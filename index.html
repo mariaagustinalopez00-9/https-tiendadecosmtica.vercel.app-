@@ -1,0 +1,3626 @@
+DOCTYPE html<!DOCTYPE html>
+<html lang="es" class="scroll-smooth">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>PRONTA — Belleza & Cosmética</title>
+
+  <!-- Google Fonts: Kingred Modern style high-contrast serifs (Bodoni Moda & Playfair Display) & Plus Jakarta Sans -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Bodoni+Moda:ital,opsz,wght@0,6..96,400..900;1,6..96,400..700&family=Playfair+Display:ital,wght@0,400..800;1,400..700&family=Plus+Jakarta+Sans:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+
+  <!-- Tailwind CSS -->
+  <script src="https://cdn.tailwindcss.com"></script>
+
+  <!-- Phosphor Icons -->
+  <script src="https://unpkg.com/@phosphor-icons/web"></script>
+
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          colors: {
+            pronta: {
+              roseBanner: '#CD899C',   // Tono exacto del rectángulo del logo
+              roseAccent: '#B56F83',   // Rosa saturado para interacciones
+              roseDeep: '#873F53',     // Rosa borgoña para acentos
+              roseLight: '#F7E7EC',    // Rosa pastel cosmético
+              blush: '#FAF5F6',        // Nude rosado claro para fondos de tarjetas
+              surface: '#FCFBF9',      // Blanco roto elegante
+              yellowSun: '#F9E784',    // Amarillo sol floral del logo
+              yellowSoft: '#FFF6C2',   // Tono manteca para badges
+              goldLine: '#DFC484',     // Dorado sutil del marco
+              charcoal: '#1C1819',     // Negro profundo tipográfico del logo
+              body: '#4A3E42',         // Texto de lectura confortable
+              muted: '#8E7D82',        // Gris rosado suave
+              border: '#EED9DF',       // Bordes ultra delgados
+            }
+          },
+          fontFamily: {
+            kingred: ['"Bodoni Moda"', '"Playfair Display"', 'serif'],
+            serif: ['"Bodoni Moda"', '"Playfair Display"', 'serif'],
+            sans: ['"Plus Jakarta Sans"', 'sans-serif'],
+          }
+        }
+      }
+    }
+  </script>
+
+  <style>
+    @font-face {
+      font-family: 'Kingred Modern';
+      src: local('Kingred Modern'), local('KingredModern');
+    }
+
+    .brand-font {
+      font-family: 'Kingred Modern', 'Bodoni Moda', 'Playfair Display', serif;
+      letter-spacing: 0.12em;
+    }
+
+    body {
+      background-color: #FAF5F6;
+      color: #1C1819;
+      font-family: 'Plus Jakarta Sans', sans-serif;
+      -webkit-font-smoothing: antialiased;
+    }
+
+    h1, h2, h3, .font-serif {
+      font-family: 'Kingred Modern', 'Bodoni Moda', 'Playfair Display', serif;
+      letter-spacing: -0.015em;
+    }
+
+    /* Custom Luxury Scrollbar */
+    ::-webkit-scrollbar {
+      width: 6px;
+      height: 6px;
+    }
+    ::-webkit-scrollbar-track {
+      background: #FAF5F6;
+    }
+    ::-webkit-scrollbar-thumb {
+      background: #D9A9B7;
+      border-radius: 9999px;
+    }
+    ::-webkit-scrollbar-thumb:hover {
+      background: #CD899C;
+    }
+
+    .glass-nav {
+      background: rgba(255, 255, 255, 0.92);
+      backdrop-filter: blur(12px);
+      -webkit-backdrop-filter: blur(12px);
+    }
+  </style>
+</head>
+<body class="min-h-screen flex flex-col bg-pronta-blush text-pronta-charcoal antialiased">
+
+  <!-- BARRA DE ANUNCIO SUPERIOR MINIMALISTA -->
+  <div id="announcement-bar" class="bg-pronta-yellowSun text-pronta-charcoal px-4 py-2.5 text-center text-xs tracking-wider uppercase font-semibold border-b border-pronta-goldLine/40 flex items-center justify-center gap-2.5">
+    <span class="text-pronta-roseDeep text-sm">✦</span>
+    <span>Envío sin cargo en compras superiores a $75.000 en CABA</span>
+    <span class="text-pronta-roseDeep text-sm">✦</span>
+  </div>
+
+  <!-- NAVEGACIÓN PRINCIPAL CON LOGO TIPOGRÁFICO LIMPIO -->
+  <header class="sticky top-0 z-40 glass-nav border-b border-pronta-border transition-all duration-300">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+      <div class="flex items-center justify-between h-20 sm:h-24">
+        
+        <!-- LOGO TIPOGRÁFICO: SOLO LA PALABRA "PRONTA" -->
+        <a href="javascript:void(0)" onclick="switchView('store')" class="flex flex-col group cursor-pointer select-none py-1" title="PRONTA — Inicio">
+          <span class="brand-font text-3xl sm:text-4xl lg:text-5xl font-light text-pronta-charcoal tracking-[0.16em] uppercase transition-colors duration-300 group-hover:text-pronta-roseDeep leading-none">
+            PRONTA
+          </span>
+          <span class="text-[9px] sm:text-[10px] tracking-[0.35em] text-pronta-roseDeep uppercase font-medium mt-1 pl-0.5 opacity-90 transition-opacity group-hover:opacity-100">
+            BELLEZA &amp; COSMÉTICA
+          </span>
+        </a>
+
+        <!-- ACCIONES DERECHA -->
+        <div class="flex items-center space-x-3">
+          
+          <!-- Botón Mi Cuenta (Cliente / Ingreso / Crear cuenta) -->
+          <div id="user-menu-container">
+            <button 
+              id="auth-btn" 
+              onclick="openAuthModal()" 
+              class="inline-flex items-center gap-1.5 text-xs font-semibold px-4 py-2 rounded-full bg-white border border-pronta-border hover:border-pronta-roseAccent transition-all text-pronta-charcoal shadow-xs">
+              <i class="ph-bold ph-user text-sm text-pronta-roseAccent"></i>
+              <span id="auth-btn-text">Ingresar / Crear Cuenta</span>
+            </button>
+          </div>
+
+          <!-- Carrito de Compras -->
+          <button 
+            id="cart-btn" 
+            onclick="toggleCart()" 
+            class="relative inline-flex items-center justify-center p-3 rounded-full bg-pronta-charcoal text-white hover:bg-black transition-all shadow-md active:scale-95"
+            aria-label="Abrir Carrito">
+            <i class="ph-bold ph-shopping-bag text-base"></i>
+            <span id="cart-count-badge" class="absolute -top-1 -right-1 bg-pronta-yellowSun text-pronta-charcoal text-[11px] font-bold w-5 h-5 rounded-full flex items-center justify-center border-2 border-white shadow-xs">0</span>
+          </button>
+        </div>
+
+      </div>
+    </div>
+  </header>
+
+  <!-- VISTA PRINCIPAL: TIENDA -->
+  <main id="store-view" class="flex-grow">
+
+    <!-- HERO EDITORIAL CON ALTA ESTÉTICA Y FOTOGRAFÍA -->
+    <section class="relative bg-gradient-to-b from-[#F7EAEE] via-[#FCF9FA] to-pronta-blush py-16 sm:py-24 border-b border-pronta-border overflow-hidden">
+      <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
+        <div class="grid grid-cols-1 lg:grid-cols-12 gap-12 items-center">
+          
+          <div class="lg:col-span-7">
+            <div class="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-white/80 border border-pronta-border text-pronta-roseDeep text-xs font-semibold tracking-wider uppercase mb-5 backdrop-blur-sm">
+              <span class="text-pronta-roseBanner text-sm">✦</span>
+              <span>Cosmética Botánica Consciente</span>
+            </div>
+            
+            <h1 class="text-4xl sm:text-6xl font-serif text-pronta-charcoal font-normal tracking-tight leading-[1.08] mb-6">
+              El Arte de Cuidar y Proteger tu piel, más allá del clima.
+            </h1>
+            
+            <p class="text-pronta-body text-base sm:text-lg mb-8 leading-relaxed max-w-xl font-light">
+              Fórmulas creadas para <strong class="font-bold text-pronta-charcoal">estimular</strong> la vitalidad original de la piel, <strong class="font-bold text-pronta-charcoal">restaurar</strong> la barrera de protección e <strong class="font-bold text-pronta-charcoal">iluminar</strong> con la belleza natural.
+            </p>
+
+            <div class="flex flex-wrap items-center gap-4">
+              <a href="#products-section" onclick="filterCategory('all')" class="px-8 py-3.5 rounded-full bg-pronta-charcoal hover:bg-black text-white text-xs uppercase tracking-widest font-semibold transition-all shadow-md hover:shadow-xl flex items-center gap-2">
+                <span>Ver Colección</span>
+                <i class="ph-bold ph-arrow-down"></i>
+              </a>
+              <div class="flex items-center gap-2 text-xs font-medium text-pronta-body bg-white/90 backdrop-blur px-4 py-3 rounded-full border border-pronta-border">
+                <i class="ph-fill ph-leaf text-pronta-roseAccent text-base"></i>
+                <span>Artesanal • Cruelty Free • Sin Parabenos</span>
+              </div>
+            </div>
+          </div>
+
+          <!-- Composicion de Imagen Editorial Hero -->
+          <div class="lg:col-span-5 relative flex justify-center">
+              <div class="aspect-[4/5] rounded-3xl overflow-hidden shadow-2xl border-4 border-white bg-pronta-roseLight relative">
+                <img 
+                  src="https://images.unsplash.com/photo-1598440947619-2c35fc9aa908?auto=format&fit=crop&w=800&q=80" 
+                  alt="PRONTA Belleza y Cosmética" 
+                  class="w-full h-full object-cover">
+                <div class="absolute inset-0 bg-gradient-to-t from-pronta-charcoal/40 via-transparent to-transparent"></div>
+              </div>
+
+              <!-- Tarjeta flotante con tratamientos sinérgicos -->
+              <div class="absolute -bottom-5 -left-6 bg-white/95 backdrop-blur-md p-4 rounded-2xl border border-pronta-border shadow-xl max-w-[230px]">
+                <div class="flex items-center gap-2 mb-1">
+                  <span class="w-2.5 h-2.5 rounded-full bg-pronta-yellowSun"></span>
+                  <p class="text-[10px] font-bold uppercase tracking-wider text-pronta-roseDeep">TRATAMIENTOS SINÉRGICOS</p>
+                </div>
+                <p class="text-xs font-semibold text-pronta-charcoal">PRONTA y la propuesta de la Triple Limpieza.</p>
+              </div>
+            </div>
+          </div>
+
+        </div>
+      </div>
+
+      <!-- Resplandores orgánicos decorativos -->
+      <div class="absolute -right-24 -top-24 w-96 h-96 bg-pronta-roseLight/50 rounded-full blur-3xl pointer-events-none"></div>
+      <div class="absolute -left-20 bottom-0 w-80 h-80 bg-pronta-yellowSoft/40 rounded-full blur-3xl pointer-events-none"></div>
+    </section>
+
+    <!-- PILARES DE SERVICIO (MINIMALISTAS) -->
+    <section class="py-8 bg-white border-b border-pronta-border">
+      <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <div class="grid grid-cols-1 sm:grid-cols-3 gap-6 text-center">
+          <div class="flex flex-col items-center p-2">
+            <span class="w-9 h-9 rounded-full bg-pronta-blush flex items-center justify-center text-pronta-roseAccent mb-2">
+              <i class="ph-bold ph-truck text-lg"></i>
+            </span>
+            <h4 class="text-xs font-bold uppercase tracking-wider text-pronta-charcoal">Envíos a todo el país</h4>
+            <p class="text-[11px] text-pronta-muted">Gratis superando $75.000 en CABA</p>
+          </div>
+          <div class="flex flex-col items-center p-2">
+            <span class="w-9 h-9 rounded-full bg-pronta-blush flex items-center justify-center text-pronta-roseAccent mb-2">
+              <i class="ph-bold ph-tag text-lg"></i>
+            </span>
+            <h4 class="text-xs font-bold uppercase tracking-wider text-pronta-charcoal">Ahorro por Volumen</h4>
+            <p class="text-[11px] text-pronta-muted">Descuento automático en carrito</p>
+          </div>
+          <div class="flex flex-col items-center p-2">
+            <span class="w-9 h-9 rounded-full bg-pronta-blush flex items-center justify-center text-pronta-roseAccent mb-2">
+              <i class="ph-bold ph-credit-card text-lg"></i>
+            </span>
+            <h4 class="text-xs font-bold uppercase tracking-wider text-pronta-charcoal">Mercado Pago</h4>
+            <p class="text-[11px] text-pronta-muted">Cuotas y todas las tarjetas</p>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- SECCIÓN DE PRODUCTOS & FILTROS -->
+    <section id="products-section" class="pt-8 pb-16 sm:pt-10 sm:pb-20">
+      <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        
+        <!-- ENCABEZADO Y FILTRO POR CATEGORÍAS EDITORIAL -->
+        <div class="flex flex-col items-center text-center mb-8 gap-5">
+          <div>
+            <span class="text-[11px] uppercase tracking-[0.25em] text-pronta-roseDeep font-semibold block mb-1">Catálogo Botánico</span>
+            <h2 class="text-3xl sm:text-4xl font-serif text-pronta-charcoal font-normal">Nuestros Esenciales de Cuidado</h2>
+          </div>
+
+          <!-- Filtros de categoría refinados tipo cápsula/pill -->
+          <div class="w-full flex justify-center">
+            <div 
+              id="category-filters-container" 
+              class="inline-flex items-center gap-1.5 p-1.5 bg-white/80 backdrop-blur-md rounded-full border border-pronta-border shadow-xs max-w-full overflow-x-auto scrollbar-none">
+              <!-- Inyectado por JavaScript -->
+            </div>
+          </div>
+        </div>
+
+        <!-- GRILLA DE PRODUCTOS EDITORIAL -->
+        <div id="products-grid" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-8">
+          <!-- Inyectado por JavaScript -->
+        </div>
+
+      </div>
+    </section>
+
+    <!-- RUTINA EDITORIAL -->
+    <section id="ritual-section" class="py-16 bg-white border-t border-pronta-border">
+      <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <div class="text-center max-w-xl mx-auto mb-12">
+          <span class="text-xs uppercase tracking-[0.2em] text-pronta-roseDeep font-semibold">RUTINA SALUDABLE</span>
+          <h3 class="text-2xl sm:text-3xl font-serif text-pronta-charcoal mt-1">PRONTA en 3 Pasos</h3>
+        </div>
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-8">
+          <div class="bg-pronta-blush p-8 rounded-3xl border border-pronta-border text-center flex flex-col items-center">
+            <span class="w-8 h-8 rounded-full bg-pronta-yellowSun text-pronta-charcoal font-serif font-bold inline-flex items-center justify-center mb-4 text-sm">1</span>
+            <h4 class="font-serif text-lg font-medium mb-2 text-pronta-charcoal">Limpieza — Depuración Progresiva</h4>
+            <p class="text-xs text-pronta-body leading-relaxed">La base para un tratamiento efectivo, mayor penetración de activos y la reestructuración de la matriz extracelular.</p>
+          </div>
+          <div class="bg-pronta-blush p-8 rounded-3xl border border-pronta-border text-center flex flex-col items-center">
+            <span class="w-8 h-8 rounded-full bg-pronta-yellowSun text-pronta-charcoal font-serif font-bold inline-flex items-center justify-center mb-4 text-sm">2</span>
+            <h4 class="font-serif text-lg font-medium mb-2 text-pronta-charcoal">Equilibrio Activo — Cuidado</h4>
+            <p class="text-xs text-pronta-body leading-relaxed">Luego de barrer la capa hidrolipídica, es el momento indicado para aplicar el producto de acción específico. La piel está receptiva y la penetración es más efectiva.</p>
+          </div>
+          <div class="bg-pronta-blush p-8 rounded-3xl border border-pronta-border text-center flex flex-col items-center">
+            <span class="w-8 h-8 rounded-full bg-pronta-yellowSun text-pronta-charcoal font-serif font-bold inline-flex items-center justify-center mb-4 text-sm">3</span>
+            <h4 class="font-serif text-lg font-medium mb-2 text-pronta-charcoal">Barrera Lipídica — Protección</h4>
+            <p class="text-xs text-pronta-body leading-relaxed">Regenerar el manto hidrolipídico incorporando lípidos es fundamental para la autoprotección y ralentizar el proceso oxidativo.</p>
+          </div>
+        </div>
+
+        <!-- Pregunta reflexiva y asesoramiento personalizado -->
+        <div class="mt-12 pt-10 border-t border-pronta-border/60 text-center max-w-2xl mx-auto">
+          <p class="font-serif text-xl sm:text-2xl text-pronta-charcoal italic font-light leading-snug mb-4">
+            Entonces.. ¿Cuál es el producto indicado para mi Piel? ¿Cuál es mi tipo de piel?
+          </p>
+          <button 
+            onclick="switchView('skin-guide')" 
+            class="inline-flex items-center gap-2 px-6 py-2.5 rounded-full bg-pronta-roseBanner text-white text-xs font-semibold uppercase tracking-wider hover:bg-pronta-roseDeep transition-all shadow-sm">
+            <i class="ph-bold ph-sparkle text-sm"></i>
+            <span>Ver Guía de Pieles &amp; Rutinas</span>
+          </button>
+        </div>
+      </div>
+    </section>
+
+  </main>
+
+  <!-- VISTA DEDICADA: LANDING / GUÍA DE TIPOS DE PIEL, ACTIVOS Y RUTINAS -->
+  <section id="skin-guide-view" class="hidden flex-grow py-12 sm:py-16 bg-[#FAF5F6]">
+    <div class="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
+      
+      <!-- ENCABEZADO EDITORIAL DE LA GUÍA -->
+      <div class="text-center max-w-3xl mx-auto mb-12">
+        <button 
+          onclick="switchView('store')" 
+          class="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-white border border-pronta-border text-xs font-semibold text-pronta-charcoal hover:bg-pronta-blush mb-6 shadow-2xs">
+          <i class="ph-bold ph-arrow-left"></i>
+          <span>Volver a la Tienda</span>
+        </button>
+
+        <span class="text-[11px] uppercase tracking-[0.25em] text-pronta-roseDeep font-bold block mb-2">Conocimiento Botánico &amp; Salud Cutánea</span>
+        <h2 class="text-3xl sm:text-5xl font-serif text-pronta-charcoal font-normal leading-tight mb-4">
+          Guía de Tipos de Piel, Activos &amp; Rutinas
+        </h2>
+        <p class="text-xs sm:text-sm text-pronta-body font-light leading-relaxed">
+          Cada piel tiene un lenguaje propio y ritmos biológicos que varían según el clima, el estrés y el estilo de vida. Encontrá tu tipo de piel para elegir las fórmulas botánicas que realmente restauran tu equilibrio.
+        </p>
+      </div>
+
+      <!-- SELECTOR DE TIPOS DE PIEL -->
+      <div class="flex items-center justify-center gap-2 flex-wrap mb-10" id="skin-type-buttons">
+        <button onclick="selectSkinType('seca')" id="btn-skin-seca" class="px-5 py-2.5 rounded-full text-xs font-semibold tracking-wider uppercase transition-all bg-pronta-charcoal text-white shadow-sm">
+          Piel Seca / Deshidratada
+        </button>
+        <button onclick="selectSkinType('grasa')" id="btn-skin-grasa" class="px-5 py-2.5 rounded-full text-xs font-semibold tracking-wider uppercase transition-all bg-white text-pronta-charcoal border border-pronta-border hover:border-pronta-charcoal">
+          Piel Grasa / Con Tendencia Acneica
+        </button>
+        <button onclick="selectSkinType('mixta')" id="btn-skin-mixta" class="px-5 py-2.5 rounded-full text-xs font-semibold tracking-wider uppercase transition-all bg-white text-pronta-charcoal border border-pronta-border hover:border-pronta-charcoal">
+          Piel Mixta
+        </button>
+        <button onclick="selectSkinType('sensible')" id="btn-skin-sensible" class="px-5 py-2.5 rounded-full text-xs font-semibold tracking-wider uppercase transition-all bg-white text-pronta-charcoal border border-pronta-border hover:border-pronta-charcoal">
+          Piel Sensible / Reactiva
+        </button>
+        <button onclick="selectSkinType('madura')" id="btn-skin-madura" class="px-5 py-2.5 rounded-full text-xs font-semibold tracking-wider uppercase transition-all bg-white text-pronta-charcoal border border-pronta-border hover:border-pronta-charcoal">
+          Piel Madura
+        </button>
+      </div>
+
+      <!-- CONTENEDOR DINÁMICO DE INFORMACIÓN DE PIEL -->
+      <div id="skin-content-container" class="bg-white rounded-3xl p-6 sm:p-10 border border-pronta-border shadow-xl space-y-8">
+        <!-- Inyectado por JS -->
+      </div>
+
+      <!-- BANNER DE CONSULTA PERSONALIZADA CON LA COSMATRA -->
+      <div class="mt-12 bg-pronta-yellowSun/30 border border-pronta-goldLine/50 rounded-3xl p-6 sm:p-8 text-center flex flex-col items-center justify-center">
+        <span class="w-12 h-12 rounded-full bg-white flex items-center justify-center text-pronta-roseDeep text-2xl shadow-xs mb-3">
+          <i class="ph-bold ph-chat-circle-dots"></i>
+        </span>
+        <h4 class="font-serif text-xl sm:text-2xl text-pronta-charcoal font-medium mb-2">¿Querés una rutina personalizada con tu propia fórmula?</h4>
+        <p class="text-xs sm:text-sm text-pronta-body max-w-xl mb-5 font-light leading-relaxed">
+          Escribime directamente al celular, contame qué estas necesitando y te envío las opciones de Servicio de Paquetes con Rutinas, Seguimiento y Asesoría personalizada.
+        </p>
+        <a 
+          id="skin-guide-whatsapp-btn" 
+          href="https://wa.me/5491100000000" 
+          target="_blank" 
+          class="inline-flex items-center gap-2 px-7 py-3 rounded-full bg-pronta-charcoal hover:bg-black text-white text-xs font-bold uppercase tracking-wider shadow-md transition-all">
+          <i class="ph-bold ph-whatsapp-logo text-base text-green-400"></i>
+          <span>Asesorarme por WhatsApp</span>
+        </a>
+      </div>
+
+    </div>
+  </section>
+
+  <!-- VISTA PRIVADA: PANEL DE ADMINISTRACIÓN -->
+  <section id="admin-view" class="hidden flex-grow py-8 bg-pronta-blush">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+      
+      <!-- ENCABEZADO ADMIN -->
+      <div class="bg-white rounded-2xl p-6 border border-pronta-border shadow-sm mb-6 flex flex-col md:flex-row items-start md:items-center justify-between gap-4">
+        <div>
+          <div class="flex items-center gap-2">
+            <span class="px-2.5 py-0.5 rounded-full bg-pronta-roseBanner text-white text-[11px] font-semibold tracking-wider uppercase">Área Restringida</span>
+            <span class="text-xs text-pronta-muted">Sesión de Administrador: prontacosmetica@gmail.com</span>
+          </div>
+          <h2 class="text-2xl font-serif text-pronta-charcoal mt-1">Panel de Control & Gestión — PRONTA</h2>
+        </div>
+
+        <div class="flex flex-wrap items-center gap-2.5">
+          <button 
+            onclick="switchView('store')" 
+            class="px-4 py-2 rounded-full border border-pronta-border bg-white text-xs font-medium text-pronta-charcoal hover:bg-pronta-blush transition-colors flex items-center gap-1.5">
+            <i class="ph-bold ph-storefront"></i>
+            <span>Ver Tienda</span>
+          </button>
+          <button 
+            onclick="resetAllStoreData()" 
+            class="px-4 py-2 rounded-full border border-red-200 bg-red-50 text-xs font-medium text-red-600 hover:bg-red-100 transition-colors flex items-center gap-1.5"
+            title="Restaura productos y configuraciones de muestra">
+            <i class="ph-bold ph-arrow-counter-clockwise"></i>
+            <span>Restaurar datos demo</span>
+          </button>
+          <button 
+            onclick="logoutAdminSession()" 
+            class="px-4 py-2 rounded-full bg-pronta-charcoal text-white text-xs font-semibold hover:bg-black transition-colors flex items-center gap-1.5 shadow-sm">
+            <i class="ph-bold ph-lock-key"></i>
+            <span>Bloquear / Salir</span>
+          </button>
+        </div>
+      </div>
+
+      <!-- PESTAÑAS DE NAVEGACIÓN ADMIN -->
+      <div class="flex items-center gap-2 border-b border-pronta-border mb-6 overflow-x-auto pb-1">
+        <button onclick="switchAdminTab('products')" id="tab-btn-products" class="px-4 py-2.5 text-xs font-bold rounded-t-lg bg-white border-t border-l border-r border-pronta-border text-pronta-roseDeep flex items-center gap-2">
+          <i class="ph-bold ph-package"></i>
+          <span>Productos (<span id="adm-badge-products">0</span>)</span>
+        </button>
+        <button onclick="switchAdminTab('categories')" id="tab-btn-categories" class="px-4 py-2.5 text-xs font-medium rounded-t-lg text-pronta-muted hover:text-pronta-charcoal flex items-center gap-2">
+          <i class="ph-bold ph-squares-four"></i>
+          <span>Categorías (<span id="adm-badge-categories">0</span>)</span>
+        </button>
+        <button onclick="switchAdminTab('shipping')" id="tab-btn-shipping" class="px-4 py-2.5 text-xs font-medium rounded-t-lg text-pronta-muted hover:text-pronta-charcoal flex items-center gap-2">
+          <i class="ph-bold ph-truck"></i>
+          <span>Envíos &amp; Tarifas (<span id="adm-badge-shipping">0</span>)</span>
+        </button>
+        <button onclick="switchAdminTab('payments')" id="tab-btn-payments" class="px-4 py-2.5 text-xs font-medium rounded-t-lg text-pronta-muted hover:text-pronta-charcoal flex items-center gap-2">
+          <i class="ph-bold ph-credit-card"></i>
+          <span>Medios de Pago &amp; Descuentos</span>
+        </button>
+        <button onclick="switchAdminTab('orders')" id="tab-btn-orders" class="px-4 py-2.5 text-xs font-medium rounded-t-lg text-pronta-muted hover:text-pronta-charcoal flex items-center gap-2">
+          <i class="ph-bold ph-receipt"></i>
+          <span>Pedidos (<span id="adm-badge-orders">0</span>)</span>
+        </button>
+        <button onclick="switchAdminTab('users')" id="tab-btn-users" class="px-4 py-2.5 text-xs font-medium rounded-t-lg text-pronta-muted hover:text-pronta-charcoal flex items-center gap-2">
+          <i class="ph-bold ph-users"></i>
+          <span>Clientes &amp; Usuarios (<span id="adm-badge-users">0</span>)</span>
+        </button>
+        <button onclick="switchAdminTab('settings')" id="tab-btn-settings" class="px-4 py-2.5 text-xs font-medium rounded-t-lg text-pronta-muted hover:text-pronta-charcoal flex items-center gap-2">
+          <i class="ph-bold ph-whatsapp-logo text-green-600"></i>
+          <span>WhatsApp &amp; Contacto</span>
+        </button>
+      </div>
+
+      <!-- CONTENEDOR 1: PRODUCTOS -->
+      <div id="adm-tab-content-products" class="space-y-6">
+        <div class="bg-white rounded-2xl p-6 border border-pronta-border shadow-sm flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
+          <div>
+            <h3 class="text-lg font-serif text-pronta-charcoal">Catálogo de Productos</h3>
+            <p class="text-xs text-pronta-muted">Cargá productos con foto, precio de lista, oferta y descuentos progresivos por cantidad.</p>
+          </div>
+          <button 
+            onclick="openProductModal()" 
+            class="px-5 py-2.5 rounded-full bg-pronta-charcoal hover:bg-black text-white text-xs font-semibold flex items-center gap-2 shadow-sm transition-all">
+            <i class="ph-bold ph-plus"></i>
+            <span>Nuevo Producto</span>
+          </button>
+        </div>
+
+        <!-- Tabla de productos -->
+        <div class="bg-white rounded-2xl border border-pronta-border shadow-sm overflow-hidden">
+          <div class="overflow-x-auto">
+            <table class="w-full text-left text-xs">
+              <thead class="bg-pronta-blush text-pronta-muted uppercase tracking-wider text-[10px] border-b border-pronta-border">
+                <tr>
+                  <th class="py-3 px-4">Producto</th>
+                  <th class="py-3 px-4">Categoría</th>
+                  <th class="py-3 px-4">Precio Regular</th>
+                  <th class="py-3 px-4">Precio Promo</th>
+                  <th class="py-3 px-4">Reglas por Cantidad</th>
+                  <th class="py-3 px-4">Stock</th>
+                  <th class="py-3 px-4 text-right">Acciones</th>
+                </tr>
+              </thead>
+              <tbody id="admin-products-table-body" class="divide-y divide-pronta-border/50">
+                <!-- Inyectado por JS -->
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+
+      <!-- CONTENEDOR 2: CATEGORÍAS -->
+      <div id="adm-tab-content-categories" class="hidden space-y-6">
+        <div class="bg-white rounded-2xl p-6 border border-pronta-border shadow-sm flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
+          <div>
+            <h3 class="text-lg font-serif text-pronta-charcoal">Categorías de la Tienda</h3>
+            <p class="text-xs text-pronta-muted">Crea, edita o elimina las categorías para organizar tus productos.</p>
+          </div>
+          <button 
+            onclick="openCategoryModal()" 
+            class="px-5 py-2.5 rounded-full bg-pronta-charcoal hover:bg-black text-white text-xs font-semibold flex items-center gap-2 shadow-sm transition-all">
+            <i class="ph-bold ph-plus"></i>
+            <span>Nueva Categoría</span>
+          </button>
+        </div>
+
+        <div class="bg-white rounded-2xl border border-pronta-border shadow-sm overflow-hidden p-4">
+          <div id="admin-categories-list" class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4">
+            <!-- Inyectado por JS -->
+          </div>
+        </div>
+      </div>
+
+      <!-- CONTENEDOR NUEVO: MÉTODOS DE ENVÍO -->
+      <div id="adm-tab-content-shipping" class="hidden space-y-6">
+        <div class="bg-white rounded-2xl p-6 border border-pronta-border shadow-sm flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
+          <div>
+            <h3 class="text-lg font-serif text-pronta-charcoal">Formas de Envío y Tarifas</h3>
+            <p class="text-xs text-pronta-muted">Configurá las opciones de entrega disponibles, los costos de flete para el cliente y los montos mínimos para envío gratis.</p>
+          </div>
+          <button 
+            onclick="openShippingModal()" 
+            class="px-5 py-2.5 rounded-full bg-pronta-charcoal hover:bg-black text-white text-xs font-semibold flex items-center gap-2 shadow-sm transition-all">
+            <i class="ph-bold ph-plus"></i>
+            <span>Nueva Forma de Envío</span>
+          </button>
+        </div>
+
+        <div id="admin-shipping-list" class="grid grid-cols-1 md:grid-cols-3 gap-6">
+          <!-- Inyectado por JS -->
+        </div>
+      </div>
+
+      <!-- CONTENEDOR 3: MEDIOS DE PAGO & DESCUENTOS -->
+      <div id="adm-tab-content-payments" class="hidden space-y-6">
+        <div class="bg-white rounded-2xl p-6 border border-pronta-border shadow-sm flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
+          <div>
+            <h3 class="text-lg font-serif text-pronta-charcoal">Medios de Pago & Descuentos Especiales</h3>
+            <p class="text-xs text-pronta-muted">Configura las formas de pago, bonificaciones en transferencia o efectivo y la integración con Mercado Pago.</p>
+          </div>
+          <button 
+            onclick="openPaymentModal()" 
+            class="px-5 py-2.5 rounded-full bg-pronta-charcoal hover:bg-black text-white text-xs font-semibold flex items-center gap-2 shadow-sm transition-all">
+            <i class="ph-bold ph-plus"></i>
+            <span>Nuevo Medio de Pago</span>
+          </button>
+        </div>
+
+        <div id="admin-payments-list" class="grid grid-cols-1 md:grid-cols-3 gap-6">
+          <!-- Inyectado por JS -->
+        </div>
+      </div>
+
+      <!-- CONTENEDOR 4: PEDIDOS -->
+      <div id="adm-tab-content-orders" class="hidden space-y-6">
+        <div class="bg-white rounded-2xl p-6 border border-pronta-border shadow-sm">
+          <h3 class="text-lg font-serif text-pronta-charcoal">Historial de Órdenes y Ventas</h3>
+          <p class="text-xs text-pronta-muted">Supervisa las compras realizadas por tus clientes y actualiza su estado.</p>
+        </div>
+
+        <div class="bg-white rounded-2xl border border-pronta-border shadow-sm overflow-hidden">
+          <div class="overflow-x-auto">
+            <table class="w-full text-left text-xs">
+              <thead class="bg-pronta-blush text-pronta-muted uppercase tracking-wider text-[10px] border-b border-pronta-border">
+                <tr>
+                  <th class="py-3 px-4">Orden</th>
+                  <th class="py-3 px-4">Fecha</th>
+                  <th class="py-3 px-4">Cliente</th>
+                  <th class="py-3 px-4">Total</th>
+                  <th class="py-3 px-4">Medio de Pago</th>
+                  <th class="py-3 px-4">Estado</th>
+                  <th class="py-3 px-4 text-right">Detalles</th>
+                </tr>
+              </thead>
+              <tbody id="admin-orders-table-body" class="divide-y divide-pronta-border/50">
+                <!-- Inyectado por JS -->
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+
+      <!-- CONTENEDOR 5: CLIENTES & USUARIOS -->
+      <div id="adm-tab-content-users" class="hidden space-y-6">
+        <div class="bg-white rounded-2xl p-6 border border-pronta-border shadow-sm flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
+          <div>
+            <h3 class="text-lg font-serif text-pronta-charcoal">Administración de Clientes & Permisos</h3>
+            <p class="text-xs text-pronta-muted">Gestioná contraseñas, permisos de administrador, bloqueos y descargas en Excel.</p>
+          </div>
+          <div class="flex items-center gap-2">
+            <button 
+              onclick="exportUsersToCSV()" 
+              class="px-4 py-2.5 rounded-full bg-pronta-yellowSun hover:bg-yellow-300 text-pronta-charcoal text-xs font-bold flex items-center gap-2 shadow-sm transition-all border border-pronta-goldLine/40">
+              <i class="ph-bold ph-microsoft-excel-logo text-base"></i>
+              <span>Descargar Excel (CSV)</span>
+            </button>
+          </div>
+        </div>
+
+        <div class="bg-white rounded-2xl border border-pronta-border shadow-sm overflow-hidden">
+          <div class="overflow-x-auto">
+            <table class="w-full text-left text-xs">
+              <thead class="bg-pronta-blush text-pronta-muted uppercase tracking-wider text-[10px] border-b border-pronta-border">
+                <tr>
+                  <th class="py-3 px-4">Cliente</th>
+                  <th class="py-3 px-4">Email</th>
+                  <th class="py-3 px-4">Cumpleaños</th>
+                  <th class="py-3 px-4">Rol / Permisos</th>
+                  <th class="py-3 px-4">Estado</th>
+                  <th class="py-3 px-4 text-right">Acciones</th>
+                </tr>
+              </thead>
+              <tbody id="admin-users-table-body" class="divide-y divide-pronta-border/50">
+                <!-- Inyectado por JS -->
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+
+      <!-- CONTENEDOR 6: WHATSAPP & CONFIGURACIÓN DE CONTACTO -->
+      <div id="adm-tab-content-settings" class="hidden space-y-6">
+        <div class="bg-white rounded-2xl p-6 border border-pronta-border shadow-sm max-w-2xl">
+          <div class="flex items-center gap-3 mb-4">
+            <span class="w-10 h-10 rounded-full bg-green-50 border border-green-200 flex items-center justify-center text-green-600 text-xl">
+              <i class="ph-bold ph-whatsapp-logo"></i>
+            </span>
+            <div>
+              <h3 class="text-lg font-serif text-pronta-charcoal">Configuración de WhatsApp</h3>
+              <p class="text-xs text-pronta-muted">Definí el número donde recibirás consultas y confirmaciones de pedidos.</p>
+            </div>
+          </div>
+
+          <form onsubmit="handleSaveWhatsApp(event)" class="space-y-4">
+            <div>
+              <label class="block text-xs font-semibold text-pronta-charcoal mb-1">
+                Número de WhatsApp (con código de país y código de área) *
+              </label>
+              <div class="relative">
+                <span class="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none text-xs text-pronta-muted font-bold">
+                  +
+                </span>
+                <input 
+                  type="text" 
+                  id="adm-whatsapp-input" 
+                  required 
+                  placeholder="5491112345678"
+                  class="w-full text-xs pl-7 pr-3.5 py-2.5 rounded-xl border border-pronta-border bg-pronta-blush focus:bg-white focus:outline-none focus:border-pronta-charcoal font-mono">
+              </div>
+              <p class="text-[11px] text-pronta-muted mt-1.5 leading-relaxed">
+                Ingresá solo números, sin guiones ni espacios. Para Argentina debe empezar con <strong>549</strong> (ej: <code>5491122334455</code>).
+              </p>
+            </div>
+
+            <div>
+              <label class="block text-xs font-semibold text-pronta-charcoal mb-1">
+                Mensaje predeterminado de consulta para clientes
+              </label>
+              <input 
+                type="text" 
+                id="adm-whatsapp-msg-input" 
+                placeholder="¡Hola PRONTA! Me gustaría consultar por..."
+                class="w-full text-xs px-3.5 py-2.5 rounded-xl border border-pronta-border bg-pronta-blush focus:bg-white focus:outline-none focus:border-pronta-charcoal">
+            </div>
+
+            <!-- Previsualización interactiva -->
+            <div class="p-4 bg-pronta-blush rounded-xl border border-pronta-border">
+              <p class="text-[10px] font-bold uppercase tracking-wider text-pronta-muted mb-1.5">Probar enlace directo actual:</p>
+              <a 
+                id="adm-whatsapp-preview-link" 
+                href="#" 
+                target="_blank" 
+                class="inline-flex items-center gap-2 text-xs font-semibold text-green-700 bg-white px-3.5 py-2 rounded-full border border-green-200 shadow-2xs hover:bg-green-50">
+                <i class="ph-bold ph-arrow-square-out text-sm"></i>
+                <span>Abrir chat de prueba</span>
+              </a>
+            </div>
+
+            <div class="flex items-center justify-end pt-2">
+              <button 
+                type="submit" 
+                class="px-7 py-2.5 rounded-full bg-pronta-charcoal hover:bg-black text-white text-xs font-bold tracking-wider uppercase transition-all shadow-md active:scale-95 flex items-center gap-1.5">
+                <i class="ph-bold ph-floppy-disk"></i>
+                <span>Guardar WhatsApp</span>
+              </button>
+            </div>
+          </form>
+        </div>
+      </div>
+
+    </div>
+  </section>
+
+  <!-- PIE DE PÁGINA -->
+  <footer class="bg-white border-t border-pronta-border mt-auto">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
+      <div class="grid grid-cols-1 md:grid-cols-4 gap-8 mb-8">
+        
+        <div class="md:col-span-2">
+          <!-- Logo Footer: Solo texto PRONTA -->
+          <div class="mb-4">
+            <span class="brand-font text-3xl font-light text-pronta-charcoal tracking-[0.16em] uppercase block leading-none">
+              PRONTA
+            </span>
+            <span class="text-[8px] tracking-[0.32em] text-pronta-roseDeep uppercase font-medium block mt-1">
+              BELLEZA &amp; COSMÉTICA
+            </span>
+          </div>
+          <p class="text-xs text-pronta-muted max-w-sm leading-relaxed">
+            Cosmética botánica de alta pureza. Cuidado consciente para tu piel, desarrollado con respeto por el medio ambiente y los seres vivos.
+          </p>
+        </div>
+
+        <div>
+          <h4 class="text-xs font-bold uppercase tracking-wider text-pronta-charcoal mb-3">Navegación</h4>
+          <ul class="space-y-2 text-xs text-pronta-muted">
+            <li><a href="javascript:void(0)" onclick="switchView('store')" class="hover:text-pronta-roseDeep">Inicio</a></li>
+            <li><a href="javascript:void(0)" onclick="switchView('store'); scrollToSection('products-section');" class="hover:text-pronta-roseDeep">Productos y Descuentos</a></li>
+            <li><a href="javascript:void(0)" onclick="openAuthModal()" class="hover:text-pronta-roseDeep">Mi Cuenta</a></li>
+            <li><a href="javascript:void(0)" onclick="requestAdminAccess()" class="hover:text-pronta-roseDeep">Administración</a></li>
+          </ul>
+        </div>
+
+        <div>
+          <h4 class="text-xs font-bold uppercase tracking-wider text-pronta-charcoal mb-3">Atención al Cliente</h4>
+          <p class="text-xs text-pronta-muted mb-2">¿Tenés dudas sobre tu rutina?</p>
+          <div class="space-y-2">
+            <a href="javascript:void(0)" onclick="switchView('skin-guide')" class="inline-flex items-center gap-1.5 text-xs font-semibold text-pronta-roseDeep hover:underline block">
+              <i class="ph-bold ph-sparkle text-sm"></i>
+              <span>Guía de Pieles, Activos y Rutinas</span>
+            </a>
+            <a id="footer-whatsapp-link" href="https://wa.me/5491100000000" target="_blank" class="inline-flex items-center gap-1.5 text-xs font-medium text-pronta-charcoal hover:underline block">
+              <i class="ph-bold ph-whatsapp-logo text-base text-green-600"></i>
+              <span id="footer-whatsapp-text">Consultar por WhatsApp</span>
+            </a>
+          </div>
+        </div>
+
+      </div>
+
+      <div class="pt-6 border-t border-pronta-border flex flex-col sm:flex-row items-center justify-between text-[11px] text-pronta-muted gap-2">
+        <p>© 2026 PRONTA — Belleza & Cosmética. Todos los derechos reservados.</p>
+        <p>Tienda Online con Carrito, Descuentos por Cantidad y Checkout</p>
+      </div>
+    </div>
+  </footer>
+
+  <!-- ========================================== -->
+  <!-- MODALES Y DRAWERS                         -->
+  <!-- ========================================== -->
+
+  <!-- DRAWER DEL CARRITO -->
+  <div id="cart-drawer" class="fixed inset-0 z-50 overflow-hidden hidden" aria-labelledby="slide-over-title" role="dialog" aria-modal="true">
+    <div class="absolute inset-0 bg-pronta-charcoal/40 backdrop-blur-sm transition-opacity" onclick="toggleCart()"></div>
+
+    <div class="pointer-events-none fixed inset-y-0 right-0 flex max-w-full pl-10">
+      <div class="pointer-events-auto w-screen max-w-md bg-white shadow-2xl flex flex-col">
+        
+        <!-- Header Carrito -->
+        <div class="p-6 bg-pronta-blush border-b border-pronta-border flex items-center justify-between">
+          <div class="flex items-center gap-2">
+            <i class="ph-bold ph-shopping-bag text-pronta-roseDeep text-xl"></i>
+            <h3 class="font-serif text-lg font-medium text-pronta-charcoal">Tu Carrito de Compras</h3>
+          </div>
+          <button onclick="toggleCart()" class="text-pronta-muted hover:text-pronta-charcoal p-1 rounded-full">
+            <i class="ph-bold ph-x text-lg"></i>
+          </button>
+        </div>
+
+        <!-- Banner de incentivo -->
+        <div id="cart-free-shipping-bar" class="bg-pronta-yellowSun/40 px-4 py-2 border-b border-pronta-border text-xs text-pronta-charcoal text-center">
+          <!-- Inyectado por JS -->
+        </div>
+
+        <!-- SELECCIÓN DE ENVÍO DIRECTO EN EL CARRITO -->
+        <div id="cart-shipping-selector-section" class="px-6 py-3 bg-white border-b border-pronta-border">
+          <label class="block text-[11px] font-bold uppercase tracking-wider text-pronta-charcoal mb-2 flex items-center justify-between">
+            <span class="flex items-center gap-1.5">
+              <i class="ph-bold ph-truck text-pronta-roseDeep"></i>
+              <span>Forma de Envío &amp; Costo</span>
+            </span>
+            <span id="cart-shipping-tag" class="text-[10px] font-semibold text-pronta-roseDeep lowercase">calcular entrega</span>
+          </label>
+          <div id="cart-shipping-options-list" class="space-y-1.5">
+            <!-- Inyectado por JS -->
+          </div>
+        </div>
+
+        <!-- Lista de items del carrito -->
+        <div id="cart-items-container" class="flex-grow overflow-y-auto p-6 divide-y divide-pronta-border/60 space-y-4">
+          <!-- Inyectado por JS -->
+        </div>
+
+        <!-- Resumen y checkout -->
+        <div id="cart-summary-container" class="p-6 bg-pronta-blush border-t border-pronta-border space-y-3">
+          <!-- Inyectado por JS -->
+        </div>
+
+      </div>
+    </div>
+  </div>
+
+  <!-- MODAL: CHECKOUT & FINALIZAR COMPRA -->
+  <div id="checkout-modal" class="fixed inset-0 z-50 overflow-y-auto hidden bg-pronta-charcoal/50 backdrop-blur-sm flex items-center justify-center p-4">
+    <div class="bg-white rounded-3xl max-w-2xl w-full p-6 sm:p-8 border border-pronta-border shadow-2xl my-8">
+      
+      <div class="flex items-center justify-between pb-4 border-b border-pronta-border mb-6">
+        <div>
+          <span class="text-[11px] font-bold uppercase tracking-wider text-pronta-roseDeep">Paso Final</span>
+          <h3 class="text-2xl font-serif text-pronta-charcoal">Completar Pedido</h3>
+        </div>
+        <button onclick="closeCheckoutModal()" class="text-pronta-muted hover:text-pronta-charcoal p-1">
+          <i class="ph-bold ph-x text-lg"></i>
+        </button>
+      </div>
+
+      <form id="checkout-form" onsubmit="handleCheckoutSubmit(event)" class="space-y-6">
+        
+        <!-- Datos de contacto y envío -->
+        <div>
+          <div class="flex items-center justify-between mb-3">
+            <h4 class="text-xs font-bold uppercase tracking-wider text-pronta-charcoal flex items-center gap-1.5">
+              <i class="ph-bold ph-user-circle text-pronta-roseDeep"></i>
+              <span>1. Datos del Comprador</span>
+            </h4>
+            <span id="chk-autofill-indicator" class="text-[10px] text-pronta-roseDeep font-semibold hidden">
+              ✓ Datos completados de tu cuenta
+            </span>
+          </div>
+          
+          <div class="grid grid-cols-1 sm:grid-cols-2 gap-3 mb-3">
+            <div>
+              <label class="block text-[11px] font-semibold text-pronta-muted mb-1">Nombre y Apellido *</label>
+              <input type="text" id="chk-name" required placeholder="Ej: Valentina Gómez" class="w-full text-xs px-3.5 py-2.5 rounded-xl border border-pronta-border bg-pronta-blush focus:bg-white focus:outline-none focus:border-pronta-charcoal">
+            </div>
+            <div>
+              <label class="block text-[11px] font-semibold text-pronta-muted mb-1">Email *</label>
+              <input type="email" id="chk-email" required placeholder="tuemail@ejemplo.com" class="w-full text-xs px-3.5 py-2.5 rounded-xl border border-pronta-border bg-pronta-blush focus:bg-white focus:outline-none focus:border-pronta-charcoal">
+            </div>
+          </div>
+
+          <div class="grid grid-cols-1 sm:grid-cols-2 gap-3 mb-3">
+            <div>
+              <label class="block text-[11px] font-semibold text-pronta-muted mb-1">WhatsApp / Teléfono *</label>
+              <input type="tel" id="chk-phone" required placeholder="Ej: 11 5555 8888" class="w-full text-xs px-3.5 py-2.5 rounded-xl border border-pronta-border bg-pronta-blush focus:bg-white focus:outline-none focus:border-pronta-charcoal">
+            </div>
+            <div>
+              <label class="block text-[11px] font-semibold text-pronta-muted mb-1">Calle / Avenida *</label>
+              <input type="text" id="chk-street" required placeholder="Ej: Av. Santa Fe" class="w-full text-xs px-3.5 py-2.5 rounded-xl border border-pronta-border bg-pronta-blush focus:bg-white focus:outline-none focus:border-pronta-charcoal">
+            </div>
+          </div>
+
+          <!-- Número de casa, Entre calles y Código Postal -->
+          <div class="grid grid-cols-2 sm:grid-cols-3 gap-3 mb-3">
+            <div>
+              <label class="block text-[11px] font-semibold text-pronta-muted mb-1">Número de Casa / Piso / Depto *</label>
+              <input type="text" id="chk-number" required placeholder="Ej: 3240 4to B" class="w-full text-xs px-3.5 py-2.5 rounded-xl border border-pronta-border bg-pronta-blush focus:bg-white focus:outline-none focus:border-pronta-charcoal">
+            </div>
+            <div>
+              <label class="block text-[11px] font-semibold text-pronta-muted mb-1">Código Postal (CP) *</label>
+              <input type="text" id="chk-zipcode" required placeholder="Ej: 1425" class="w-full text-xs px-3.5 py-2.5 rounded-xl border border-pronta-border bg-pronta-blush focus:bg-white focus:outline-none focus:border-pronta-charcoal">
+            </div>
+            <div class="col-span-2 sm:col-span-1">
+              <label class="block text-[11px] font-semibold text-pronta-muted mb-1">Localidad / Ciudad *</label>
+              <input type="text" id="chk-city" required placeholder="Ej: Palermo, CABA" class="w-full text-xs px-3.5 py-2.5 rounded-xl border border-pronta-border bg-pronta-blush focus:bg-white focus:outline-none focus:border-pronta-charcoal">
+            </div>
+          </div>
+
+          <div>
+            <label class="block text-[11px] font-semibold text-pronta-muted mb-1">Entre Calles / Referencias de Entrega (Opcional)</label>
+            <input type="text" id="chk-cross-streets" placeholder="Ej: Entre Coronel Díaz y Billinghurst. Tocar timbre 'Gómez'." class="w-full text-xs px-3.5 py-2.5 rounded-xl border border-pronta-border bg-pronta-blush focus:bg-white focus:outline-none focus:border-pronta-charcoal">
+          </div>
+
+          <!-- NOTAS O ACLARACIONES ADICIONALES -->
+          <div class="mt-3">
+            <label class="block text-[11px] font-semibold text-pronta-muted mb-1 flex items-center justify-between">
+              <span class="flex items-center gap-1">
+                <i class="ph-bold ph-note-pencil text-pronta-roseDeep"></i>
+                <span>Notas o aclaraciones sobre el pedido / envío (Opcional)</span>
+              </span>
+              <span class="text-[10px] text-pronta-muted lowercase font-normal">opcional</span>
+            </label>
+            <textarea 
+              id="chk-order-notes" 
+              rows="2" 
+              placeholder="Ej: Dejar en portería si no estoy, envolver para regalo, franja horaria preferida..." 
+              class="w-full text-xs px-3.5 py-2 rounded-xl border border-pronta-border bg-pronta-blush focus:bg-white focus:outline-none focus:border-pronta-charcoal resize-none"></textarea>
+          </div>
+        </div>
+
+        <!-- Opciones de Envío -->
+        <div>
+          <h4 class="text-xs font-bold uppercase tracking-wider text-pronta-charcoal mb-3 flex items-center gap-1.5">
+            <i class="ph-bold ph-truck text-pronta-roseDeep"></i>
+            <span>2. Método de Envío</span>
+          </h4>
+          <div id="checkout-shipping-options" class="grid grid-cols-1 sm:grid-cols-3 gap-2.5">
+            <!-- Inyectado dinámicamente por JS desde la configuración de envíos -->
+          </div>
+        </div>
+
+        <!-- Formas de Pago con Descuentos Editables -->
+        <div>
+          <h4 class="text-xs font-bold uppercase tracking-wider text-pronta-charcoal mb-3 flex items-center gap-1.5">
+            <i class="ph-bold ph-credit-card text-pronta-roseDeep"></i>
+            <span>3. Forma de Pago</span>
+          </h4>
+          <div id="checkout-payments-options" class="space-y-2.5">
+            <!-- Inyectado por JS -->
+          </div>
+        </div>
+
+        <!-- Desglose Final y Botón -->
+        <div id="checkout-totals-summary" class="bg-pronta-blush p-4 rounded-2xl border border-pronta-border text-xs space-y-1.5">
+          <!-- Inyectado por JS -->
+        </div>
+
+        <div class="flex items-center justify-end gap-3 pt-2">
+          <button type="button" onclick="closeCheckoutModal()" class="px-5 py-2.5 rounded-full border border-pronta-border text-xs font-medium text-pronta-charcoal hover:bg-pronta-blush">
+            Volver al carrito
+          </button>
+          <button type="submit" id="btn-submit-order" class="px-7 py-3 rounded-full bg-pronta-charcoal hover:bg-black text-white text-xs font-bold shadow-md hover:shadow-lg transition-all flex items-center gap-2">
+            <span>Confirmar Pedido</span>
+            <i class="ph-bold ph-check"></i>
+          </button>
+        </div>
+
+      </form>
+
+    </div>
+  </div>
+
+  <!-- MODAL: ACCESO ADMINISTRACIÓN (PROTECCIÓN CON CONTRASEÑA PRIVADA) -->
+  <div id="admin-login-modal" class="fixed inset-0 z-50 overflow-y-auto hidden bg-pronta-charcoal/60 backdrop-blur-sm flex items-center justify-center p-4">
+    <div class="bg-white rounded-3xl max-w-md w-full p-6 sm:p-8 border border-pronta-border shadow-2xl">
+      <div class="text-center mb-6">
+        <div class="w-14 h-14 bg-pronta-blush rounded-full flex items-center justify-center mx-auto mb-3 text-pronta-roseDeep border border-pronta-border">
+          <i class="ph-bold ph-shield-check text-2xl"></i>
+        </div>
+        <h3 class="text-2xl font-serif text-pronta-charcoal">Acceso Restringido</h3>
+        <p class="text-xs text-pronta-muted mt-1">Ingresá tus credenciales de Administrador para gestionar la tienda.</p>
+      </div>
+
+      <form id="admin-login-form" onsubmit="handleAdminLoginSubmit(event)" class="space-y-4">
+        <div>
+          <label class="block text-xs font-semibold text-pronta-charcoal mb-1">Email de Administrador</label>
+          <input 
+            type="email" 
+            id="adm-login-email" 
+            required 
+            placeholder="ejemplo@prontacosmetica.com" 
+            autocomplete="username"
+            class="w-full text-xs px-3.5 py-2.5 rounded-xl border border-pronta-border bg-pronta-blush focus:bg-white focus:outline-none focus:border-pronta-charcoal">
+        </div>
+        <div>
+          <label class="block text-xs font-semibold text-pronta-charcoal mb-1">Contraseña</label>
+          <input 
+            type="password" 
+            id="adm-login-password" 
+            required 
+            placeholder="••••••••••••" 
+            autocomplete="current-password"
+            class="w-full text-xs px-3.5 py-2.5 rounded-xl border border-pronta-border bg-pronta-blush focus:bg-white focus:outline-none focus:border-pronta-charcoal">
+        </div>
+
+        <div class="flex items-center justify-end gap-3 pt-3">
+          <button 
+            type="button" 
+            onclick="closeAdminLoginModal()" 
+            class="px-5 py-2.5 rounded-full border border-pronta-border text-xs font-medium text-pronta-charcoal hover:bg-pronta-blush transition-colors">
+            Cancelar
+          </button>
+          <button 
+            type="submit" 
+            class="px-7 py-2.5 rounded-full bg-pronta-charcoal hover:bg-black text-white text-xs font-bold tracking-wider uppercase transition-all shadow-md active:scale-95">
+            INGRESAR
+          </button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- MODAL: CUENTA CLIENTE (LOGIN / REGISTRO / MIS PEDIDOS) -->
+  <div id="auth-modal" class="fixed inset-0 z-50 overflow-y-auto hidden bg-pronta-charcoal/50 backdrop-blur-sm flex items-center justify-center p-4">
+    <div class="bg-white rounded-3xl max-w-lg w-full p-6 sm:p-8 border border-pronta-border shadow-2xl">
+      
+      <div class="flex items-center justify-between pb-3 border-b border-pronta-border mb-5">
+        <h3 id="auth-modal-title" class="text-xl font-serif text-pronta-charcoal">Mi Cuenta</h3>
+        <button onclick="closeAuthModal()" class="text-pronta-muted hover:text-pronta-charcoal p-1">
+          <i class="ph-bold ph-x text-lg"></i>
+        </button>
+      </div>
+
+      <!-- TABS LOGIN / REGISTRO (SI NO HAY SESIÓN) -->
+      <div id="auth-forms-container">
+        <div class="flex border-b border-pronta-border mb-5">
+          <button onclick="toggleAuthTab('login')" id="tab-auth-login" class="flex-1 pb-2 text-xs font-bold border-b-2 border-pronta-charcoal text-pronta-charcoal">Iniciar Sesión</button>
+          <button onclick="toggleAuthTab('register')" id="tab-auth-register" class="flex-1 pb-2 text-xs font-medium text-pronta-muted border-b-2 border-transparent">Crear Cuenta</button>
+        </div>
+
+        <!-- FORM LOGIN -->
+        <form id="customer-login-form" onsubmit="handleCustomerLogin(event)" class="space-y-4">
+          <div>
+            <label class="block text-xs font-semibold text-pronta-charcoal mb-1">Email</label>
+            <input type="email" id="cust-login-email" required class="w-full text-xs px-3.5 py-2.5 rounded-xl border border-pronta-border bg-pronta-blush focus:bg-white focus:outline-none focus:border-pronta-charcoal">
+          </div>
+          <div>
+            <label class="block text-xs font-semibold text-pronta-charcoal mb-1">Contraseña</label>
+            <input type="password" id="cust-login-password" required class="w-full text-xs px-3.5 py-2.5 rounded-xl border border-pronta-border bg-pronta-blush focus:bg-white focus:outline-none focus:border-pronta-charcoal">
+          </div>
+          <button type="submit" class="w-full py-3 rounded-full bg-pronta-charcoal hover:bg-black text-white text-xs font-bold transition-all shadow-md">Ingresar</button>
+        </form>
+
+        <!-- FORM REGISTRO -->
+        <form id="customer-register-form" onsubmit="handleCustomerRegister(event)" class="space-y-3 hidden">
+          <div>
+            <label class="block text-xs font-semibold text-pronta-charcoal mb-1">Nombre y Apellido *</label>
+            <input type="text" id="cust-reg-name" required class="w-full text-xs px-3.5 py-2 rounded-xl border border-pronta-border bg-pronta-blush focus:bg-white focus:outline-none focus:border-pronta-charcoal">
+          </div>
+          <div>
+            <label class="block text-xs font-semibold text-pronta-charcoal mb-1">Email *</label>
+            <input type="email" id="cust-reg-email" required class="w-full text-xs px-3.5 py-2 rounded-xl border border-pronta-border bg-pronta-blush focus:bg-white focus:outline-none focus:border-pronta-charcoal">
+          </div>
+          <div class="grid grid-cols-2 gap-2">
+            <div>
+              <label class="block text-xs font-semibold text-pronta-charcoal mb-1">Fecha de Nacimiento *</label>
+              <input type="date" id="cust-reg-birthday" required class="w-full text-xs px-3 py-2 rounded-xl border border-pronta-border bg-pronta-blush focus:bg-white focus:outline-none focus:border-pronta-charcoal">
+            </div>
+            <div>
+              <label class="block text-xs font-semibold text-pronta-charcoal mb-1">WhatsApp / Teléfono *</label>
+              <input type="tel" id="cust-reg-phone" required class="w-full text-xs px-3 py-2 rounded-xl border border-pronta-border bg-pronta-blush focus:bg-white focus:outline-none focus:border-pronta-charcoal">
+            </div>
+          </div>
+          <div class="grid grid-cols-3 gap-2">
+            <div class="col-span-2">
+              <label class="block text-xs font-semibold text-pronta-charcoal mb-1">Calle</label>
+              <input type="text" id="cust-reg-street" placeholder="Av. Santa Fe" class="w-full text-xs px-3 py-2 rounded-xl border border-pronta-border bg-pronta-blush focus:bg-white focus:outline-none focus:border-pronta-charcoal">
+            </div>
+            <div>
+              <label class="block text-xs font-semibold text-pronta-charcoal mb-1">Número / Dpto</label>
+              <input type="text" id="cust-reg-number" placeholder="3240 4to B" class="w-full text-xs px-3 py-2 rounded-xl border border-pronta-border bg-pronta-blush focus:bg-white focus:outline-none focus:border-pronta-charcoal">
+            </div>
+          </div>
+          <div class="grid grid-cols-2 gap-2">
+            <div>
+              <label class="block text-xs font-semibold text-pronta-charcoal mb-1">Código Postal</label>
+              <input type="text" id="cust-reg-zipcode" placeholder="1425" class="w-full text-xs px-3 py-2 rounded-xl border border-pronta-border bg-pronta-blush focus:bg-white focus:outline-none focus:border-pronta-charcoal">
+            </div>
+            <div>
+              <label class="block text-xs font-semibold text-pronta-charcoal mb-1">Localidad</label>
+              <input type="text" id="cust-reg-city" placeholder="Palermo, CABA" class="w-full text-xs px-3 py-2 rounded-xl border border-pronta-border bg-pronta-blush focus:bg-white focus:outline-none focus:border-pronta-charcoal">
+            </div>
+          </div>
+          <div>
+            <label class="block text-xs font-semibold text-pronta-charcoal mb-1">Entre Calles / Referencias</label>
+            <input type="text" id="cust-reg-cross-streets" placeholder="Entre Coronel Díaz y Billinghurst" class="w-full text-xs px-3.5 py-2 rounded-xl border border-pronta-border bg-pronta-blush focus:bg-white focus:outline-none focus:border-pronta-charcoal">
+          </div>
+          <div>
+            <label class="block text-xs font-semibold text-pronta-charcoal mb-1">Contraseña *</label>
+            <input type="password" id="cust-reg-password" required minlength="4" class="w-full text-xs px-3.5 py-2 rounded-xl border border-pronta-border bg-pronta-blush focus:bg-white focus:outline-none focus:border-pronta-charcoal">
+          </div>
+          <button type="submit" class="w-full py-3 rounded-full bg-pronta-charcoal hover:bg-black text-white text-xs font-bold transition-all shadow-md mt-2">Registrarme</button>
+        </form>
+      </div>
+
+      <!-- VISTA CLIENTE LOGUEADO: HISTORIAL Y PERFIL -->
+      <div id="customer-profile-container" class="hidden space-y-4">
+        <!-- Inyectado por JS -->
+      </div>
+
+    </div>
+  </div>
+
+  <!-- MODAL: AGREGAR / EDITAR PRODUCTO -->
+  <div id="product-modal" class="fixed inset-0 z-50 overflow-y-auto hidden bg-pronta-charcoal/50 backdrop-blur-sm flex items-center justify-center p-4">
+    <div class="bg-white rounded-3xl max-w-xl w-full p-6 sm:p-8 border border-pronta-border shadow-2xl my-8">
+      <div class="flex items-center justify-between pb-3 border-b border-pronta-border mb-5">
+        <h3 id="product-modal-title" class="text-xl font-serif text-pronta-charcoal">Agregar Nuevo Producto</h3>
+        <button onclick="closeProductModal()" class="text-pronta-muted hover:text-pronta-charcoal p-1">
+          <i class="ph-bold ph-x text-lg"></i>
+        </button>
+      </div>
+
+      <form id="product-form" onsubmit="handleProductFormSubmit(event)" class="space-y-4">
+        <input type="hidden" id="prod-id">
+
+        <div>
+          <label class="block text-xs font-semibold text-pronta-charcoal mb-1">Nombre del Producto *</label>
+          <input type="text" id="prod-name" required placeholder="Ej: Sérum Hidratante Botánico" class="w-full text-xs px-3.5 py-2.5 rounded-xl border border-pronta-border bg-pronta-blush focus:bg-white focus:outline-none focus:border-pronta-charcoal">
+        </div>
+
+        <div class="grid grid-cols-2 gap-3">
+          <div>
+            <label class="block text-xs font-semibold text-pronta-charcoal mb-1">Categoría *</label>
+            <select id="prod-category" required class="w-full text-xs px-3.5 py-2.5 rounded-xl border border-pronta-border bg-pronta-blush focus:bg-white focus:outline-none focus:border-pronta-charcoal">
+              <!-- Opciones dinámicas -->
+            </select>
+          </div>
+          <div>
+            <label class="block text-xs font-semibold text-pronta-charcoal mb-1">Stock Disponible</label>
+            <input type="number" id="prod-stock" min="0" step="any" value="25" class="w-full text-xs px-3.5 py-2.5 rounded-xl border border-pronta-border bg-pronta-blush focus:bg-white focus:outline-none focus:border-pronta-charcoal">
+          </div>
+        </div>
+
+        <div class="grid grid-cols-2 gap-3">
+          <div>
+            <label class="block text-xs font-semibold text-pronta-charcoal mb-1">Precio Regular ($) *</label>
+            <input type="number" id="prod-price" required min="0" step="any" placeholder="18500" class="w-full text-xs px-3.5 py-2.5 rounded-xl border border-pronta-border bg-pronta-blush focus:bg-white focus:outline-none focus:border-pronta-charcoal">
+          </div>
+          <div>
+            <label class="block text-xs font-semibold text-pronta-charcoal mb-1">Precio Promo Opcional ($)</label>
+            <input type="number" id="prod-sale-price" min="0" step="any" placeholder="15900 (opcional)" class="w-full text-xs px-3.5 py-2.5 rounded-xl border border-pronta-border bg-pronta-blush focus:bg-white focus:outline-none focus:border-pronta-charcoal">
+          </div>
+        </div>
+
+        <div>
+          <label class="block text-xs font-semibold text-pronta-charcoal mb-1">Foto del Producto (Subir PNG / JPG o ingresar enlace)</label>
+          
+          <!-- Selector para subir archivo PNG / JPG -->
+          <div class="flex flex-col sm:flex-row items-center gap-3 p-3 bg-pronta-blush rounded-xl border border-dashed border-pronta-border hover:border-pronta-roseAccent transition-colors mb-2">
+            <label class="cursor-pointer px-4 py-2 rounded-full bg-white border border-pronta-border text-pronta-charcoal hover:bg-pronta-blush text-xs font-semibold flex items-center gap-1.5 shadow-2xs whitespace-nowrap">
+              <i class="ph-bold ph-upload-simple text-sm text-pronta-roseDeep"></i>
+              <span>Seleccionar Archivo (PNG / JPG)</span>
+              <input type="file" id="prod-file-input" accept=".png, .jpg, .jpeg, image/png, image/jpeg" onchange="handleProductFileUpload(event)" class="hidden">
+            </label>
+            <span id="prod-file-name" class="text-[11px] text-pronta-muted truncate max-w-xs">Sin archivo seleccionado</span>
+          </div>
+
+          <!-- Vista previa de la foto seleccionada -->
+          <div id="prod-image-preview-container" class="hidden items-center gap-3 p-2 bg-white rounded-xl border border-pronta-border mb-2">
+            <img id="prod-preview-thumb" src="" alt="Vista previa" class="w-14 h-14 rounded-lg object-cover bg-pronta-blush border border-pronta-border">
+            <div class="flex-grow">
+              <span class="text-xs font-medium text-pronta-charcoal block">Vista previa activa</span>
+              <span class="text-[10px] text-pronta-muted">Esta foto se asignará al producto</span>
+            </div>
+            <button type="button" onclick="clearProductImage()" class="text-red-500 hover:text-red-700 text-xs font-semibold p-1.5">
+              <i class="ph-bold ph-trash text-sm"></i>
+            </button>
+          </div>
+
+          <!-- Campo URL de respaldo -->
+          <input type="url" id="prod-image" required placeholder="O pega una URL: https://..." oninput="updateImagePreviewFromUrl(this.value)" class="w-full text-xs px-3.5 py-2.5 rounded-xl border border-pronta-border bg-pronta-blush focus:bg-white focus:outline-none focus:border-pronta-charcoal mb-1.5">
+          <div class="flex items-center gap-2">
+            <span class="text-[10px] text-pronta-muted">Fotos sugeridas:</span>
+            <button type="button" onclick="setPresetImage('https://images.unsplash.com/photo-1620916566398-39f1143ab7be?auto=format&fit=crop&w=600&q=80')" class="text-[10px] text-pronta-roseDeep underline">Gotero Sérum</button>
+            <button type="button" onclick="setPresetImage('https://images.unsplash.com/photo-1608248597359-577717d66668?auto=format&fit=crop&w=600&q=80')" class="text-[10px] text-pronta-roseDeep underline">Crema Botánica</button>
+            <button type="button" onclick="setPresetImage('https://images.unsplash.com/photo-1556228720-195a672e8a03?auto=format&fit=crop&w=600&q=80')" class="text-[10px] text-pronta-roseDeep underline">Limpiador Facial</button>
+          </div>
+        </div>
+
+        <div>
+          <label class="block text-xs font-semibold text-pronta-charcoal mb-1">Descripción</label>
+          <textarea id="prod-desc" rows="2" placeholder="Beneficios, modo de uso y activos principales..." class="w-full text-xs px-3.5 py-2 rounded-xl border border-pronta-border bg-pronta-blush focus:bg-white focus:outline-none focus:border-pronta-charcoal"></textarea>
+        </div>
+
+        <!-- REGLAS DE DESCUENTO POR CANTIDAD -->
+        <div class="p-3.5 bg-pronta-blush rounded-2xl border border-pronta-border">
+          <div class="flex items-center justify-between mb-2">
+            <div>
+              <p class="text-xs font-bold text-pronta-charcoal">Descuentos por Cantidad (Volumen)</p>
+              <p class="text-[10px] text-pronta-muted">Ejemplo: llevando 2 unidades 10% OFF, llevando 3 unidades 15% OFF</p>
+            </div>
+            <button type="button" onclick="addVolumeRuleRow()" class="px-2.5 py-1 rounded-full bg-pronta-yellowSun hover:bg-yellow-300 text-pronta-charcoal text-[11px] font-bold border border-pronta-goldLine/40">
+              + Agregar Escala
+            </button>
+          </div>
+          <div id="volume-rules-inputs-container" class="space-y-2">
+            <!-- Inyectado por JS -->
+          </div>
+        </div>
+
+        <div class="flex items-center justify-end gap-2 pt-2">
+          <button type="button" onclick="closeProductModal()" class="px-4 py-2 rounded-full border border-pronta-border text-xs text-pronta-muted hover:bg-pronta-blush">Cancelar</button>
+          <button type="submit" class="px-6 py-2.5 rounded-full bg-pronta-charcoal hover:bg-black text-white text-xs font-bold transition-all shadow-md">Guardar Producto</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- MODAL: AGREGAR / EDITAR CATEGORÍA -->
+  <div id="category-modal" class="fixed inset-0 z-50 overflow-y-auto hidden bg-pronta-charcoal/50 backdrop-blur-sm flex items-center justify-center p-4">
+    <div class="bg-white rounded-3xl max-w-sm w-full p-6 border border-pronta-border shadow-2xl">
+      <div class="flex items-center justify-between pb-3 border-b border-pronta-border mb-4">
+        <h3 id="category-modal-title" class="text-lg font-serif text-pronta-charcoal">Nueva Categoría</h3>
+        <button onclick="closeCategoryModal()" class="text-pronta-muted hover:text-pronta-charcoal p-1">
+          <i class="ph-bold ph-x text-lg"></i>
+        </button>
+      </div>
+
+      <form id="category-form" onsubmit="handleCategoryFormSubmit(event)" class="space-y-3">
+        <input type="hidden" id="cat-id">
+        <div>
+          <label class="block text-xs font-semibold text-pronta-charcoal mb-1">Nombre de la Categoría *</label>
+          <input type="text" id="cat-name" required placeholder="Ej: Sérums Faciales" class="w-full text-xs px-3.5 py-2.5 rounded-xl border border-pronta-border bg-pronta-blush focus:bg-white focus:outline-none focus:border-pronta-charcoal">
+        </div>
+        <div class="flex items-center justify-end gap-2 pt-2">
+          <button type="button" onclick="closeCategoryModal()" class="px-4 py-2 rounded-full border border-pronta-border text-xs text-pronta-muted hover:bg-pronta-blush">Cancelar</button>
+          <button type="submit" class="px-5 py-2 rounded-full bg-pronta-charcoal hover:bg-black text-white text-xs font-bold transition-all shadow-md">Guardar</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- MODAL: AGREGAR / EDITAR FORMA DE ENVÍO -->
+  <div id="shipping-modal" class="fixed inset-0 z-50 overflow-y-auto hidden bg-pronta-charcoal/50 backdrop-blur-sm flex items-center justify-center p-4">
+    <div class="bg-white rounded-3xl max-w-md w-full p-6 border border-pronta-border shadow-2xl">
+      <div class="flex items-center justify-between pb-3 border-b border-pronta-border mb-4">
+        <h3 id="shipping-modal-title" class="text-lg font-serif text-pronta-charcoal">Forma de Envío</h3>
+        <button onclick="closeShippingModal()" class="text-pronta-muted hover:text-pronta-charcoal p-1">
+          <i class="ph-bold ph-x text-lg"></i>
+        </button>
+      </div>
+
+      <form id="shipping-form" onsubmit="handleShippingFormSubmit(event)" class="space-y-3">
+        <input type="hidden" id="ship-id">
+        <div>
+          <label class="block text-xs font-semibold text-pronta-charcoal mb-1">Nombre del Método de Entrega *</label>
+          <input type="text" id="ship-name" required placeholder="Ej: Cadetería CABA o Correo Argentino" class="w-full text-xs px-3.5 py-2.5 rounded-xl border border-pronta-border bg-pronta-blush focus:bg-white focus:outline-none focus:border-pronta-charcoal">
+        </div>
+        <div>
+          <label class="block text-xs font-semibold text-pronta-charcoal mb-1">Descripción / Plazo estimado</label>
+          <input type="text" id="ship-desc" placeholder="Ej: Entrega en 24 a 48 hs hábiles o Palermo, CABA" class="w-full text-xs px-3.5 py-2.5 rounded-xl border border-pronta-border bg-pronta-blush focus:bg-white focus:outline-none focus:border-pronta-charcoal">
+        </div>
+
+        <div class="grid grid-cols-2 gap-3">
+          <div>
+            <label class="block text-xs font-semibold text-pronta-charcoal mb-1">Costo de Envío ($) *</label>
+            <input type="number" id="ship-cost" min="0" step="any" required placeholder="0 para gratis" class="w-full text-xs px-3.5 py-2.5 rounded-xl border border-pronta-border bg-pronta-blush focus:bg-white focus:outline-none focus:border-pronta-charcoal">
+            <p class="text-[10px] text-pronta-muted mt-1">Colocar 0 si es retiro gratis.</p>
+          </div>
+          <div>
+            <label class="block text-xs font-semibold text-pronta-charcoal mb-1">Envío Gratis desde ($)</label>
+            <input type="number" id="ship-free-threshold" min="0" step="any" placeholder="Ej: 75000 (opcional)" class="w-full text-xs px-3.5 py-2.5 rounded-xl border border-pronta-border bg-pronta-blush focus:bg-white focus:outline-none focus:border-pronta-charcoal">
+            <p class="text-[10px] text-pronta-muted mt-1">Dejar vacío si no bonifica.</p>
+          </div>
+        </div>
+
+        <div class="flex items-center justify-end gap-2 pt-3">
+          <button type="button" onclick="closeShippingModal()" class="px-4 py-2 rounded-full border border-pronta-border text-xs text-pronta-muted hover:bg-pronta-blush">Cancelar</button>
+          <button type="submit" class="px-5 py-2 rounded-full bg-pronta-charcoal hover:bg-black text-white text-xs font-bold transition-all shadow-md">Guardar Envío</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- MODAL: AGREGAR / EDITAR FORMA DE PAGO -->
+  <div id="payment-modal" class="fixed inset-0 z-50 overflow-y-auto hidden bg-pronta-charcoal/50 backdrop-blur-sm flex items-center justify-center p-4">
+    <div class="bg-white rounded-3xl max-w-md w-full p-6 border border-pronta-border shadow-2xl">
+      <div class="flex items-center justify-between pb-3 border-b border-pronta-border mb-4">
+        <h3 id="payment-modal-title" class="text-lg font-serif text-pronta-charcoal">Medio de Pago</h3>
+        <button onclick="closePaymentModal()" class="text-pronta-muted hover:text-pronta-charcoal p-1">
+          <i class="ph-bold ph-x text-lg"></i>
+        </button>
+      </div>
+
+      <form id="payment-form" onsubmit="handlePaymentFormSubmit(event)" class="space-y-3">
+        <input type="hidden" id="pay-id">
+        <div>
+          <label class="block text-xs font-semibold text-pronta-charcoal mb-1">Nombre del Medio de Pago *</label>
+          <input type="text" id="pay-name" required placeholder="Ej: Transferencia Bancaria" class="w-full text-xs px-3.5 py-2.5 rounded-xl border border-pronta-border bg-pronta-blush focus:bg-white focus:outline-none focus:border-pronta-charcoal">
+        </div>
+        <div>
+          <label class="block text-xs font-semibold text-pronta-charcoal mb-1">Descripción corta</label>
+          <input type="text" id="pay-desc" placeholder="Ej: Acreditación inmediata con CBU/Alias" class="w-full text-xs px-3.5 py-2.5 rounded-xl border border-pronta-border bg-pronta-blush focus:bg-white focus:outline-none focus:border-pronta-charcoal">
+        </div>
+
+        <div class="grid grid-cols-2 gap-2">
+          <div>
+            <label class="block text-xs font-semibold text-pronta-charcoal mb-1">¿Aplica Descuento?</label>
+            <select id="pay-has-discount" onchange="toggleDiscountInputs(this.value)" class="w-full text-xs px-3 py-2 rounded-xl border border-pronta-border bg-pronta-blush focus:bg-white focus:outline-none focus:border-pronta-charcoal">
+              <option value="true">Sí, otorgar descuento</option>
+              <option value="false">Sin descuento</option>
+            </select>
+          </div>
+          <div>
+            <label class="block text-xs font-semibold text-pronta-charcoal mb-1">Tipo de Descuento</label>
+            <select id="pay-discount-type" class="w-full text-xs px-3 py-2 rounded-xl border border-pronta-border bg-pronta-blush focus:bg-white focus:outline-none focus:border-pronta-charcoal">
+              <option value="percent">Porcentaje (%)</option>
+              <option value="fixed">Monto Fijo ($)</option>
+            </select>
+          </div>
+        </div>
+
+        <div id="pay-discount-amount-container">
+          <label class="block text-xs font-semibold text-pronta-charcoal mb-1">Valor del Descuento (% o $)</label>
+          <input type="number" id="pay-discount-value" min="0" step="any" value="10" class="w-full text-xs px-3.5 py-2 rounded-xl border border-pronta-border bg-pronta-blush focus:bg-white focus:outline-none focus:border-pronta-charcoal">
+        </div>
+
+        <div>
+          <label class="block text-xs font-semibold text-pronta-charcoal mb-1">Instrucciones de Cobro (CBU / Alias / Pasos)</label>
+          <textarea id="pay-instructions" rows="2" placeholder="Alias: pronta.cosmetica / CBU: 00000031000... Enviar comprobante por WhatsApp." class="w-full text-xs px-3.5 py-2 rounded-xl border border-pronta-border bg-pronta-blush focus:bg-white focus:outline-none focus:border-pronta-charcoal"></textarea>
+        </div>
+
+        <div>
+          <label class="block text-xs font-semibold text-pronta-charcoal mb-1">URL API Mercado Pago (Opcional)</label>
+          <input type="url" id="pay-api-url" placeholder="https://api.mercadopago.com/..." class="w-full text-xs px-3.5 py-2.5 rounded-xl border border-pronta-border bg-pronta-blush focus:bg-white focus:outline-none focus:border-pronta-charcoal">
+        </div>
+
+        <div class="flex items-center justify-end gap-2 pt-3">
+          <button type="button" onclick="closePaymentModal()" class="px-4 py-2 rounded-full border border-pronta-border text-xs text-pronta-muted hover:bg-pronta-blush">Cancelar</button>
+          <button type="submit" class="px-5 py-2 rounded-full bg-pronta-charcoal hover:bg-black text-white text-xs font-bold transition-all shadow-md">Guardar Medio</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- TOAST NOTIFICACIONES -->
+  <div id="toast-container" class="fixed bottom-5 right-5 z-50 flex flex-col gap-2 pointer-events-none"></div>
+
+  <!-- ========================================== -->
+  <!-- JAVASCRIPT GLOBAL & LÓGICA DE APLICACIÓN    -->
+  <!-- ========================================== -->
+  <script>
+    // --- CLAVES Y CONFIGURACIÓN ---
+    const KEYS = {
+      PRODUCTS: "pronta_products_v3",
+      CATEGORIES: "pronta_categories_v3",
+      SHIPPING: "pronta_shipping_v2",
+      PAYMENTS: "pronta_payments_v2",
+      ORDERS: "pronta_orders_v2",
+      CART: "pronta_cart_v2",
+      USERS: "pronta_users_v2",
+      CURRENT_USER: "pronta_current_user_v2",
+      IS_ADMIN: "pronta_is_admin_v2",
+      WHATSAPP: "pronta_whatsapp_num_v2",
+      WHATSAPP_MSG: "pronta_whatsapp_msg_v2"
+    };
+
+    const ADMIN_CREDENTIALS = {
+      email: "prontacosmetica@gmail.com",
+      password: "pronta144-1991"
+    };
+
+    const DEFAULT_WHATSAPP = "5491100000000";
+    const DEFAULT_WHATSAPP_MSG = "¡Hola PRONTA! Me gustaría consultar por sus productos.";
+
+    // --- DATOS POR DEFECTO: AGRUPADOS POR TIPO DE PRODUCTO ---
+    const DEFAULT_CATEGORIES = [
+      { id: "serums", name: "Sérums" },
+      { id: "cremas", name: "Cremas" },
+      { id: "limpiadores", name: "Limpiadores" },
+      { id: "brumas", name: "Brumas" },
+      { id: "oleos", name: "Óleos & Tratamientos" }
+    ];
+
+    const DEFAULT_PRODUCTS = [
+      {
+        id: "prod-1",
+        name: "Emulsión de Limpieza Facial Botánica",
+        category: "limpiadores",
+        price: 18500,
+        salePrice: 16500,
+        stock: 35,
+        image: "https://images.unsplash.com/photo-1556228720-195a672e8a03?auto=format&fit=crop&w=600&q=80",
+        description: "Remueve impurezas, polución y maquillaje sin alterar el manto lipídico protector. Textura suave con caléndula y manzanilla.",
+        volumeRules: [
+          { minQty: 2, discountPercent: 10 },
+          { minQty: 3, discountPercent: 15 }
+        ]
+      },
+      {
+        id: "prod-2",
+        name: "Sérum Hidratante Hialurónico & B3",
+        category: "serums",
+        price: 24900,
+        salePrice: null,
+        stock: 20,
+        image: "https://images.unsplash.com/photo-1620916566398-39f1143ab7be?auto=format&fit=crop&w=600&q=80",
+        description: "Fórmula de alta penetración con ácido hialurónico multimolecular y niacinamida pura. Aporta turgencia y luminosidad inmediata.",
+        volumeRules: [
+          { minQty: 2, discountPercent: 10 },
+          { minQty: 4, discountPercent: 20 }
+        ]
+      },
+      {
+        id: "prod-3",
+        name: "Crema Regeneradora Barrera Cutánea",
+        category: "cremas",
+        price: 22800,
+        salePrice: 19900,
+        stock: 28,
+        image: "https://images.unsplash.com/photo-1608248597359-577717d66668?auto=format&fit=crop&w=600&q=80",
+        description: "Regenera el manto hidrolipídico incorporando lípidos esenciales y ceramidas bioidénticas. Ralentiza el proceso oxidativo.",
+        volumeRules: [
+          { minQty: 2, discountPercent: 10 },
+          { minQty: 3, discountPercent: 15 }
+        ]
+      },
+      {
+        id: "prod-4",
+        name: "Bruma Botánica Descongestiva & Termal",
+        category: "brumas",
+        price: 15400,
+        salePrice: null,
+        stock: 25,
+        image: "https://images.unsplash.com/photo-1571781926291-c477ebfd024b?auto=format&fit=crop&w=600&q=80",
+        description: "Rocío hidratante y calmante con hidrolato de rosas, té verde y manzanilla. Refresca e hidrata a lo largo del día.",
+        volumeRules: [
+          { minQty: 2, discountPercent: 10 }
+        ]
+      },
+      {
+        id: "prod-5",
+        name: "Óleo Facial Antioxidante Elixir",
+        category: "oleos",
+        price: 26500,
+        salePrice: 23900,
+        stock: 18,
+        image: "https://images.unsplash.com/photo-1601049541289-9b1b7bbbfe19?auto=format&fit=crop&w=600&q=80",
+        description: "Sinergia de jojoba, rosa mosqueta y vitamina E pura para un sellado lipídico nutritivo nocturno sin sensación oleosa.",
+        volumeRules: [
+          { minQty: 2, discountPercent: 10 },
+          { minQty: 3, discountPercent: 15 }
+        ]
+      }
+    ];
+
+    const DEFAULT_SHIPPING_METHODS = [
+      {
+        id: "ship-caba",
+        name: "Cadetería Express CABA",
+        description: "Entrega en 24 a 48 hs hábiles en CABA",
+        cost: 4200,
+        freeThreshold: 75000
+      },
+      {
+        id: "ship-correo",
+        name: "Correo Argentino a Domicilio",
+        description: "Envíos a todo el país (3 a 5 días hábiles)",
+        cost: 6900,
+        freeThreshold: 90000
+      },
+      {
+        id: "ship-retiro",
+        name: "Retiro en Showroom (Palermo)",
+        description: "Coordinar retiro previa cita",
+        cost: 0,
+        freeThreshold: 0
+      }
+    ];
+
+    const DEFAULT_PAYMENTS = [
+      {
+        id: "pay-transfer",
+        name: "Transferencia Bancaria Directa",
+        description: "10% de descuento directo al transferir con Alias o CBU",
+        hasDiscount: true,
+        discountType: "percent",
+        discountValue: 10,
+        instructions: "Alias: pronta.cosmetica / CBU: 0000003100012345678901. Enviar comprobante por WhatsApp.",
+        apiUrl: ""
+      },
+      {
+        id: "pay-mp",
+        name: "Mercado Pago (Tarjetas / Cuotas / Débito)",
+        description: "Aboná con dinero en cuenta, tarjetas de crédito o débito",
+        hasDiscount: false,
+        discountType: "percent",
+        discountValue: 0,
+        instructions: "Se coordinará el link de pago o checkout tras confirmar.",
+        apiUrl: ""
+      }
+    ];
+
+    const DEFAULT_USERS = [
+      {
+        id: "usr-admin-master",
+        name: "Administración PRONTA",
+        email: "prontacosmetica@gmail.com",
+        birthday: "1991-04-14",
+        phone: "1155558888",
+        street: "Av. Santa Fe",
+        houseNumber: "3240",
+        zipcode: "1425",
+        city: "Palermo, CABA",
+        crossStreets: "Entre Coronel Díaz y Billinghurst",
+        password: "pronta144-1991",
+        role: "admin",
+        isBlocked: false,
+        createdAt: "2026-01-01"
+      }
+    ];
+
+    // --- FUNCIONES DE ALMACENAMIENTO ---
+    function loadData(key, fallback) {
+      try {
+        const val = localStorage.getItem(key);
+        return val ? JSON.parse(val) : fallback;
+      } catch (err) {
+        console.error("Error cargando localStorage:", err);
+        return fallback;
+      }
+    }
+
+    function saveData(key, value) {
+      try {
+        localStorage.setItem(key, JSON.stringify(value));
+      } catch (err) {
+        console.error("Error guardando localStorage:", err);
+      }
+    }
+
+    // --- ESTADO GLOBAL ---
+    let categories = loadData(KEYS.CATEGORIES, DEFAULT_CATEGORIES);
+    let shippingMethods = loadData(KEYS.SHIPPING, DEFAULT_SHIPPING_METHODS);
+    let products = loadData(KEYS.PRODUCTS, DEFAULT_PRODUCTS);
+    let payments = loadData(KEYS.PAYMENTS, DEFAULT_PAYMENTS);
+    let users = loadData(KEYS.USERS, DEFAULT_USERS);
+    let orders = loadData(KEYS.ORDERS, []);
+    let cart = loadData(KEYS.CART, []);
+    let currentUser = loadData(KEYS.CURRENT_USER, null);
+    let isAdminLogged = loadData(KEYS.IS_ADMIN, false);
+    let whatsappNumber = loadData(KEYS.WHATSAPP, DEFAULT_WHATSAPP);
+    let whatsappDefaultMsg = loadData(KEYS.WHATSAPP_MSG, DEFAULT_WHATSAPP_MSG);
+
+    let selectedCategoryFilter = "all";
+    let selectedCartShippingId = shippingMethods[0] ? shippingMethods[0].id : null;
+
+    // --- UTILIDADES ---
+    function formatCurrency(amount) {
+      return "$" + Number(amount || 0).toLocaleString("es-AR", {
+        minimumFractionDigits: 0,
+        maximumFractionDigits: 0
+      });
+    }
+
+    function showToast(message, type = "success") {
+      const container = document.getElementById("toast-container");
+      if (!container) return;
+
+      const toast = document.createElement("div");
+      toast.className = `pointer-events-auto px-4 py-3 rounded-2xl text-xs font-semibold shadow-xl flex items-center gap-2 transform transition-all duration-300 translate-y-4 opacity-0 ${
+        type === "error" ? "bg-red-600 text-white" : "bg-pronta-charcoal text-white"
+      }`;
+      toast.innerHTML = `
+        <i class="ph-bold ${type === 'error' ? 'ph-warning-circle' : 'ph-check-circle'} text-base"></i>
+        <span>${message}</span>
+      `;
+      container.appendChild(toast);
+
+      requestAnimationFrame(() => {
+        toast.classList.remove("translate-y-4", "opacity-0");
+      });
+
+      setTimeout(() => {
+        toast.classList.add("translate-y-4", "opacity-0");
+        setTimeout(() => toast.remove(), 300);
+      }, 3500);
+    }
+
+    // --- VISTAS: TIENDA vs ADMINISTRACIÓN vs GUÍA DE PIELES ---
+    function switchView(view) {
+      const storeView = document.getElementById("store-view");
+      const adminView = document.getElementById("admin-view");
+      const skinGuideView = document.getElementById("skin-guide-view");
+
+      if (view === "admin") {
+        if (!isAdminLogged) {
+          openAdminLoginModal();
+          return;
+        }
+        storeView.classList.add("hidden");
+        if (skinGuideView) skinGuideView.classList.add("hidden");
+        adminView.classList.remove("hidden");
+        renderAdminAll();
+        window.scrollTo({ top: 0, behavior: "smooth" });
+      } else if (view === "skin-guide") {
+        storeView.classList.add("hidden");
+        adminView.classList.add("hidden");
+        if (skinGuideView) skinGuideView.classList.remove("hidden");
+        selectSkinType('seca');
+        window.scrollTo({ top: 0, behavior: "smooth" });
+      } else {
+        adminView.classList.add("hidden");
+        if (skinGuideView) skinGuideView.classList.add("hidden");
+        storeView.classList.remove("hidden");
+        renderStoreCatalog();
+        window.scrollTo({ top: 0, behavior: "smooth" });
+      }
+    }
+
+    // --- CONTENIDO Y LÓGICA DE LA GUÍA DE TIPOS DE PIEL ---
+    const SKIN_TYPES_DATA = {
+      seca: {
+        title: "Piel Seca & Deshidratada",
+        subtitle: "Falta de lípidos esenciales, tirantez constante y pérdida de agua transepidérmica.",
+        badge: "Barrera Lipídica Comprometida",
+        symptoms: [
+          "Sensación de tirantez o incomodidad luego de la limpieza.",
+          "Textura áspera, opaca o descamación sutil en mejillas y contorno de labios.",
+          "Líneas de expresión más marcadas por falta de retención hídrica.",
+          "Poros casi imperceptibles pero tendencia a apagarse con facilidad."
+        ],
+        heroActives: [
+          { name: "Ceramidas & Fitoesteroles", role: "Reconstituyen el cemento intercelular y sellan la hidratación." },
+          { name: "Ácido Hialurónico Multimolecular", role: "Atrae agua a las capas profundas y superficiales de la epidermis." },
+          { name: "Aceite de Jojoba & Rosa Mosqueta", role: "Lípidos botánicos bioidénticos que aportan nutrición sin tapar poros." }
+        ],
+        avoidActives: "Jabones sulfatados, alcoholes secantes y exfoliaciones físicas abrasivas.",
+        routine: {
+          morning: [
+            "1. Limpieza suave: Gel emulsionante o bálsamo sin espuma agresiva con agua tibia.",
+            "2. Hidratación activa: Tónico calmante botánico y Sérum con Ácido Hialurónico o Vitamina C estabilizada.",
+            "3. Nutrición & Sellado: Crema rica en ceramidas y lípidos vegetales protectores + Protector Solar."
+          ],
+          night: [
+            "1. Doble Limpieza: Emulsión de limpieza botánica para retirar polución y protector sin resecar.",
+            "2. Reparación nocturna: Sérum restaurador celular o tratamiento regenerador.",
+            "3. Confort final: Crema nutritiva concentrada o 2 gotitas de óleo facial como manto de protección."
+          ]
+        }
+      },
+      grasa: {
+        title: "Piel Grasa & Con Tendencia Acneica",
+        subtitle: "Hipersecreción sebácea, brillo visible y susceptibilidad a comedones o poros dilatados.",
+        badge: "Desbalance en la Seborregulación",
+        symptoms: [
+          "Brillo visible en todo el rostro pocas horas después de lavarlo.",
+          "Poros visiblemente dilatados, puntos negros y brotes inflamatorios ocasionales.",
+          "Textura irregular y maquillaje que suele deslizarse rápidamente.",
+          "Mito frecuente: Se suele sobrelimpiar provocando efecto rebote y deshidratación superficial."
+        ],
+        heroActives: [
+          { name: "Niacinamida (Vitamina B3)", role: "Regula la producción de sebo, calma rojeces y mejora la apariencia de poros." },
+          { name: "Ácido Salicílico / BHA Botánico", role: "Limpia los poros en profundidad eliminando el sebo atrapado." },
+          { name: "Extracto de Manzanilla & Caléndula", role: "Descongestivos naturales para evitar la inflamación celular." }
+        ],
+        avoidActives: "Aceites minerales pesados, siliconas oclusivas y limpiadores astringentes excesivos con alcohol.",
+        routine: {
+          morning: [
+            "1. Limpieza depuradora: Gel limpiador suave espumante con pH equilibrado.",
+            "2. Equilibrio activo: Sérum ligero base acuosa con Niacinamida y Zinc.",
+            "3. Hidratación no comedogénica: Gel crema acuoso ultraligero + Protector solar toque seco."
+          ],
+          night: [
+            "1. Limpieza profunda: Doble limpieza respetuosa para disolver restos seborreicos sin agredir.",
+            "2. Tratamiento renovador: Activo clarificante o tónico purificante botánico.",
+            "3. Emulsión liviana: Hidratante con textura fluida libre de aceites comedogénicos."
+          ]
+        }
+      },
+      mixta: {
+        title: "Piel Mixta",
+        subtitle: "Zona T (frente, nariz y mentón) con brillo o poros visibles, y mejillas normales a secas.",
+        badge: "Biotipo Combinado",
+        symptoms: [
+          "Grasitud o comedones localizados en frente, nariz y barbilla.",
+          "Mejillas que sienten tirantez o sequedad tras el lavado.",
+          "Dificultad para equilibrar productos pesados con productos matificantes.",
+          "Sensibilidad a los cambios de estación (más grasa en verano, más tirante en invierno)."
+        ],
+        heroActives: [
+          { name: "Niacinamida", role: "Unifica la textura y estabiliza tanto la zona T como las áreas secas." },
+          { name: "Ácido Hialurónico de bajo peso molecular", role: "Hidrata sin aportar peso oleoso a la zona media." },
+          { name: "Té Verde & Centella Asiática", role: "Poderosos antioxidantes y reguladores del estrés cutáneo." }
+        ],
+        avoidActives: "Tratamientos agresivos para piel acneica aplicados en todo el rostro indistintamente.",
+        routine: {
+          morning: [
+            "1. Limpiador facial equilibrado: Espuma o gel dermo-calmante que no reseque mejillas.",
+            "2. Sérum multifunción: Vitamina C o Niacinamida para luminosidad y balance sebáceo.",
+            "3. Emulsión hidratante fluida: Cobertura homogénea y liviana + Protector solar FPS 50."
+          ],
+          night: [
+            "1. Limpieza depuradora: Limpieza suave sin frotar bruscamente la zona de mejillas.",
+            "2. Cuidado sinérgico: Aplicar activos descongestivos o exfoliantes suaves enfocados en zona T.",
+            "3. Hidratación: Crema balanceada modulando mayor cantidad en mejillas si fuera necesario."
+          ]
+        }
+      },
+      sensible: {
+        title: "Piel Sensible & Reactiva",
+        subtitle: "Umbral de tolerancia bajo, tendencia a rojeces, ardor y sensibilidad a agentes externos.",
+        badge: "Hiperreactividad Cutánea",
+        symptoms: [
+          "Enrojecimiento inmediato ante cambios bruscos de temperatura, viento o roces.",
+          "Sensación de picor, pinchazos o ardor al probar nuevos cosméticos.",
+          "Piel fina, transparente o con capilares visibles (cuperosis).",
+          "Reacción frecuente a fragancias sintéticas y colorantes artificiales."
+        ],
+        heroActives: [
+          { name: "Pantenol (Provitamina B5)", role: "Acelera la cicatrización epidérmica y alivia el ardor." },
+          { name: "Extractos de Manzanilla, Avena & Caléndula", role: "Suavizantes botánicos milenarios que apagan la inflamación." },
+          { name: "Escualano Vegetal", role: "Lípido afín que imita la barrera biológica sin sensibilizar." }
+        ],
+        avoidActives: "Perfumes, aceites esenciales en alta concentración, exfoliaciones mecánicas y ácidos en dosis altas.",
+        routine: {
+          morning: [
+            "1. Higiene no irritante: Leche o emulsión de limpieza sin sulfatos con aclarado con agua tibia.",
+            "2. Calma concentrada: Sérum descongestivo con caléndula, avena o pantenol.",
+            "3. Blindaje calmante: Crema hipoalergénica con textura confort + Protector solar mineral."
+          ],
+          night: [
+            "1. Limpieza suave: Retirar impurezas con mucha suavidad, sin algodones ásperos ni fricción.",
+            "2. Fortalecimiento: Sérum reparador de barrera y humectación de alta pureza.",
+            "3. Emulsión barrera: Capa protectora para permitir que la piel se desinflame durante el sueño."
+          ]
+        }
+      },
+      madura: {
+        title: "Piel Madura & Con Fotoenvejecimiento",
+        subtitle: "Disminución de colágeno y elastina, pérdida de turgencia, manchas o falta de luminosidad.",
+        badge: "Renovación Celular Lenta",
+        symptoms: [
+          "Pérdida progresiva de firmeza y elasticidad en óvalo facial y cuello.",
+          "Aparición de manchas solares o tono desparejo por acumulación de daño oxidativo.",
+          "Lentitud en la cicatrización o recuperación cutánea.",
+          "Sequedad más persistente debido a la disminución en la producción de lípidos naturales."
+        ],
+        heroActives: [
+          { name: "Vitamina C Estabilizada", role: "Poderoso antioxidante que estimula colágeno e ilumina manchas." },
+          { name: "Péptidos Botánicos & Bakuchiol", role: "Alternativa suave al retinol para mejorar densidad y firmeza." },
+          { name: "Rosa Mosqueta & Aceites Ricos en Omega 3, 6 y 9", role: "Regeneración activa de la matriz dérmica." }
+        ],
+        avoidActives: "Limpiezas resecantes, falta de protección solar y abandono del escote y cuello.",
+        routine: {
+          morning: [
+            "1. Limpieza nutritiva: Emulsión que conserve la humedad natural de la piel.",
+            "2. Escudo antioxidante: Sérum de Vitamina C concentrada para neutralizar radicales libres.",
+            "3. Nutrición reafirmante: Crema rica con efecto tensor y emoliente + Protección solar estricta."
+          ],
+          night: [
+            "1. Doble Limpieza: Emulsión limpiadora seguida de tónico reafirmante botánico.",
+            "2. Renovación activa: Sérum botánico con activos pro-colágeno y regeneradores celulares.",
+            "3. Sellado nutritivo: Crema rica nutritiva acompañada de masaje ascendente revitalizante."
+          ]
+        }
+      }
+    };
+
+    function selectSkinType(typeKey) {
+      const keys = ['seca', 'grasa', 'mixta', 'sensible', 'madura'];
+      keys.forEach(k => {
+        const btn = document.getElementById(`btn-skin-${k}`);
+        if (btn) {
+          if (k === typeKey) {
+            btn.className = "px-5 py-2.5 rounded-full text-xs font-semibold tracking-wider uppercase transition-all bg-pronta-charcoal text-white shadow-sm";
+          } else {
+            btn.className = "px-5 py-2.5 rounded-full text-xs font-semibold tracking-wider uppercase transition-all bg-white text-pronta-charcoal border border-pronta-border hover:border-pronta-charcoal";
+          }
+        }
+      });
+
+      const data = SKIN_TYPES_DATA[typeKey];
+      const container = document.getElementById("skin-content-container");
+      if (!data || !container) return;
+
+      container.innerHTML = `
+        <div class="border-b border-pronta-border pb-6 flex flex-col md:flex-row md:items-center justify-between gap-4">
+          <div>
+            <span class="inline-block px-3 py-1 rounded-full bg-pronta-yellowSun/70 border border-pronta-goldLine/40 text-pronta-charcoal text-[11px] font-bold uppercase tracking-wider mb-2">
+              ${data.badge}
+            </span>
+            <h3 class="text-2xl sm:text-3xl font-serif text-pronta-charcoal">${data.title}</h3>
+            <p class="text-xs sm:text-sm text-pronta-body mt-1 max-w-2xl">${data.subtitle}</p>
+          </div>
+          <button 
+            onclick="switchView('store'); scrollToSection('products-section');" 
+            class="self-start md:self-center px-6 py-2.5 rounded-full bg-pronta-charcoal hover:bg-black text-white text-xs font-bold uppercase tracking-wider transition-all shadow-sm whitespace-nowrap">
+            Explorar Fórmulas
+          </button>
+        </div>
+
+        <!-- SÍNTOMAS Y DIAGNÓSTICO -->
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-8 items-start">
+          <div class="bg-pronta-blush p-6 rounded-2xl border border-pronta-border">
+            <h4 class="text-xs font-bold uppercase tracking-wider text-pronta-roseDeep mb-3 flex items-center gap-1.5">
+              <i class="ph-bold ph-magnifying-glass text-base"></i>
+              <span>¿Cómo reconocer este tipo de piel?</span>
+            </h4>
+            <ul class="space-y-2 text-xs text-pronta-body">
+              ${data.symptoms.map(s => `
+                <li class="flex items-start gap-2">
+                  <span class="text-pronta-roseAccent font-bold text-sm leading-none">•</span>
+                  <span>${s}</span>
+                </li>
+              `).join("")}
+            </ul>
+          </div>
+
+          <div class="space-y-4">
+            <div class="bg-white p-6 rounded-2xl border border-pronta-border shadow-xs">
+              <h4 class="text-xs font-bold uppercase tracking-wider text-pronta-charcoal mb-3 flex items-center gap-1.5">
+                <i class="ph-bold ph-flower-lotus text-base text-pronta-roseAccent"></i>
+                <span>Activos Botánicos Recomendados</span>
+              </h4>
+              <div class="space-y-2.5">
+                ${data.heroActives.map(a => `
+                  <div class="text-xs">
+                    <strong class="font-bold text-pronta-charcoal block">${a.name}</strong>
+                    <span class="text-pronta-muted text-[11px] leading-relaxed">${a.role}</span>
+                  </div>
+                `).join("")}
+              </div>
+            </div>
+
+            <div class="p-4 bg-red-50/60 border border-red-200/60 rounded-2xl text-xs text-red-900">
+              <strong class="font-bold text-[11px] uppercase tracking-wider block mb-1 flex items-center gap-1 text-red-700">
+                <i class="ph-bold ph-warning-circle"></i>
+                <span>Qué ingredientes evitar:</span>
+              </strong>
+              <p class="text-[11px] text-red-800">${data.avoidActives}</p>
+            </div>
+          </div>
+        </div>
+
+        <!-- RUTINA SUGERIDA PASO A PASO (DÍA Y NOCHE) -->
+        <div class="pt-6 border-t border-pronta-border">
+          <h4 class="font-serif text-xl text-pronta-charcoal mb-4 text-center">Rutina Sinérgica Sugerida</h4>
+          
+          <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <!-- RUTINA DÍA -->
+            <div class="bg-[#FCFBF9] p-6 rounded-2xl border border-pronta-border">
+              <div class="flex items-center gap-2 mb-3">
+                <span class="w-7 h-7 rounded-full bg-pronta-yellowSun flex items-center justify-center text-pronta-charcoal text-sm">
+                  <i class="ph-bold ph-sun"></i>
+                </span>
+                <h5 class="text-xs font-bold uppercase tracking-wider text-pronta-charcoal">Rutina de Día (Protección &amp; Vitalidad)</h5>
+              </div>
+              <ul class="space-y-2.5 text-xs text-pronta-body">
+                ${data.routine.morning.map(step => `
+                  <li class="bg-white p-3 rounded-xl border border-pronta-border/70 leading-relaxed">${step}</li>
+                `).join("")}
+              </ul>
+            </div>
+
+            <!-- RUTINA NOCHE -->
+            <div class="bg-[#FCFBF9] p-6 rounded-2xl border border-pronta-border">
+              <div class="flex items-center gap-2 mb-3">
+                <span class="w-7 h-7 rounded-full bg-pronta-roseLight flex items-center justify-center text-pronta-roseDeep text-sm">
+                  <i class="ph-bold ph-moon"></i>
+                </span>
+                <h5 class="text-xs font-bold uppercase tracking-wider text-pronta-charcoal">Rutina de Noche (Regeneración &amp; Reparación)</h5>
+              </div>
+              <ul class="space-y-2.5 text-xs text-pronta-body">
+                ${data.routine.night.map(step => `
+                  <li class="bg-white p-3 rounded-xl border border-pronta-border/70 leading-relaxed">${step}</li>
+                `).join("")}
+              </ul>
+            </div>
+          </div>
+        </div>
+      `;
+    }
+
+    function scrollToSection(id) {
+      const el = document.getElementById(id);
+      if (el) el.scrollIntoView({ behavior: "smooth" });
+    }
+
+    // --- CONTROL DE ACCESO AL PANEL DE ADMINISTRACIÓN ---
+    function requestAdminAccess() {
+      if (isAdminLogged) {
+        switchView("admin");
+      } else {
+        openAdminLoginModal();
+      }
+    }
+
+    function openAdminLoginModal() {
+      const emailInput = document.getElementById("adm-login-email");
+      const passInput = document.getElementById("adm-login-password");
+      if (emailInput) emailInput.value = "";
+      if (passInput) passInput.value = "";
+      document.getElementById("admin-login-modal").classList.remove("hidden");
+    }
+
+    function closeAdminLoginModal() {
+      document.getElementById("admin-login-modal").classList.add("hidden");
+    }
+
+    function handleAdminLoginSubmit(e) {
+      e.preventDefault();
+      const email = document.getElementById("adm-login-email").value.trim().toLowerCase();
+      const pass = document.getElementById("adm-login-password").value;
+
+      // Validación estricta con credenciales maestras privadas
+      if (email === ADMIN_CREDENTIALS.email.toLowerCase() && pass === ADMIN_CREDENTIALS.password) {
+        isAdminLogged = true;
+        saveData(KEYS.IS_ADMIN, true);
+        closeAdminLoginModal();
+        switchView("admin");
+        showToast("¡Bienvenida a la Administración de PRONTA!");
+        return;
+      }
+
+      showToast("Acceso denegado: Email o contraseña incorrectos.", "error");
+    }
+
+    function logoutAdminSession() {
+      isAdminLogged = false;
+      saveData(KEYS.IS_ADMIN, false);
+      switchView("store");
+      showToast("Sesión de administrador cerrada.");
+    }
+
+    // --- PESTAÑAS DEL PANEL DE ADMINISTRACIÓN ---
+    function switchAdminTab(tabName) {
+      const tabs = ["products", "categories", "shipping", "payments", "orders", "users", "settings"];
+      tabs.forEach(t => {
+        const content = document.getElementById(`adm-tab-content-${t}`);
+        const btn = document.getElementById(`tab-btn-${t}`);
+        if (content) content.classList.add("hidden");
+        if (btn) {
+          btn.className = "px-4 py-2.5 text-xs font-medium rounded-t-lg text-pronta-muted hover:text-pronta-charcoal flex items-center gap-2";
+        }
+      });
+
+      const activeContent = document.getElementById(`adm-tab-content-${tabName}`);
+      const activeBtn = document.getElementById(`tab-btn-${tabName}`);
+      if (activeContent) activeContent.classList.remove("hidden");
+      if (activeBtn) {
+        activeBtn.className = "px-4 py-2.5 text-xs font-bold rounded-t-lg bg-white border-t border-l border-r border-pronta-border text-pronta-roseDeep flex items-center gap-2";
+      }
+
+      if (tabName === "settings") {
+        syncWhatsAppSettingsForm();
+      }
+    }
+
+    // --- SINCRONIZACIÓN Y GESTIÓN DE WHATSAPP ---
+    function updateWhatsAppLinks() {
+      const cleanPhone = String(whatsappNumber).replace(/\D/g, "");
+      const encodedMsg = encodeURIComponent(whatsappDefaultMsg);
+      const fullUrl = `https://wa.me/${cleanPhone}?text=${encodedMsg}`;
+
+      const footerLink = document.getElementById("footer-whatsapp-link");
+      if (footerLink) {
+        footerLink.href = fullUrl;
+      }
+
+      const skinGuideBtn = document.getElementById("skin-guide-whatsapp-btn");
+      if (skinGuideBtn) {
+        const guideMsg = encodeURIComponent("¡Hola PRONTA! Me gustaría consultar por el Servicio de Paquetes con Rutina personalizada, Seguimiento y Asesoría con mi propia fórmula.");
+        skinGuideBtn.href = `https://wa.me/${cleanPhone}?text=${guideMsg}`;
+      }
+
+      const previewLink = document.getElementById("adm-whatsapp-preview-link");
+      if (previewLink) {
+        previewLink.href = fullUrl;
+      }
+    }
+
+    function syncWhatsAppSettingsForm() {
+      const phoneInput = document.getElementById("adm-whatsapp-input");
+      const msgInput = document.getElementById("adm-whatsapp-msg-input");
+      if (phoneInput) phoneInput.value = whatsappNumber;
+      if (msgInput) msgInput.value = whatsappDefaultMsg;
+      updateWhatsAppLinks();
+    }
+
+    function handleSaveWhatsApp(e) {
+      e.preventDefault();
+      const rawNumber = document.getElementById("adm-whatsapp-input").value;
+      const cleanNumber = rawNumber.replace(/\D/g, "");
+
+      if (!cleanNumber || cleanNumber.length < 8) {
+        showToast("Por favor ingresá un número de WhatsApp válido.", "error");
+        return;
+      }
+
+      const msg = document.getElementById("adm-whatsapp-msg-input").value.trim() || DEFAULT_WHATSAPP_MSG;
+
+      whatsappNumber = cleanNumber;
+      whatsappDefaultMsg = msg;
+
+      saveData(KEYS.WHATSAPP, whatsappNumber);
+      saveData(KEYS.WHATSAPP_MSG, whatsappDefaultMsg);
+
+      updateWhatsAppLinks();
+      showToast("¡Número de WhatsApp y enlace actualizados con éxito!");
+    }
+
+    // --- RENDERIZADO DEL CATÁLOGO DE LA TIENDA ---
+    function renderCategoryFilters() {
+      const container = document.getElementById("category-filters-container");
+      if (!container) return;
+
+      let html = `
+        <button 
+          onclick="filterCategory('all')" 
+          class="px-5 py-2 rounded-full text-xs font-semibold tracking-wider uppercase whitespace-nowrap transition-all duration-300 ${
+            selectedCategoryFilter === 'all' 
+              ? 'bg-pronta-charcoal text-white shadow-sm scale-[1.02]' 
+              : 'text-pronta-body hover:text-pronta-roseDeep hover:bg-pronta-roseLight/40'
+          }">
+          Todos
+        </button>
+      `;
+
+      categories.forEach(cat => {
+        const isSelected = selectedCategoryFilter === cat.id;
+        html += `
+          <button 
+            onclick="filterCategory('${cat.id}')" 
+            class="px-5 py-2 rounded-full text-xs font-semibold tracking-wider uppercase whitespace-nowrap transition-all duration-300 ${
+              isSelected 
+                ? 'bg-pronta-charcoal text-white shadow-sm scale-[1.02]' 
+                : 'text-pronta-body hover:text-pronta-roseDeep hover:bg-pronta-roseLight/40'
+            }">
+            ${cat.name}
+          </button>
+        `;
+      });
+
+      container.innerHTML = html;
+    }
+
+    function filterCategory(catId) {
+      selectedCategoryFilter = catId;
+      renderCategoryFilters();
+      renderProductsGrid();
+    }
+
+    function renderProductsGrid() {
+      const grid = document.getElementById("products-grid");
+      if (!grid) return;
+
+      const filtered = selectedCategoryFilter === "all"
+        ? products
+        : products.filter(p => p.category === selectedCategoryFilter);
+
+      if (filtered.length === 0) {
+        grid.innerHTML = `
+          <div class="col-span-full py-12 text-center text-pronta-muted">
+            <i class="ph-bold ph-package text-4xl mb-2 text-pronta-roseDeep"></i>
+            <p class="text-sm">No hay productos en esta categoría por el momento.</p>
+          </div>
+        `;
+        return;
+      }
+
+      grid.innerHTML = filtered.map(prod => {
+        const hasSale = prod.salePrice && prod.salePrice < prod.price;
+        const currentPrice = hasSale ? prod.salePrice : prod.price;
+        const cat = categories.find(c => c.id === prod.category) || { name: "Cosmética" };
+
+        let volumeBadgesHtml = "";
+        if (prod.volumeRules && prod.volumeRules.length > 0) {
+          volumeBadgesHtml = prod.volumeRules.map(rule => `
+            <span class="inline-flex items-center gap-1 text-[10px] font-bold px-2 py-0.5 rounded-full bg-pronta-yellowSun/70 border border-pronta-goldLine/40 text-pronta-charcoal">
+              <span>${rule.minQty}+ unid: ${rule.discountPercent}% OFF</span>
+            </span>
+          `).join(" ");
+        }
+
+        return `
+          <div class="bg-white rounded-2xl border border-pronta-border overflow-hidden flex flex-col group transition-all duration-300 hover:shadow-xl hover:border-pronta-roseBanner/60">
+            
+            <div class="relative aspect-[4/5] overflow-hidden bg-pronta-blush">
+              <img 
+                src="${prod.image}" 
+                alt="${prod.name}" 
+                loading="lazy"
+                onerror="this.src='https://placehold.co/500x600/FAF5F6/CD899C?text=PRONTA+Cosmetica'"
+                class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-700 ease-out">
+              
+              ${hasSale ? `
+                <span class="absolute top-3 left-3 bg-pronta-charcoal text-white text-[10px] font-bold tracking-widest uppercase px-3 py-1 rounded-full shadow-sm">
+                  Promo
+                </span>
+              ` : ''}
+
+              <button 
+                onclick="addToCart('${prod.id}')" 
+                class="absolute bottom-3 right-3 w-11 h-11 rounded-full bg-white text-pronta-charcoal hover:bg-pronta-charcoal hover:text-white shadow-lg flex items-center justify-center transition-all duration-300 active:scale-95"
+                title="Agregar al Carrito">
+                <i class="ph-bold ph-plus text-base"></i>
+              </button>
+            </div>
+
+            <div class="p-5 flex flex-col flex-grow">
+              <span class="text-[10px] font-bold tracking-[0.15em] uppercase text-pronta-roseDeep mb-1.5">${cat.name}</span>
+              <h3 class="font-serif text-lg font-medium text-pronta-charcoal leading-snug mb-2 group-hover:text-pronta-roseAccent transition-colors">${prod.name}</h3>
+              <p class="text-xs text-pronta-body font-light line-clamp-2 mb-4 leading-relaxed">${prod.description || ''}</p>
+
+              ${volumeBadgesHtml ? `
+                <div class="flex flex-wrap gap-1.5 mb-4">
+                  ${volumeBadgesHtml}
+                </div>
+              ` : ''}
+
+              <div class="mt-auto pt-3 border-t border-pronta-border flex items-center justify-between">
+                <div>
+                  ${hasSale ? `
+                    <div class="flex items-baseline gap-1.5">
+                      <span class="text-xs line-through text-pronta-muted">${formatCurrency(prod.price)}</span>
+                      <span class="text-lg font-serif font-bold text-pronta-charcoal">${formatCurrency(prod.salePrice)}</span>
+                    </div>
+                  ` : `
+                    <span class="text-lg font-serif font-bold text-pronta-charcoal">${formatCurrency(prod.price)}</span>
+                  `}
+                </div>
+                <button 
+                  onclick="addToCart('${prod.id}')" 
+                  class="px-4 py-2 rounded-full border border-pronta-border hover:border-pronta-charcoal bg-white text-pronta-charcoal hover:bg-pronta-charcoal hover:text-white text-xs font-semibold tracking-wide uppercase transition-all duration-200">
+                  Comprar
+                </button>
+              </div>
+
+            </div>
+
+          </div>
+        `;
+      }).join("");
+    }
+
+    function renderStoreCatalog() {
+      renderCategoryFilters();
+      renderProductsGrid();
+      updateCartBadge();
+    }
+
+    // --- CARRITO & DESCUENTOS POR VOLUMEN ---
+    function toggleCart() {
+      const drawer = document.getElementById("cart-drawer");
+      drawer.classList.toggle("hidden");
+      if (!drawer.classList.contains("hidden")) {
+        renderCartUI();
+      }
+    }
+
+    function addToCart(productId) {
+      const prod = products.find(p => p.id === productId);
+      if (!prod) return;
+
+      const item = cart.find(i => i.productId === productId);
+      if (item) {
+        item.qty += 1;
+      } else {
+        cart.push({ productId, qty: 1 });
+      }
+
+      saveData(KEYS.CART, cart);
+      updateCartBadge();
+      showToast(`¡${prod.name} agregado al carrito!`);
+    }
+
+    function updateCartItemQty(productId, newQty) {
+      if (newQty <= 0) {
+        cart = cart.filter(i => i.productId !== productId);
+      } else {
+        const item = cart.find(i => i.productId === productId);
+        if (item) item.qty = newQty;
+      }
+      saveData(KEYS.CART, cart);
+      renderCartUI();
+      updateCartBadge();
+    }
+
+    function updateCartBadge() {
+      const totalCount = cart.reduce((acc, item) => acc + item.qty, 0);
+      const badge = document.getElementById("cart-count-badge");
+      if (badge) badge.textContent = totalCount;
+    }
+
+    function calculateProductLine(prod, qty) {
+      const baseUnitPrice = prod.salePrice && prod.salePrice < prod.price ? prod.salePrice : prod.price;
+      let appliedDiscountPercent = 0;
+
+      if (prod.volumeRules && prod.volumeRules.length > 0) {
+        const sortedRules = [...prod.volumeRules].sort((a, b) => b.minQty - a.minQty);
+        for (const rule of sortedRules) {
+          if (qty >= rule.minQty) {
+            appliedDiscountPercent = rule.discountPercent;
+            break;
+          }
+        }
+      }
+
+      const rawSubtotal = baseUnitPrice * qty;
+      const discountAmount = rawSubtotal * (appliedDiscountPercent / 100);
+      const finalSubtotal = rawSubtotal - discountAmount;
+
+      return {
+        baseUnitPrice,
+        appliedDiscountPercent,
+        discountAmount,
+        finalSubtotal
+      };
+    }
+
+    function renderCartUI() {
+      const container = document.getElementById("cart-items-container");
+      const summaryContainer = document.getElementById("cart-summary-container");
+      const freeShippingBar = document.getElementById("cart-free-shipping-bar");
+      const shippingSection = document.getElementById("cart-shipping-selector-section");
+
+      if (cart.length === 0) {
+        if (shippingSection) shippingSection.classList.add("hidden");
+        container.innerHTML = `
+          <div class="py-16 text-center text-pronta-muted">
+            <i class="ph-bold ph-shopping-bag text-4xl mb-3 text-pronta-roseBanner opacity-60"></i>
+            <p class="text-sm font-medium text-pronta-charcoal">Tu carrito está vacío</p>
+            <p class="text-xs text-pronta-muted mt-1">Explorá nuestros productos botánicos y sumalos aquí.</p>
+          </div>
+        `;
+        summaryContainer.innerHTML = "";
+        freeShippingBar.innerHTML = `<span>Envío gratis a partir de $75.000</span>`;
+        return;
+      }
+
+      if (shippingSection) shippingSection.classList.remove("hidden");
+
+      let subtotalGeneral = 0;
+      let totalAhorroVolumen = 0;
+
+      container.innerHTML = cart.map(item => {
+        const prod = products.find(p => p.id === item.productId);
+        if (!prod) return '';
+
+        const calc = calculateProductLine(prod, item.qty);
+        subtotalGeneral += calc.finalSubtotal;
+        totalAhorroVolumen += calc.discountAmount;
+
+        return `
+          <div class="py-4 flex gap-3 items-center">
+            <img src="${prod.image}" class="w-16 h-16 rounded-xl object-cover bg-pronta-blush border border-pronta-border flex-shrink-0" onerror="this.src='https://placehold.co/100x100/FAF5F6/CD899C?text=PRONTA'">
+            <div class="flex-grow">
+              <h4 class="font-serif text-sm font-medium text-pronta-charcoal line-clamp-1">${prod.name}</h4>
+              <div class="flex items-center gap-2 mt-0.5">
+                <span class="text-xs font-semibold text-pronta-charcoal">${formatCurrency(calc.baseUnitPrice)}</span>
+                ${calc.appliedDiscountPercent > 0 ? `
+                  <span class="text-[10px] font-bold text-pronta-roseDeep bg-pronta-yellowSun/70 px-1.5 py-0.5 rounded">
+                    ${calc.appliedDiscountPercent}% OFF
+                  </span>
+                ` : ''}
+              </div>
+              
+              <div class="flex items-center justify-between mt-2">
+                <div class="inline-flex items-center border border-pronta-border rounded-full bg-white">
+                  <button onclick="updateCartItemQty('${prod.id}', ${item.qty - 1})" class="w-6 h-6 flex items-center justify-center text-xs text-pronta-charcoal hover:bg-pronta-blush rounded-l-full">-</button>
+                  <span class="px-2 text-xs font-bold">${item.qty}</span>
+                  <button onclick="updateCartItemQty('${prod.id}', ${item.qty + 1})" class="w-6 h-6 flex items-center justify-center text-xs text-pronta-charcoal hover:bg-pronta-blush rounded-r-full">+</button>
+                </div>
+                <span class="font-serif font-bold text-sm text-pronta-charcoal">${formatCurrency(calc.finalSubtotal)}</span>
+              </div>
+            </div>
+          </div>
+        `;
+      }).join("");
+
+      const FREE_SHIPPING_LIMIT = 75000;
+      if (subtotalGeneral >= FREE_SHIPPING_LIMIT) {
+        freeShippingBar.innerHTML = `<span class="font-bold text-green-800">¡Tenés ENVÍO GRATIS en CABA disponible!</span>`;
+      } else {
+        const falta = FREE_SHIPPING_LIMIT - subtotalGeneral;
+        freeShippingBar.innerHTML = `<span>Sumá <strong>${formatCurrency(falta)}</strong> más para <strong>ENVÍO GRATIS en CABA</strong></span>`;
+      }
+
+      // Renderizar métodos de envío dentro del Carrito
+      renderCartShippingOptions(subtotalGeneral);
+
+      // Calcular envío seleccionado
+      let currentShip = shippingMethods.find(s => s.id === selectedCartShippingId) || shippingMethods[0];
+      let shippingCost = 0;
+      if (currentShip) {
+        const isFree = currentShip.freeThreshold && subtotalGeneral >= currentShip.freeThreshold;
+        shippingCost = isFree ? 0 : currentShip.cost;
+      }
+
+      const totalConEnvio = subtotalGeneral + shippingCost;
+
+      summaryContainer.innerHTML = `
+        <div class="space-y-1.5 text-xs">
+          ${totalAhorroVolumen > 0 ? `
+            <div class="flex justify-between text-pronta-roseDeep font-semibold">
+              <span>Ahorro por cantidad:</span>
+              <span>-${formatCurrency(totalAhorroVolumen)}</span>
+            </div>
+          ` : ''}
+          <div class="flex justify-between text-pronta-charcoal text-xs">
+            <span>Subtotal de productos:</span>
+            <span>${formatCurrency(subtotalGeneral)}</span>
+          </div>
+          <div class="flex justify-between text-pronta-charcoal text-xs">
+            <span>Envío estimado (${currentShip ? currentShip.name : 'A convenir'}):</span>
+            <span class="font-semibold ${shippingCost === 0 ? 'text-green-700' : ''}">${shippingCost === 0 ? 'GRATIS' : formatCurrency(shippingCost)}</span>
+          </div>
+          <div class="flex justify-between text-pronta-charcoal text-sm font-bold pt-1.5 border-t border-pronta-border">
+            <span>Total estimado:</span>
+            <span class="font-serif text-lg">${formatCurrency(totalConEnvio)}</span>
+          </div>
+          <p class="text-[10px] text-pronta-muted">Podrás aplicar descuentos por método de pago (como 10% OFF en transferencia) al confirmar tus datos.</p>
+        </div>
+
+        <button 
+          onclick="openCheckoutModal()" 
+          class="w-full py-3.5 rounded-full bg-pronta-charcoal hover:bg-black text-white text-xs font-bold tracking-wide uppercase transition-all shadow-md flex items-center justify-center gap-2 mt-2">
+          <span>Iniciar Compra</span>
+          <i class="ph-bold ph-arrow-right"></i>
+        </button>
+      `;
+    }
+
+    function renderCartShippingOptions(subtotalItems) {
+      const listContainer = document.getElementById("cart-shipping-options-list");
+      if (!listContainer) return;
+
+      if (!shippingMethods || shippingMethods.length === 0) {
+        shippingMethods = [...DEFAULT_SHIPPING_METHODS];
+        saveData(KEYS.SHIPPING, shippingMethods);
+      }
+
+      if (!selectedCartShippingId) {
+        selectedCartShippingId = shippingMethods[0].id;
+      }
+
+      listContainer.innerHTML = shippingMethods.map(sm => {
+        const isFree = sm.freeThreshold && subtotalItems >= sm.freeThreshold;
+        const effectiveCost = isFree ? 0 : sm.cost;
+        const isChecked = sm.id === selectedCartShippingId;
+
+        return `
+          <label class="cursor-pointer border ${isChecked ? 'border-pronta-charcoal bg-pronta-roseLight/20' : 'border-pronta-border bg-pronta-blush'} p-2 rounded-xl flex items-center justify-between text-xs hover:border-pronta-roseBanner transition-all">
+            <div class="flex items-center gap-2">
+              <input 
+                type="radio" 
+                name="cart_shipping_option" 
+                value="${sm.id}" 
+                ${isChecked ? 'checked' : ''} 
+                onchange="selectCartShippingMethod('${sm.id}')" 
+                class="accent-pronta-charcoal">
+              <div>
+                <p class="font-semibold text-pronta-charcoal text-[11px] leading-tight">${sm.name}</p>
+                <p class="text-[10px] text-pronta-muted">${sm.description || ''}</p>
+              </div>
+            </div>
+            <span class="font-bold text-[11px] ${effectiveCost === 0 ? 'text-green-700' : 'text-pronta-charcoal'}">
+              ${effectiveCost === 0 ? 'GRATIS' : formatCurrency(effectiveCost)}
+            </span>
+          </label>
+        `;
+      }).join("");
+    }
+
+    function selectCartShippingMethod(shippingId) {
+      selectedCartShippingId = shippingId;
+      renderCartUI();
+    }
+
+    // --- CHECKOUT & MEDIOS DE PAGO DINÁMICOS ---
+    function openCheckoutModal() {
+      if (cart.length === 0) {
+        showToast("El carrito está vacío.", "error");
+        return;
+      }
+      toggleCart();
+      document.getElementById("checkout-modal").classList.remove("hidden");
+      renderCheckoutShippingOptions();
+      renderCheckoutPaymentOptions();
+      autofillCustomerData();
+      updateCheckoutTotals();
+    }
+
+    function closeCheckoutModal() {
+      document.getElementById("checkout-modal").classList.add("hidden");
+    }
+
+    function autofillCustomerData() {
+      const indicator = document.getElementById("chk-autofill-indicator");
+      if (currentUser) {
+        if (indicator) indicator.classList.remove("hidden");
+        document.getElementById("chk-name").value = currentUser.name || "";
+        document.getElementById("chk-email").value = currentUser.email || "";
+        document.getElementById("chk-phone").value = currentUser.phone || "";
+        document.getElementById("chk-street").value = currentUser.street || "";
+        document.getElementById("chk-number").value = currentUser.houseNumber || "";
+        document.getElementById("chk-cross-streets").value = currentUser.crossStreets || "";
+        document.getElementById("chk-zipcode").value = currentUser.zipcode || "";
+        document.getElementById("chk-city").value = currentUser.city || "";
+      } else {
+        if (indicator) indicator.classList.add("hidden");
+      }
+    }
+
+    function renderCheckoutShippingOptions() {
+      const container = document.getElementById("checkout-shipping-options");
+      if (!container) return;
+
+      if (!shippingMethods || shippingMethods.length === 0) {
+        shippingMethods = [...DEFAULT_SHIPPING_METHODS];
+        saveData(KEYS.SHIPPING, shippingMethods);
+      }
+
+      let subtotalItems = 0;
+      cart.forEach(item => {
+        const prod = products.find(p => p.id === item.productId);
+        if (prod) {
+          const calc = calculateProductLine(prod, item.qty);
+          subtotalItems += calc.finalSubtotal;
+        }
+      });
+
+      container.innerHTML = shippingMethods.map((sm) => {
+        const isFreeByThreshold = sm.freeThreshold && subtotalItems >= sm.freeThreshold;
+        const effectiveCost = isFreeByThreshold ? 0 : sm.cost;
+        const isSelected = selectedCartShippingId ? sm.id === selectedCartShippingId : false;
+
+        return `
+          <label class="cursor-pointer border border-pronta-border p-3 rounded-xl flex items-center justify-between text-xs hover:border-pronta-charcoal transition-all ${isSelected ? 'border-pronta-charcoal bg-pronta-roseLight/20' : ''}">
+            <div class="flex items-center gap-2">
+              <input type="radio" name="shipping_method" value="${sm.id}" ${isSelected ? 'checked' : ''} onchange="syncCheckoutShipping('${sm.id}')" class="accent-pronta-charcoal">
+              <div>
+                <p class="font-semibold text-pronta-charcoal">${sm.name}</p>
+                <p class="text-[10px] text-pronta-muted">${sm.description || ''}</p>
+                ${sm.freeThreshold ? `<p class="text-[9px] text-pronta-roseDeep">Gratis superando ${formatCurrency(sm.freeThreshold)}</p>` : ''}
+              </div>
+            </div>
+            <span class="font-bold ${effectiveCost === 0 ? 'text-green-700' : 'text-pronta-charcoal'}">
+              ${effectiveCost === 0 ? 'GRATIS' : formatCurrency(effectiveCost)}
+            </span>
+          </label>
+        `;
+      }).join("");
+    }
+
+    function syncCheckoutShipping(shippingId) {
+      selectedCartShippingId = shippingId;
+      updateCheckoutTotals();
+    }
+
+    function renderCheckoutPaymentOptions() {
+      const container = document.getElementById("checkout-payments-options");
+      if (!container) return;
+
+      container.innerHTML = payments.map((pm, idx) => {
+        let discountBadge = "";
+        if (pm.hasDiscount && pm.discountValue > 0) {
+          discountBadge = `
+            <span class="inline-flex items-center text-[10px] font-bold px-2 py-0.5 rounded-full bg-pronta-yellowSun text-pronta-charcoal">
+              ${pm.discountType === 'percent' ? `${pm.discountValue}% OFF` : `-${formatCurrency(pm.discountValue)}`}
+            </span>
+          `;
+        }
+
+        return `
+          <label class="cursor-pointer border border-pronta-border p-3.5 rounded-2xl flex flex-col gap-1 hover:border-pronta-charcoal transition-all">
+            <div class="flex items-center justify-between">
+              <div class="flex items-center gap-2">
+                <input type="radio" name="payment_method" value="${pm.id}" ${idx === 0 ? 'checked' : ''} onchange="updateCheckoutTotals()" class="accent-pronta-charcoal">
+                <span class="text-xs font-bold text-pronta-charcoal">${pm.name}</span>
+              </div>
+              ${discountBadge}
+            </div>
+            <p class="text-[11px] text-pronta-muted pl-5">${pm.description}</p>
+          </label>
+        `;
+      }).join("");
+    }
+
+    function updateCheckoutTotals() {
+      const totalsContainer = document.getElementById("checkout-totals-summary");
+      if (!totalsContainer) return;
+
+      let subtotalItems = 0;
+      cart.forEach(item => {
+        const prod = products.find(p => p.id === item.productId);
+        if (prod) {
+          const calc = calculateProductLine(prod, item.qty);
+          subtotalItems += calc.finalSubtotal;
+        }
+      });
+
+      const shippingRadio = document.querySelector('input[name="shipping_method"]:checked');
+      const selectedShip = shippingRadio ? shippingMethods.find(s => s.id === shippingRadio.value) : shippingMethods[0];
+
+      let shippingCost = 0;
+      let shippingName = "Entrega";
+
+      if (selectedShip) {
+        shippingName = selectedShip.name;
+        if (selectedShip.freeThreshold && subtotalItems >= selectedShip.freeThreshold) {
+          shippingCost = 0;
+          shippingName += " (Bonificado)";
+        } else {
+          shippingCost = selectedShip.cost || 0;
+        }
+      }
+
+      const paymentRadio = document.querySelector('input[name="payment_method"]:checked');
+      const selectedPayment = paymentRadio ? payments.find(p => p.id === paymentRadio.value) : payments[0];
+
+      let paymentDiscountAmount = 0;
+      if (selectedPayment && selectedPayment.hasDiscount && selectedPayment.discountValue > 0) {
+        if (selectedPayment.discountType === "percent") {
+          paymentDiscountAmount = subtotalItems * (selectedPayment.discountValue / 100);
+        } else {
+          paymentDiscountAmount = selectedPayment.discountValue;
+        }
+      }
+
+      const totalFinal = Math.max(0, subtotalItems + shippingCost - paymentDiscountAmount);
+
+      totalsContainer.innerHTML = `
+        <div class="flex justify-between text-pronta-muted">
+          <span>Subtotal de productos:</span>
+          <span>${formatCurrency(subtotalItems)}</span>
+        </div>
+        <div class="flex justify-between text-pronta-muted">
+          <span>Envío (${shippingName}):</span>
+          <span>${shippingCost === 0 ? '<strong class="text-green-700">GRATIS</strong>' : formatCurrency(shippingCost)}</span>
+        </div>
+        ${paymentDiscountAmount > 0 ? `
+          <div class="flex justify-between text-pronta-roseDeep font-semibold">
+            <span>Descuento por medio de pago (${selectedPayment.name}):</span>
+            <span>-${formatCurrency(paymentDiscountAmount)}</span>
+          </div>
+        ` : ''}
+        <div class="flex justify-between text-pronta-charcoal text-base font-bold pt-2 border-t border-pronta-border">
+          <span>Total a Pagar:</span>
+          <span class="font-serif text-xl text-pronta-charcoal">${formatCurrency(totalFinal)}</span>
+        </div>
+      `;
+    }
+
+    async function handleCheckoutSubmit(e) {
+      e.preventDefault();
+
+      const name = document.getElementById("chk-name").value.trim();
+      const email = document.getElementById("chk-email").value.trim();
+      const phone = document.getElementById("chk-phone").value.trim();
+      const street = document.getElementById("chk-street").value.trim();
+      const number = document.getElementById("chk-number").value.trim();
+      const zipcode = document.getElementById("chk-zipcode").value.trim();
+      const city = document.getElementById("chk-city").value.trim();
+      const crossStreets = document.getElementById("chk-cross-streets").value.trim();
+      const orderNotes = (document.getElementById("chk-order-notes") ? document.getElementById("chk-order-notes").value.trim() : "");
+
+      const fullAddress = `${street} ${number}, ${city} (CP: ${zipcode})${crossStreets ? ` [Entre calles: ${crossStreets}]` : ''}`;
+
+      if (currentUser) {
+        currentUser.street = street;
+        currentUser.houseNumber = number;
+        currentUser.zipcode = zipcode;
+        currentUser.city = city;
+        currentUser.crossStreets = crossStreets;
+        currentUser.phone = phone;
+
+        const userIdx = users.findIndex(u => u.id === currentUser.id);
+        if (userIdx !== -1) {
+          users[userIdx] = { ...users[userIdx], ...currentUser };
+          saveData(KEYS.USERS, users);
+        }
+        saveData(KEYS.CURRENT_USER, currentUser);
+      }
+
+      const shippingRadio = document.querySelector('input[name="shipping_method"]:checked');
+      const selectedShip = shippingRadio ? shippingMethods.find(s => s.id === shippingRadio.value) : shippingMethods[0];
+
+      const paymentRadio = document.querySelector('input[name="payment_method"]:checked');
+      const paymentId = paymentRadio ? paymentRadio.value : payments[0].id;
+      const paymentMethod = payments.find(p => p.id === paymentId) || payments[0];
+
+      let subtotal = 0;
+      cart.forEach(item => {
+        const prod = products.find(p => p.id === item.productId);
+        if (prod) {
+          const calc = calculateProductLine(prod, item.qty);
+          subtotal += calc.finalSubtotal;
+        }
+      });
+
+      let shippingCost = selectedShip ? selectedShip.cost : 0;
+      if (selectedShip && selectedShip.freeThreshold && subtotal >= selectedShip.freeThreshold) {
+        shippingCost = 0;
+      }
+
+      let paymentDiscount = 0;
+      if (paymentMethod.hasDiscount) {
+        paymentDiscount = paymentMethod.discountType === "percent"
+          ? subtotal * (paymentMethod.discountValue / 100)
+          : paymentMethod.discountValue;
+      }
+
+      const total = Math.max(0, subtotal + shippingCost - paymentDiscount);
+      const orderId = "PRONTA-" + Math.floor(100000 + Math.random() * 900000);
+
+      const newOrder = {
+        id: orderId,
+        date: new Date().toISOString(),
+        customer: { 
+          name, 
+          email, 
+          phone, 
+          street,
+          houseNumber: number,
+          zipcode,
+          city,
+          crossStreets,
+          address: fullAddress 
+        },
+        items: [...cart],
+        shippingMethod: selectedShip ? selectedShip.name : "Envío",
+        shippingCost,
+        paymentMethod: paymentMethod.name,
+        notes: orderNotes,
+        total,
+        status: "Pendiente"
+      };
+
+      orders.unshift(newOrder);
+      saveData(KEYS.ORDERS, orders);
+
+      if (paymentMethod.apiUrl && paymentMethod.apiUrl.trim() !== "") {
+        try {
+          showToast("Conectando con Mercado Pago...");
+          const res = await fetch(paymentMethod.apiUrl, {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({
+              orderId,
+              customer: { name, email, phone, address: fullAddress },
+              items: cart.map(i => {
+                const prod = products.find(p => p.id === i.productId);
+                return {
+                  productId: i.productId,
+                  productName: prod ? prod.name : "Producto",
+                  unitPrice: prod ? (prod.salePrice || prod.price) : 0,
+                  quantity: i.qty
+                };
+              }),
+              totalAmount: total
+            })
+          });
+
+          const data = await res.json();
+          if (data && data.init_point) {
+            cart = [];
+            saveData(KEYS.CART, cart);
+            updateCartBadge();
+            closeCheckoutModal();
+            window.location.href = data.init_point;
+            return;
+          }
+        } catch (err) {
+          console.warn("No se pudo conectar a la API de Mercado Pago, procediendo con orden normal:", err);
+        }
+      }
+
+      cart = [];
+      saveData(KEYS.CART, cart);
+      updateCartBadge();
+      closeCheckoutModal();
+
+      const cleanPhone = String(whatsappNumber).replace(/\D/g, "");
+      const mensajeWA = encodeURIComponent(
+        `¡Hola PRONTA! Acabo de realizar el pedido *#${orderId}*.\n\n` +
+        `👤 *Cliente:* ${name}\n` +
+        `📍 *Dirección:* ${fullAddress}\n` +
+        `🚚 *Envío:* ${selectedShip ? selectedShip.name : 'A convenir'}\n` +
+        `💳 *Medio de pago:* ${paymentMethod.name}\n` +
+        (orderNotes ? `📝 *Notas:* ${orderNotes}\n` : '') +
+        `💰 *Total:* ${formatCurrency(total)}`
+      );
+      const urlWA = `https://wa.me/${cleanPhone}?text=${mensajeWA}`;
+
+      const win = window.open(urlWA, "_blank");
+      if (!win) {
+        window.location.href = urlWA;
+      }
+
+      showToast(`¡Pedido #${orderId} registrado con éxito!`);
+    }
+
+    // --- AUTENTICACIÓN & PANEL DE CLIENTES ---
+    function openAuthModal() {
+      const modal = document.getElementById("auth-modal");
+      modal.classList.remove("hidden");
+      renderCustomerAuthOrProfile();
+    }
+
+    function closeAuthModal() {
+      document.getElementById("auth-modal").classList.add("hidden");
+    }
+
+    function toggleAuthTab(tab) {
+      const formLogin = document.getElementById("customer-login-form");
+      const formReg = document.getElementById("customer-register-form");
+      const tabLogin = document.getElementById("tab-auth-login");
+      const tabReg = document.getElementById("tab-auth-register");
+
+      if (tab === "login") {
+        formLogin.classList.remove("hidden");
+        formReg.classList.add("hidden");
+        tabLogin.className = "flex-1 pb-2 text-xs font-bold border-b-2 border-pronta-charcoal text-pronta-charcoal";
+        tabReg.className = "flex-1 pb-2 text-xs font-medium text-pronta-muted border-b-2 border-transparent";
+      } else {
+        formLogin.classList.add("hidden");
+        formReg.classList.remove("hidden");
+        tabReg.className = "flex-1 pb-2 text-xs font-bold border-b-2 border-pronta-charcoal text-pronta-charcoal";
+        tabLogin.className = "flex-1 pb-2 text-xs font-medium text-pronta-muted border-b-2 border-transparent";
+      }
+    }
+
+    function handleCustomerLogin(e) {
+      e.preventDefault();
+      const email = document.getElementById("cust-login-email").value.trim().toLowerCase();
+      const pass = document.getElementById("cust-login-password").value;
+
+      const user = users.find(u => u.email.toLowerCase() === email && u.password === pass);
+
+      if (user) {
+        if (user.isBlocked) {
+          showToast("Tu cuenta se encuentra bloqueada. Contactate con nosotros.", "error");
+          return;
+        }
+        currentUser = user;
+        saveData(KEYS.CURRENT_USER, currentUser);
+        updateAuthNavButton();
+        renderCustomerAuthOrProfile();
+        showToast(`¡Hola de nuevo, ${user.name}!`);
+      } else {
+        showToast("Email o contraseña incorrectos.", "error");
+      }
+    }
+
+    function handleCustomerRegister(e) {
+      e.preventDefault();
+      const name = document.getElementById("cust-reg-name").value.trim();
+      const email = document.getElementById("cust-reg-email").value.trim().toLowerCase();
+      const birthday = document.getElementById("cust-reg-birthday").value;
+      const phone = document.getElementById("cust-reg-phone").value.trim();
+      const street = document.getElementById("cust-reg-street").value.trim();
+      const houseNumber = document.getElementById("cust-reg-number").value.trim();
+      const zipcode = document.getElementById("cust-reg-zipcode").value.trim();
+      const city = document.getElementById("cust-reg-city").value.trim();
+      const crossStreets = document.getElementById("cust-reg-cross-streets").value.trim();
+      const password = document.getElementById("cust-reg-password").value;
+
+      if (users.some(u => u.email.toLowerCase() === email)) {
+        showToast("Ya existe un usuario registrado con este email.", "error");
+        return;
+      }
+
+      const newUser = {
+        id: "usr-" + Date.now(),
+        name,
+        email,
+        birthday,
+        phone,
+        street,
+        houseNumber,
+        zipcode,
+        city,
+        crossStreets,
+        password,
+        role: "customer",
+        isBlocked: false,
+        createdAt: new Date().toISOString().split("T")[0]
+      };
+
+      users.push(newUser);
+      saveData(KEYS.USERS, users);
+
+      currentUser = newUser;
+      saveData(KEYS.CURRENT_USER, currentUser);
+      updateAuthNavButton();
+      renderCustomerAuthOrProfile();
+      showToast("¡Cuenta creada exitosamente en PRONTA!");
+    }
+
+    function logoutCustomer() {
+      currentUser = null;
+      saveData(KEYS.CURRENT_USER, null);
+      updateAuthNavButton();
+      renderCustomerAuthOrProfile();
+      showToast("Sesión cerrada.");
+    }
+
+    function updateAuthNavButton() {
+      const btnText = document.getElementById("auth-btn-text");
+      if (!btnText) return;
+
+      if (currentUser) {
+        const firstName = currentUser.name.split(" ")[0];
+        btnText.textContent = `Hola, ${firstName}`;
+      } else {
+        btnText.textContent = "Ingresar / Crear Cuenta";
+      }
+    }
+
+    function renderCustomerAuthOrProfile() {
+      const formsContainer = document.getElementById("auth-forms-container");
+      const profileContainer = document.getElementById("customer-profile-container");
+      const title = document.getElementById("auth-modal-title");
+
+      if (currentUser) {
+        formsContainer.classList.add("hidden");
+        profileContainer.classList.remove("hidden");
+        title.textContent = `Mi Perfil — ${currentUser.name}`;
+
+        const myOrders = orders.filter(o => o.customer && o.customer.email && o.customer.email.toLowerCase() === currentUser.email.toLowerCase());
+
+        profileContainer.innerHTML = `
+          <div class="p-4 bg-pronta-blush rounded-2xl border border-pronta-border flex items-center justify-between">
+            <div>
+              <p class="text-xs font-bold text-pronta-charcoal">${currentUser.name}</p>
+              <p class="text-[11px] text-pronta-muted">${currentUser.email}</p>
+              ${currentUser.birthday ? `<p class="text-[10px] text-pronta-roseDeep">Cumpleaños: ${currentUser.birthday}</p>` : ''}
+            </div>
+            <button onclick="logoutCustomer()" class="text-xs font-semibold text-red-600 hover:underline">
+              Cerrar Sesión
+            </button>
+          </div>
+
+          <div>
+            <h4 class="text-xs font-bold uppercase tracking-wider text-pronta-charcoal mb-2">Mis Pedidos Realizados (${myOrders.length})</h4>
+            <div class="space-y-2 max-h-60 overflow-y-auto">
+              ${myOrders.length === 0 ? `
+                <p class="text-xs text-pronta-muted text-center py-4">Aún no registras compras en la tienda.</p>
+              ` : myOrders.map(ord => `
+                <div class="p-3 bg-white rounded-xl border border-pronta-border text-xs flex items-center justify-between">
+                  <div>
+                    <span class="font-bold text-pronta-charcoal">#${ord.id}</span>
+                    <p class="text-[10px] text-pronta-muted">${new Date(ord.date).toLocaleDateString("es-AR")} • ${ord.paymentMethod}</p>
+                  </div>
+                  <div class="text-right">
+                    <span class="font-serif font-bold text-pronta-charcoal">${formatCurrency(ord.total)}</span>
+                    <span class="block text-[9px] font-bold uppercase text-pronta-roseDeep">${ord.status}</span>
+                  </div>
+                </div>
+              `).join("")}
+            </div>
+          </div>
+        `;
+      } else {
+        formsContainer.classList.remove("hidden");
+        profileContainer.classList.add("hidden");
+        title.textContent = "Ingresar a mi Cuenta";
+      }
+    }
+
+    // --- GESTIÓN DE PRODUCTOS (ADMIN) ---
+    function renderAdminProductsTable() {
+      const tbody = document.getElementById("admin-products-table-body");
+      if (!tbody) return;
+
+      tbody.innerHTML = products.map(prod => {
+        const cat = categories.find(c => c.id === prod.category) || { name: "Sin categoría" };
+        const volumeRulesStr = prod.volumeRules && prod.volumeRules.length > 0
+          ? prod.volumeRules.map(r => `${r.minQty}+ u. (${r.discountPercent}%)`).join(", ")
+          : '<span class="text-pronta-muted italic">Sin escalas</span>';
+
+        return `
+          <tr class="hover:bg-pronta-blush transition-colors">
+            <td class="py-3 px-4 font-medium flex items-center gap-2.5">
+              <img src="${prod.image}" class="w-9 h-9 rounded-lg object-cover bg-pronta-blush border border-pronta-border flex-shrink-0">
+              <span class="font-serif text-pronta-charcoal">${prod.name}</span>
+            </td>
+            <td class="py-3 px-4 text-pronta-muted">${cat.name}</td>
+            <td class="py-3 px-4 font-medium">${formatCurrency(prod.price)}</td>
+            <td class="py-3 px-4 text-pronta-roseDeep font-semibold">${prod.salePrice ? formatCurrency(prod.salePrice) : '-'}</td>
+            <td class="py-3 px-4 text-[11px]">${volumeRulesStr}</td>
+            <td class="py-3 px-4">${prod.stock}</td>
+            <td class="py-3 px-4 text-right space-x-2">
+              <button onclick="editProduct('${prod.id}')" class="text-pronta-charcoal hover:text-pronta-roseDeep" title="Editar">
+                <i class="ph-bold ph-pencil-simple text-sm"></i>
+              </button>
+              <button onclick="deleteProduct('${prod.id}')" class="text-red-500 hover:text-red-700" title="Eliminar">
+                <i class="ph-bold ph-trash text-sm"></i>
+              </button>
+            </td>
+          </tr>
+        `;
+      }).join("");
+    }
+
+    function openProductModal(prodId = null) {
+      const modal = document.getElementById("product-modal");
+      const title = document.getElementById("product-modal-title");
+      const selectCat = document.getElementById("prod-category");
+
+      selectCat.innerHTML = categories.map(c => `
+        <option value="${c.id}">${c.name}</option>
+      `).join("");
+
+      document.getElementById("volume-rules-inputs-container").innerHTML = "";
+
+      if (prodId) {
+        const prod = products.find(p => p.id === prodId);
+        if (!prod) return;
+        title.textContent = "Editar Producto";
+        document.getElementById("prod-id").value = prod.id;
+        document.getElementById("prod-name").value = prod.name;
+        document.getElementById("prod-category").value = prod.category;
+        document.getElementById("prod-stock").value = prod.stock;
+        document.getElementById("prod-price").value = prod.price;
+        document.getElementById("prod-sale-price").value = prod.salePrice || "";
+        document.getElementById("prod-image").value = prod.image;
+        document.getElementById("prod-desc").value = prod.description || "";
+
+        if (prod.volumeRules) {
+          prod.volumeRules.forEach(r => addVolumeRuleRow(r.minQty, r.discountPercent));
+        }
+
+        updateImagePreviewDisplay(prod.image);
+      } else {
+        title.textContent = "Agregar Nuevo Producto";
+        document.getElementById("product-form").reset();
+        document.getElementById("prod-id").value = "";
+        clearProductImage();
+      }
+
+      modal.classList.remove("hidden");
+    }
+
+    function closeProductModal() {
+      document.getElementById("product-modal").classList.add("hidden");
+    }
+
+    function handleProductFileUpload(event) {
+      const file = event.target.files && event.target.files[0];
+      if (!file) return;
+
+      if (!file.type.match('image/jpeg') && !file.type.match('image/png') && !file.type.match('image/jpg')) {
+        showToast("Solo se admiten fotos en formato PNG o JPG.", "error");
+        return;
+      }
+
+      const reader = new FileReader();
+      reader.onload = function(e) {
+        const base64Url = e.target.result;
+        document.getElementById("prod-image").value = base64Url;
+        document.getElementById("prod-file-name").textContent = file.name;
+        updateImagePreviewDisplay(base64Url);
+        showToast("Foto cargada con éxito.");
+      };
+      reader.readAsDataURL(file);
+    }
+
+    function updateImagePreviewFromUrl(url) {
+      if (url && url.trim().length > 5) {
+        updateImagePreviewDisplay(url.trim());
+      } else {
+        clearProductImage();
+      }
+    }
+
+    function updateImagePreviewDisplay(imgSrc) {
+      const previewContainer = document.getElementById("prod-image-preview-container");
+      const previewThumb = document.getElementById("prod-preview-thumb");
+      if (previewContainer && previewThumb && imgSrc) {
+        previewThumb.src = imgSrc;
+        previewContainer.classList.remove("hidden");
+        previewContainer.classList.add("flex");
+      }
+    }
+
+    function clearProductImage() {
+      const previewContainer = document.getElementById("prod-image-preview-container");
+      const fileInput = document.getElementById("prod-file-input");
+      const fileName = document.getElementById("prod-file-name");
+      const inputUrl = document.getElementById("prod-image");
+
+      if (inputUrl) inputUrl.value = "";
+      if (fileInput) fileInput.value = "";
+      if (fileName) fileName.textContent = "Sin archivo seleccionado";
+      if (previewContainer) {
+        previewContainer.classList.add("hidden");
+        previewContainer.classList.remove("flex");
+      }
+    }
+
+    function addVolumeRuleRow(minQty = 2, discountPercent = 10) {
+      const container = document.getElementById("volume-rules-inputs-container");
+      const row = document.createElement("div");
+      row.className = "flex items-center gap-2 volume-rule-row";
+      row.innerHTML = `
+        <span class="text-[11px] text-pronta-muted">A partir de</span>
+        <input type="number" min="2" step="1" value="${minQty}" class="w-16 text-xs px-2 py-1 rounded-lg border border-pronta-border rule-qty">
+        <span class="text-[11px] text-pronta-muted">unidades:</span>
+        <input type="number" min="1" max="99" step="any" value="${discountPercent}" class="w-16 text-xs px-2 py-1 rounded-lg border border-pronta-border rule-pct">
+        <span class="text-[11px] text-pronta-muted">% OFF</span>
+        <button type="button" onclick="this.parentElement.remove()" class="text-red-500 hover:text-red-700 p-1">
+          <i class="ph-bold ph-trash"></i>
+        </button>
+      `;
+      container.appendChild(row);
+    }
+
+    function setPresetImage(url) {
+      document.getElementById("prod-image").value = url;
+      document.getElementById("prod-file-name").textContent = "Foto sugerida seleccionada";
+      updateImagePreviewDisplay(url);
+    }
+
+    function handleProductFormSubmit(e) {
+      e.preventDefault();
+
+      const id = document.getElementById("prod-id").value;
+      const name = document.getElementById("prod-name").value.trim();
+      const category = document.getElementById("prod-category").value;
+      const stock = Number(document.getElementById("prod-stock").value) || 0;
+      const price = Number(document.getElementById("prod-price").value) || 0;
+      const salePriceVal = document.getElementById("prod-sale-price").value;
+      const salePrice = salePriceVal ? Number(salePriceVal) : null;
+      const image = document.getElementById("prod-image").value.trim();
+      const description = document.getElementById("prod-desc").value.trim();
+
+      const ruleRows = document.querySelectorAll(".volume-rule-row");
+      const volumeRules = [];
+      ruleRows.forEach(r => {
+        const minQty = Number(r.querySelector(".rule-qty").value);
+        const discountPercent = Number(r.querySelector(".rule-pct").value);
+        if (minQty && discountPercent) {
+          volumeRules.push({ minQty, discountPercent });
+        }
+      });
+
+      if (id) {
+        const idx = products.findIndex(p => p.id === id);
+        if (idx !== -1) {
+          products[idx] = { ...products[idx], name, category, stock, price, salePrice, image, description, volumeRules };
+        }
+      } else {
+        products.push({
+          id: "prod-" + Date.now(),
+          name,
+          category,
+          stock,
+          price,
+          salePrice,
+          image,
+          description,
+          volumeRules
+        });
+      }
+
+      saveData(KEYS.PRODUCTS, products);
+      closeProductModal();
+      renderAdminProductsTable();
+      renderStoreCatalog();
+      updateAdminBadges();
+      showToast("Producto guardado correctamente.");
+    }
+
+    function editProduct(id) {
+      openProductModal(id);
+    }
+
+    function deleteProduct(id) {
+      if (confirm("¿Seguro que deseas eliminar este producto?")) {
+        products = products.filter(p => p.id !== id);
+        saveData(KEYS.PRODUCTS, products);
+        renderAdminProductsTable();
+        renderStoreCatalog();
+        updateAdminBadges();
+        showToast("Producto eliminado.");
+      }
+    }
+
+    // --- GESTIÓN DE CATEGORÍAS (ADMIN) ---
+    function renderAdminCategoriesList() {
+      const container = document.getElementById("admin-categories-list");
+      if (!container) return;
+
+      container.innerHTML = categories.map(cat => {
+        const count = products.filter(p => p.category === cat.id).length;
+        return `
+          <div class="p-4 bg-pronta-blush rounded-2xl border border-pronta-border flex items-center justify-between">
+            <div>
+              <h4 class="font-serif font-medium text-pronta-charcoal">${cat.name}</h4>
+              <p class="text-[10px] text-pronta-muted">${count} productos asociados</p>
+            </div>
+            <div class="flex items-center gap-2">
+              <button onclick="editCategory('${cat.id}')" class="text-pronta-charcoal hover:text-pronta-roseDeep p-1">
+                <i class="ph-bold ph-pencil-simple text-sm"></i>
+              </button>
+              <button onclick="deleteCategory('${cat.id}')" class="text-red-500 hover:text-red-700 p-1">
+                <i class="ph-bold ph-trash text-sm"></i>
+              </button>
+            </div>
+          </div>
+        `;
+      }).join("");
+    }
+
+    function openCategoryModal(catId = null) {
+      const modal = document.getElementById("category-modal");
+      const title = document.getElementById("category-modal-title");
+      if (catId) {
+        const cat = categories.find(c => c.id === catId);
+        if (!cat) return;
+        title.textContent = "Editar Categoría";
+        document.getElementById("cat-id").value = cat.id;
+        document.getElementById("cat-name").value = cat.name;
+      } else {
+        title.textContent = "Nueva Categoría";
+        document.getElementById("category-form").reset();
+        document.getElementById("cat-id").value = "";
+      }
+      modal.classList.remove("hidden");
+    }
+
+    function closeCategoryModal() {
+      document.getElementById("category-modal").classList.add("hidden");
+    }
+
+    function handleCategoryFormSubmit(e) {
+      e.preventDefault();
+      const id = document.getElementById("cat-id").value;
+      const name = document.getElementById("cat-name").value.trim();
+
+      if (id) {
+        const cat = categories.find(c => c.id === id);
+        if (cat) cat.name = name;
+      } else {
+        categories.push({ id: "cat-" + Date.now(), name });
+      }
+
+      saveData(KEYS.CATEGORIES, categories);
+      closeCategoryModal();
+      renderAdminCategoriesList();
+      renderCategoryFilters();
+      renderProductsGrid();
+      updateAdminBadges();
+      showToast("Categoría guardada.");
+    }
+
+    function editCategory(id) {
+      openCategoryModal(id);
+    }
+
+    function deleteCategory(id) {
+      if (categories.length <= 1) {
+        showToast("Debe haber al menos una categoría en la tienda.", "error");
+        return;
+      }
+      if (confirm("¿Eliminar esta categoría? Los productos asociados se mantendrán.")) {
+        categories = categories.filter(c => c.id !== id);
+        saveData(KEYS.CATEGORIES, categories);
+        renderAdminCategoriesList();
+        renderCategoryFilters();
+        renderProductsGrid();
+        updateAdminBadges();
+        showToast("Categoría eliminada.");
+      }
+    }
+
+    // --- GESTIÓN DE FORMAS DE ENVÍO (ADMIN) ---
+    function renderAdminShippingList() {
+      const container = document.getElementById("admin-shipping-list");
+      if (!container) return;
+
+      container.innerHTML = shippingMethods.map(sm => {
+        return `
+          <div class="bg-white rounded-2xl p-5 border border-pronta-border shadow-sm flex flex-col justify-between">
+            <div>
+              <div class="flex items-center justify-between mb-2">
+                <h4 class="font-serif font-bold text-pronta-charcoal">${sm.name}</h4>
+                <span class="text-xs font-bold px-2.5 py-0.5 rounded-full ${sm.cost === 0 ? 'bg-green-100 text-green-700' : 'bg-pronta-blush text-pronta-charcoal border border-pronta-border'}">
+                  ${sm.cost === 0 ? 'GRATIS' : formatCurrency(sm.cost)}
+                </span>
+              </div>
+              <p class="text-xs text-pronta-muted mb-2">${sm.description || 'Sin descripción'}</p>
+              ${sm.freeThreshold ? `
+                <div class="bg-pronta-blush p-2 rounded-xl border border-pronta-border text-[11px] text-pronta-charcoal mb-2">
+                  <span class="font-bold text-pronta-roseDeep">Envío sin cargo:</span> en compras desde ${formatCurrency(sm.freeThreshold)}
+                </div>
+              ` : `
+                <p class="text-[10px] text-pronta-muted">Sin bonificación automática por monto</p>
+              `}
+            </div>
+
+            <div class="flex items-center justify-end gap-2 pt-3 border-t border-pronta-border mt-3">
+              <button onclick="editShipping('${sm.id}')" class="text-xs font-semibold text-pronta-roseDeep hover:underline">
+                Editar Tarifa
+              </button>
+              <button onclick="deleteShipping('${sm.id}')" class="text-xs font-semibold text-red-500 hover:underline">
+                Eliminar
+              </button>
+            </div>
+          </div>
+        `;
+      }).join("");
+    }
+
+    function openShippingModal(shipId = null) {
+      const modal = document.getElementById("shipping-modal");
+      const title = document.getElementById("shipping-modal-title");
+
+      if (shipId) {
+        const sm = shippingMethods.find(s => s.id === shipId);
+        if (!sm) return;
+        title.textContent = "Editar Forma de Envío";
+        document.getElementById("ship-id").value = sm.id;
+        document.getElementById("ship-name").value = sm.name;
+        document.getElementById("ship-desc").value = sm.description || "";
+        document.getElementById("ship-cost").value = sm.cost;
+        document.getElementById("ship-free-threshold").value = sm.freeThreshold || "";
+      } else {
+        title.textContent = "Nueva Forma de Envío";
+        document.getElementById("shipping-form").reset();
+        document.getElementById("ship-id").value = "";
+      }
+
+      modal.classList.remove("hidden");
+    }
+
+    function closeShippingModal() {
+      document.getElementById("shipping-modal").classList.add("hidden");
+    }
+
+    function handleShippingFormSubmit(e) {
+      e.preventDefault();
+      const id = document.getElementById("ship-id").value;
+      const name = document.getElementById("ship-name").value.trim();
+      const description = document.getElementById("ship-desc").value.trim();
+      const cost = Number(document.getElementById("ship-cost").value) || 0;
+      const freeThresholdVal = document.getElementById("ship-free-threshold").value;
+      const freeThreshold = freeThresholdVal ? Number(freeThresholdVal) : null;
+
+      if (id) {
+        const sm = shippingMethods.find(s => s.id === id);
+        if (sm) {
+          Object.assign(sm, { name, description, cost, freeThreshold });
+        }
+      } else {
+        shippingMethods.push({
+          id: "ship-" + Date.now(),
+          name,
+          description,
+          cost,
+          freeThreshold
+        });
+      }
+
+      saveData(KEYS.SHIPPING, shippingMethods);
+      closeShippingModal();
+      renderAdminShippingList();
+      updateAdminBadges();
+      showToast("Forma de envío y costo guardados con éxito.");
+    }
+
+    function editShipping(id) {
+      openShippingModal(id);
+    }
+
+    function deleteShipping(id) {
+      if (shippingMethods.length <= 1) {
+        showToast("Debe existir al menos un método de entrega.", "error");
+        return;
+      }
+      if (confirm("¿Seguro que deseas eliminar esta opción de envío?")) {
+        shippingMethods = shippingMethods.filter(s => s.id !== id);
+        saveData(KEYS.SHIPPING, shippingMethods);
+        renderAdminShippingList();
+        updateAdminBadges();
+        showToast("Forma de envío eliminada.");
+      }
+    }
+
+    // --- GESTIÓN DE MEDIOS DE PAGO (ADMIN) ---
+    function renderAdminPaymentsList() {
+      const container = document.getElementById("admin-payments-list");
+      if (!container) return;
+
+      container.innerHTML = payments.map(pm => {
+        return `
+          <div class="bg-white rounded-2xl p-5 border border-pronta-border shadow-sm flex flex-col justify-between">
+            <div>
+              <div class="flex items-center justify-between mb-2">
+                <h4 class="font-serif font-bold text-pronta-charcoal">${pm.name}</h4>
+                ${pm.hasDiscount ? `
+                  <span class="text-[10px] font-bold px-2 py-0.5 rounded-full bg-pronta-yellowSun text-pronta-charcoal">
+                    ${pm.discountType === 'percent' ? `${pm.discountValue}% OFF` : `-${formatCurrency(pm.discountValue)}`}
+                  </span>
+                ` : '<span class="text-[10px] text-pronta-muted">Sin descuento</span>'}
+              </div>
+              <p class="text-xs text-pronta-muted mb-2">${pm.description}</p>
+              ${pm.instructions ? `
+                <div class="bg-pronta-blush p-2.5 rounded-xl border border-pronta-border text-[11px] text-pronta-charcoal mb-2">
+                  <p class="font-bold text-[10px] uppercase text-pronta-roseDeep">Instrucciones:</p>
+                  <p class="font-mono text-[10px]">${pm.instructions}</p>
+                </div>
+              ` : ''}
+              ${pm.apiUrl ? `
+                <p class="text-[10px] text-blue-600 font-mono truncate">API: ${pm.apiUrl}</p>
+              ` : ''}
+            </div>
+
+            <div class="flex items-center justify-end gap-2 pt-3 border-t border-pronta-border mt-3">
+              <button onclick="editPayment('${pm.id}')" class="text-xs font-semibold text-pronta-roseDeep hover:underline">
+                Editar
+              </button>
+              <button onclick="deletePayment('${pm.id}')" class="text-xs font-semibold text-red-500 hover:underline">
+                Eliminar
+              </button>
+            </div>
+          </div>
+        `;
+      }).join("");
+    }
+
+    function openPaymentModal(pmId = null) {
+      const modal = document.getElementById("payment-modal");
+      const title = document.getElementById("payment-modal-title");
+
+      if (pmId) {
+        const pm = payments.find(p => p.id === pmId);
+        if (!pm) return;
+        title.textContent = "Editar Medio de Pago";
+        document.getElementById("pay-id").value = pm.id;
+        document.getElementById("pay-name").value = pm.name;
+        document.getElementById("pay-desc").value = pm.description;
+        document.getElementById("pay-has-discount").value = pm.hasDiscount ? "true" : "false";
+        document.getElementById("pay-discount-type").value = pm.discountType || "percent";
+        document.getElementById("pay-discount-value").value = pm.discountValue || 0;
+        document.getElementById("pay-instructions").value = pm.instructions || "";
+        document.getElementById("pay-api-url").value = pm.apiUrl || "";
+      } else {
+        title.textContent = "Nuevo Medio de Pago";
+        document.getElementById("payment-form").reset();
+        document.getElementById("pay-id").value = "";
+      }
+
+      modal.classList.remove("hidden");
+    }
+
+    function closePaymentModal() {
+      document.getElementById("payment-modal").classList.add("hidden");
+    }
+
+    function toggleDiscountInputs(hasDisc) {
+      const container = document.getElementById("pay-discount-amount-container");
+      if (hasDisc === "true") {
+        container.classList.remove("hidden");
+      } else {
+        container.classList.add("hidden");
+      }
+    }
+
+    function handlePaymentFormSubmit(e) {
+      e.preventDefault();
+      const id = document.getElementById("pay-id").value;
+      const name = document.getElementById("pay-name").value.trim();
+      const description = document.getElementById("pay-desc").value.trim();
+      const hasDiscount = document.getElementById("pay-has-discount").value === "true";
+      const discountType = document.getElementById("pay-discount-type").value;
+      const discountValue = Number(document.getElementById("pay-discount-value").value) || 0;
+      const instructions = document.getElementById("pay-instructions").value.trim();
+      const apiUrl = document.getElementById("pay-api-url").value.trim();
+
+      if (id) {
+        const pm = payments.find(p => p.id === id);
+        if (pm) {
+          Object.assign(pm, { name, description, hasDiscount, discountType, discountValue, instructions, apiUrl });
+        }
+      } else {
+        payments.push({
+          id: "pay-" + Date.now(),
+          name,
+          description,
+          hasDiscount,
+          discountType,
+          discountValue,
+          instructions,
+          apiUrl
+        });
+      }
+
+      saveData(KEYS.PAYMENTS, payments);
+      closePaymentModal();
+      renderAdminPaymentsList();
+      showToast("Medio de pago guardado.");
+    }
+
+    function editPayment(id) {
+      openPaymentModal(id);
+    }
+
+    function deletePayment(id) {
+      if (payments.length <= 1) {
+        showToast("Debe haber al menos un medio de pago activo.", "error");
+        return;
+      }
+      if (confirm("¿Deseas eliminar este medio de pago?")) {
+        payments = payments.filter(p => p.id !== id);
+        saveData(KEYS.PAYMENTS, payments);
+        renderAdminPaymentsList();
+        showToast("Medio de pago eliminado.");
+      }
+    }
+
+    // --- GESTIÓN DE PEDIDOS (ADMIN) ---
+    function renderAdminOrdersTable() {
+      const tbody = document.getElementById("admin-orders-table-body");
+      if (!tbody) return;
+
+      if (orders.length === 0) {
+        tbody.innerHTML = `<tr><td colspan="7" class="py-6 text-center text-pronta-muted">No hay pedidos registrados aún.</td></tr>`;
+        return;
+      }
+
+      tbody.innerHTML = orders.map(ord => {
+        return `
+          <tr class="hover:bg-pronta-blush transition-colors">
+            <td class="py-3 px-4 font-bold text-pronta-charcoal">#${ord.id}</td>
+            <td class="py-3 px-4 text-pronta-muted text-[11px]">${new Date(ord.date).toLocaleDateString("es-AR")}</td>
+            <td class="py-3 px-4">
+              <p class="font-medium text-pronta-charcoal">${ord.customer.name}</p>
+              <p class="text-[10px] text-pronta-muted">${ord.customer.phone || ord.customer.email}</p>
+            </td>
+            <td class="py-3 px-4 font-serif font-bold text-pronta-charcoal">${formatCurrency(ord.total)}</td>
+            <td class="py-3 px-4 text-[11px]">${ord.paymentMethod}</td>
+            <td class="py-3 px-4">
+              <select onchange="updateOrderStatus('${ord.id}', this.value)" class="text-[10px] font-bold px-2 py-1 rounded-lg border border-pronta-border bg-white">
+                <option value="Pendiente" ${ord.status === 'Pendiente' ? 'selected' : ''}>Pendiente</option>
+                <option value="Aprobado" ${ord.status === 'Aprobado' ? 'selected' : ''}>Aprobado</option>
+                <option value="En Preparación" ${ord.status === 'En Preparación' ? 'selected' : ''}>En Preparación</option>
+                <option value="Enviado" ${ord.status === 'Enviado' ? 'selected' : ''}>Enviado</option>
+                <option value="Cancelado" ${ord.status === 'Cancelado' ? 'selected' : ''}>Cancelado</option>
+              </select>
+            </td>
+            <td class="py-3 px-4 text-right">
+              <button onclick="viewOrderDetails('${ord.id}')" class="text-pronta-roseDeep hover:underline text-xs font-semibold">
+                Ver Items
+              </button>
+            </td>
+          </tr>
+        `;
+      }).join("");
+    }
+
+    function updateOrderStatus(orderId, newStatus) {
+      const ord = orders.find(o => o.id === orderId);
+      if (ord) {
+        ord.status = newStatus;
+        saveData(KEYS.ORDERS, orders);
+        showToast(`Pedido #${orderId} actualizado a "${newStatus}"`);
+      }
+    }
+
+    function viewOrderDetails(orderId) {
+      const ord = orders.find(o => o.id === orderId);
+      if (!ord) return;
+
+      const itemsDesc = ord.items.map(i => {
+        const prod = products.find(p => p.id === i.productId);
+        return `• ${prod ? prod.name : 'Producto'} (x${i.qty})`;
+      }).join("\n");
+
+      alert(`Detalle del Pedido #${ord.id}\n\nCliente: ${ord.customer.name}\nEmail: ${ord.customer.email}\nDirección: ${ord.customer.address}\n\nNotas/Aclaraciones: ${ord.notes || 'Sin notas adicionales'}\n\nProductos:\n${itemsDesc}\n\nTotal: ${formatCurrency(ord.total)}`);
+    }
+
+    // --- GESTIÓN DE USUARIOS Y CLIENTES (ADMIN) ---
+    function renderAdminUsersTable() {
+      const tbody = document.getElementById("admin-users-table-body");
+      if (!tbody) return;
+
+      tbody.innerHTML = users.map(u => {
+        const isMasterAdmin = u.email.toLowerCase() === ADMIN_CREDENTIALS.email.toLowerCase();
+
+        return `
+          <tr class="hover:bg-pronta-blush transition-colors">
+            <td class="py-3 px-4">
+              <p class="font-medium text-pronta-charcoal">${u.name} ${isMasterAdmin ? '<span class="text-[9px] bg-pronta-charcoal text-white px-1.5 py-0.5 rounded-full ml-1">Principal</span>' : ''}</p>
+              <p class="text-[10px] text-pronta-muted">Registrado: ${u.createdAt || '-'}</p>
+            </td>
+            <td class="py-3 px-4 text-pronta-muted font-mono text-[11px]">${u.email}</td>
+            <td class="py-3 px-4 text-[11px]">${u.birthday || '-'}</td>
+            <td class="py-3 px-4">
+              ${isMasterAdmin ? `
+                <span class="text-[10px] font-bold px-2 py-0.5 rounded-full bg-pronta-charcoal text-white">
+                  Administrador
+                </span>
+              ` : `
+                <button onclick="toggleUserRole('${u.id}')" class="text-[10px] font-bold px-2 py-0.5 rounded-full ${u.role === 'admin' ? 'bg-pronta-charcoal text-white' : 'bg-pronta-blush text-pronta-charcoal border border-pronta-border'}">
+                  ${u.role === 'admin' ? 'Administrador' : 'Cliente'}
+                </button>
+              `}
+            </td>
+            <td class="py-3 px-4">
+              ${isMasterAdmin ? `
+                <span class="text-[10px] font-bold px-2 py-0.5 rounded-full bg-green-100 text-green-700">Activo</span>
+              ` : `
+                <button onclick="toggleUserBlock('${u.id}')" class="text-[10px] font-bold px-2 py-0.5 rounded-full ${u.isBlocked ? 'bg-red-100 text-red-700' : 'bg-green-100 text-green-700'}">
+                  ${u.isBlocked ? 'Bloqueado' : 'Activo'}
+                </button>
+              `}
+            </td>
+            <td class="py-3 px-4 text-right space-x-2">
+              <button onclick="resetUserPassword('${u.id}')" class="text-pronta-charcoal hover:text-pronta-roseDeep text-xs" title="Cambiar Contraseña">
+                <i class="ph-bold ph-key"></i>
+              </button>
+              ${!isMasterAdmin ? `
+                <button onclick="deleteUser('${u.id}')" class="text-red-500 hover:text-red-700 text-xs" title="Eliminar Usuario">
+                  <i class="ph-bold ph-trash"></i>
+                </button>
+              ` : ''}
+            </td>
+          </tr>
+        `;
+      }).join("");
+    }
+
+    function toggleUserRole(userId) {
+      const user = users.find(u => u.id === userId);
+      if (!user) return;
+      if (user.email.toLowerCase() === ADMIN_CREDENTIALS.email.toLowerCase()) {
+        showToast("No se puede modificar el rol del Administrador Principal.", "error");
+        return;
+      }
+      user.role = user.role === "admin" ? "customer" : "admin";
+      saveData(KEYS.USERS, users);
+      renderAdminUsersTable();
+      showToast(`Permiso actualizado para ${user.name}`);
+    }
+
+    function toggleUserBlock(userId) {
+      const user = users.find(u => u.id === userId);
+      if (!user) return;
+      if (user.email.toLowerCase() === ADMIN_CREDENTIALS.email.toLowerCase()) {
+        showToast("No es posible bloquear al Administrador Principal.", "error");
+        return;
+      }
+      user.isBlocked = !user.isBlocked;
+      saveData(KEYS.USERS, users);
+      renderAdminUsersTable();
+      showToast(`Estado de ${user.name} actualizado.`);
+    }
+
+    function resetUserPassword(userId) {
+      const user = users.find(u => u.id === userId);
+      if (!user) return;
+      const newPass = prompt(`Ingresa la nueva contraseña para ${user.name}:`);
+      if (newPass && newPass.trim().length >= 4) {
+        user.password = newPass.trim();
+        saveData(KEYS.USERS, users);
+        showToast("Contraseña actualizada con éxito.");
+      } else if (newPass) {
+        showToast("La contraseña debe tener al menos 4 caracteres.", "error");
+      }
+    }
+
+    function deleteUser(userId) {
+      const user = users.find(u => u.id === userId);
+      if (user && user.email.toLowerCase() === ADMIN_CREDENTIALS.email.toLowerCase()) {
+        showToast("No se puede eliminar la cuenta principal de administración.", "error");
+        return;
+      }
+      if (confirm("¿Estás segura de eliminar a este cliente?")) {
+        users = users.filter(u => u.id !== userId);
+        saveData(KEYS.USERS, users);
+        renderAdminUsersTable();
+        updateAdminBadges();
+        showToast("Usuario eliminado.");
+      }
+    }
+
+    // Exportación a Excel CSV UTF-8
+    function exportUsersToCSV() {
+      let csv = "\uFEFFNombre;Email;Teléfono;Fecha Nacimiento;Rol;Estado;Fecha Registro\n";
+      users.forEach(u => {
+        csv += `"${u.name}";"${u.email}";"${u.phone || ''}";"${u.birthday || ''}";"${u.role}";"${u.isBlocked ? 'Bloqueado' : 'Activo'}";"${u.createdAt || ''}"\n`;
+      });
+
+      const blob = new Blob([csv], { type: "text/csv;charset=utf-8;" });
+      const url = URL.createObjectURL(blob);
+      const link = document.createElement("a");
+      link.setAttribute("href", url);
+      link.setAttribute("download", `Clientes_PRONTA_${new Date().toISOString().split("T")[0]}.csv`);
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+      showToast("Listado descargado en formato compatible con Excel.");
+    }
+
+    // --- REINICIAR DATOS A DEMO ---
+    function resetAllStoreData() {
+      if (confirm("¿Restaurar todos los datos originales de la tienda (productos, categorías, envíos, medios de pago y usuarios de muestra)?")) {
+        localStorage.clear();
+        categories = JSON.parse(JSON.stringify(DEFAULT_CATEGORIES));
+        shippingMethods = JSON.parse(JSON.stringify(DEFAULT_SHIPPING_METHODS));
+        products = JSON.parse(JSON.stringify(DEFAULT_PRODUCTS));
+        payments = JSON.parse(JSON.stringify(DEFAULT_PAYMENTS));
+        users = JSON.parse(JSON.stringify(DEFAULT_USERS));
+        orders = [];
+        cart = [];
+        currentUser = null;
+        isAdminLogged = true;
+
+        saveData(KEYS.CATEGORIES, categories);
+        saveData(KEYS.SHIPPING, shippingMethods);
+        saveData(KEYS.PRODUCTS, products);
+        saveData(KEYS.PAYMENTS, payments);
+        saveData(KEYS.USERS, users);
+        saveData(KEYS.ORDERS, orders);
+        saveData(KEYS.CART, cart);
+        saveData(KEYS.IS_ADMIN, true);
+
+        renderAdminAll();
+        renderStoreCatalog();
+        showToast("Datos de muestra restaurados con éxito.");
+      }
+    }
+
+    function updateAdminBadges() {
+      const bProd = document.getElementById("adm-badge-products");
+      const bCat = document.getElementById("adm-badge-categories");
+      const bShip = document.getElementById("adm-badge-shipping");
+      const bOrd = document.getElementById("adm-badge-orders");
+      const bUsr = document.getElementById("adm-badge-users");
+
+      if (bProd) bProd.textContent = products.length;
+      if (bCat) bCat.textContent = categories.length;
+      if (bShip) bShip.textContent = shippingMethods.length;
+      if (bOrd) bOrd.textContent = orders.length;
+      if (bUsr) bUsr.textContent = users.length;
+    }
+
+    function renderAdminAll() {
+      renderAdminProductsTable();
+      renderAdminCategoriesList();
+      renderAdminShippingList();
+      renderAdminPaymentsList();
+      renderAdminOrdersTable();
+      renderAdminUsersTable();
+      updateAdminBadges();
+    }
+
+    // --- INICIALIZACIÓN GLOBAL ---
+    window.addEventListener("DOMContentLoaded", () => {
+      renderStoreCatalog();
+      updateAuthNavButton();
+      updateWhatsAppLinks();
+    });
+  </script>
+</body>
+</html>
