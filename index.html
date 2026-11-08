@@ -1307,6 +1307,10 @@
   <!-- JAVASCRIPT GLOBAL & LÓGICA DE APLICACIÓN    -->
   <!-- ========================================== -->
   <script>
+    // Conexión Supabase
+  const SUPABASE_URL = 'https://xipumaajfvfxksacigae.supabase.co';
+  const SUPABASE_ANON_KEY = 'sb_publishable_5KbBnnorVVEZaizup7wrrw_q9Qc1DWH';
+  const supabaseClient = window.supabase ? window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY) : null;
     // --- CLAVES Y CONFIGURACIÓN ---
     const KEYS = {
       PRODUCTS: "pronta_products_v3",
