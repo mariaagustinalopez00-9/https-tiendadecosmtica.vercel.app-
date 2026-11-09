@@ -2626,18 +2626,19 @@ syncWithSupabase();
 
       orders.unshift(newOrder);
       saveData(KEYS.ORDERS, orders);
-      // --- SINCRONIZAR PEDIDO CON SUPABASE ---
-// --- GUARDAR PEDIDO EN SUPABASE CON AWAIT ---
-    const sb = window.supabaseClient 
-      || (typeof supabaseClient !== 'undefined' ? supabaseClient : null)
-      || (window.supabase ? window.supabase.createClient(
-          'https://xipumaajfvfxksacigae.supabase.co',
-          'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InhpcHVtYWFqZnZmeGtzYWNpZ2FlIiwicm9sZSI6ImFub24iLCJpYXQiOjE3OTQxNzU0NzAsImV4cCI6MjEwOTc1MTQ3MH0.xkVSPpK8FATICtj1JlZw32PapeMllHvKgA4MMV_Zj2Y'
-        ) : null);
+    saveData(KEYS.ORDERS, orders);
 
-    if (sb) {
-      try {
-        const { error: insertErr } = await sb.from('orders').insert([{
+    // --- 1. GUARDAR EN SUPABASE (ESPERA OBLIGATORIA CON AWAIT) ---
+    try {
+      const sb = window.supabaseClient 
+        || (typeof supabaseClient !== 'undefined' ? supabaseClient : null)
+        || (window.supabase ? window.supabase.createClient(
+            'https://xipumaajfvfxksacigae.supabase.co',
+            'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InhpcHVtYWFqZnZmeGtzYWNpZ2FlIiwicm9sZSI6ImFub24iLCJpYXQiOjE3OTQxNzU0NzAsImV4cCI6MjEwOTc1MTQ3MH0.xkVSPpK8FATICtj1JlZw32PapeMllHvKgA4MMV_Zj2Y'
+          ) : null);
+
+      if (sb) {
+        const { data: sbData, error: sbError } = await sb.from('orders').insert([{
           id: String(newOrder.id || orderId || ('ord-' + Date.now())),
           customer_name: String(name || ''),
           customer_email: String(email || ''),
@@ -2650,41 +2651,45 @@ syncWithSupabase();
           raw_order: newOrder
         }]);
 
-        if (insertErr) {
-          console.error("Error al registrar pedido en Supabase:", insertErr);
+        if (sbError) {
+          console.error("Error al registrar en Supabase:", sbError);
         } else {
-          console.log("¡Pedido registrado exitosamente en Supabase!");
+          console.log("¡Orden guardada con éxito en Supabase!", sbData);
         }
-      } catch (err) {
-        console.error("Fallo de conexión al enviar orden a Supabase:", err);
       }
+    } catch (errSupabase) {
+      console.error("Excepción al conectar con Supabase:", errSupabase);
     }
-      // --- GUARDAR PEDIDO EN SUPABASE ANTES DE WHATSAPP ---
-    const client = window.supabaseClient || (typeof supabaseClient !== 'undefined' ? supabaseClient : null);
-    if (client) {
-      try {
-        const { error } = await client
-          .from('orders')
-          .insert([{
-            id: String(newOrder.id || orderId || ('ord-' + Date.now())),
-            customer_name: newOrder.customer?.name || (typeof name !== 'undefined' ? name : ''),
-            customer_email: newOrder.customer?.email || (typeof email !== 'undefined' ? email : ''),
-            customer_phone: newOrder.customer?.phone || (typeof phone !== 'undefined' ? phone : ''),
-            shipping_address: newOrder.customer?.address || (typeof fullAddress !== 'undefined' ? fullAddress : ''),
-            shipping_method: newOrder.shippingMethod?.name || (typeof shippingMethod !== 'undefined' ? shippingMethod.name : ''),
-            items: newOrder.items || (typeof cart !== 'undefined' ? cart : []),
-            total: Number(newOrder.total || 0),
-            status: newOrder.status || 'pending',
-            raw_order: newOrder
-          }]);
 
-        if (error) {
-          console.error("Error al guardar en Supabase:", error);
-        } else {
-          console.log("¡Pedido guardado exitosamente en Supabase!");
+// --- 2. PASARELA DE PAGO O WHATSAPP ---
+    if (paymentMethod.apiUrl && paymentMethod.apiUrl.trim() !== "") {
+      try {
+        showToast("Conectando con Mercado Pago...");
+        const res = await fetch(paymentMethod.apiUrl, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            orderId,
+            customer: { name, email, phone, address: fullAddress },
+            items: cart.map(i => {
+              const prod = products.find(p => p.id === i.productId);
+              return {
+                productId: i.productId,
+                productName: prod ? prod.name : "Producto",
+                unitPrice: prod ? (prod.salePrice || prod.price) : 0,
+                quantity: i.quantity
+              };
+            }),
+            total
+          })
+        });
+        const data = await res.json();
+        if (data.init_point) {
+          window.location.href = data.init_point;
+          return;
         }
-      } catch (err) {
-        console.error("Error de conexión con Supabase:", err);
+      } catch (e) {
+        console.error("Error pasarela:", e);
       }
     }
 // --- ENVIAR PEDIDO A SUPABASE ---
