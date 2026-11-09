@@ -2627,32 +2627,41 @@ syncWithSupabase();
       orders.unshift(newOrder);
       saveData(KEYS.ORDERS, orders);
       // --- SINCRONIZAR PEDIDO CON SUPABASE ---
-    const client = window.supabaseClient || (typeof supabaseClient !== 'undefined' ? supabaseClient : null);
-    if (client) {
-      try {
-        const { error } = await client
-          .from('orders')
-          .insert([{
-            id: String(newOrder.id || ('ord-' + Date.now())),
-            customer_name: String(name || ''),
-            customer_email: String(email || ''),
-            customer_phone: String(phone || ''),
-            shipping_address: typeof fullAddress !== 'undefined' ? String(fullAddress) : `${street || ''} ${number || ''}, ${city || ''}`,
-            shipping_method: typeof shippingMethod !== 'undefined' && shippingMethod ? String(shippingMethod.name || '') : '',
-            items: cart || [],
-            total: Number(newOrder.total || 0),
-            status: 'pending',
-            raw_order: newOrder
-          }]);
+// --- GUARDADO GARANTIZADO EN SUPABASE ---
+    const sb = window.supabaseClient 
+      || (typeof supabaseClient !== 'undefined' ? supabaseClient : null)
+      || (window.supabase ? window.supabase.createClient(
+          'https://xipumaajfvfxksacigae.supabase.co',
+          'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InhpcHVtYWFqZnZmeGtzYWNpZ2FlIiwicm9sZSI6ImFub24iLCJpYXQiOjE3OTQxNzU0NzAsImV4cCI6MjEwOTc1MTQ3MH0.xkVSPpK8FATICtj1JlZw32PapeMllHvKgA4MMV_Zj2Y'
+        ) : null);
 
-        if (error) {
-          console.error("Error al registrar en Supabase:", error);
+    if (sb) {
+      try {
+        const orderPayload = {
+          id: String(newOrder.id || ('ord-' + Date.now())),
+          customer_name: String(name || ''),
+          customer_email: String(email || ''),
+          customer_phone: String(phone || ''),
+          shipping_address: typeof fullAddress !== 'undefined' ? String(fullAddress) : `${street || ''} ${number || ''}, ${city || ''}`,
+          shipping_method: typeof shippingMethod !== 'undefined' && shippingMethod ? String(shippingMethod.name || '') : '',
+          items: cart || [],
+          total: Number(newOrder.total || 0),
+          status: 'pending',
+          raw_order: newOrder
+        };
+
+        const { error: insertError } = await sb.from('orders').insert([orderPayload]);
+        
+        if (insertError) {
+          console.error("Error al insertar en Supabase:", insertError);
         } else {
-          console.log("¡Pedido registrado exitosamente en Supabase!");
+          console.log("¡Orden guardada con éxito en Supabase!");
         }
       } catch (err) {
-        console.error("Fallo de red con Supabase:", err);
+        console.error("Excepción al guardar en Supabase:", err);
       }
+    } else {
+      console.error("No se pudo inicializar ningún cliente de Supabase");
     }
       // --- GUARDAR PEDIDO EN SUPABASE ANTES DE WHATSAPP ---
     const client = window.supabaseClient || (typeof supabaseClient !== 'undefined' ? supabaseClient : null);
