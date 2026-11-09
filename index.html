@@ -2627,7 +2627,7 @@ syncWithSupabase();
       orders.unshift(newOrder);
       saveData(KEYS.ORDERS, orders);
       // --- SINCRONIZAR PEDIDO CON SUPABASE ---
-// --- GUARDADO GARANTIZADO EN SUPABASE ---
+// --- GUARDAR PEDIDO EN SUPABASE CON AWAIT ---
     const sb = window.supabaseClient 
       || (typeof supabaseClient !== 'undefined' ? supabaseClient : null)
       || (window.supabase ? window.supabase.createClient(
@@ -2637,31 +2637,27 @@ syncWithSupabase();
 
     if (sb) {
       try {
-        const orderPayload = {
-          id: String(newOrder.id || ('ord-' + Date.now())),
+        const { error: insertErr } = await sb.from('orders').insert([{
+          id: String(newOrder.id || orderId || ('ord-' + Date.now())),
           customer_name: String(name || ''),
           customer_email: String(email || ''),
           customer_phone: String(phone || ''),
           shipping_address: typeof fullAddress !== 'undefined' ? String(fullAddress) : `${street || ''} ${number || ''}, ${city || ''}`,
-          shipping_method: typeof shippingMethod !== 'undefined' && shippingMethod ? String(shippingMethod.name || '') : '',
-          items: cart || [],
-          total: Number(newOrder.total || 0),
+          shipping_method: typeof selectedShip !== 'undefined' && selectedShip ? String(selectedShip.name || '') : 'Envío',
+          items: Array.isArray(cart) ? [...cart] : [],
+          total: Number(total || newOrder.total || 0),
           status: 'pending',
           raw_order: newOrder
-        };
+        }]);
 
-        const { error: insertError } = await sb.from('orders').insert([orderPayload]);
-        
-        if (insertError) {
-          console.error("Error al insertar en Supabase:", insertError);
+        if (insertErr) {
+          console.error("Error al registrar pedido en Supabase:", insertErr);
         } else {
-          console.log("¡Orden guardada con éxito en Supabase!");
+          console.log("¡Pedido registrado exitosamente en Supabase!");
         }
       } catch (err) {
-        console.error("Excepción al guardar en Supabase:", err);
+        console.error("Fallo de conexión al enviar orden a Supabase:", err);
       }
-    } else {
-      console.error("No se pudo inicializar ningún cliente de Supabase");
     }
       // --- GUARDAR PEDIDO EN SUPABASE ANTES DE WHATSAPP ---
     const client = window.supabaseClient || (typeof supabaseClient !== 'undefined' ? supabaseClient : null);
