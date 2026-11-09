@@ -2626,6 +2626,34 @@ syncWithSupabase();
 
       orders.unshift(newOrder);
       saveData(KEYS.ORDERS, orders);
+      // --- SINCRONIZAR PEDIDO CON SUPABASE ---
+    const client = window.supabaseClient || (typeof supabaseClient !== 'undefined' ? supabaseClient : null);
+    if (client) {
+      try {
+        const { error } = await client
+          .from('orders')
+          .insert([{
+            id: String(newOrder.id || ('ord-' + Date.now())),
+            customer_name: String(name || ''),
+            customer_email: String(email || ''),
+            customer_phone: String(phone || ''),
+            shipping_address: typeof fullAddress !== 'undefined' ? String(fullAddress) : `${street || ''} ${number || ''}, ${city || ''}`,
+            shipping_method: typeof shippingMethod !== 'undefined' && shippingMethod ? String(shippingMethod.name || '') : '',
+            items: cart || [],
+            total: Number(newOrder.total || 0),
+            status: 'pending',
+            raw_order: newOrder
+          }]);
+
+        if (error) {
+          console.error("Error al registrar en Supabase:", error);
+        } else {
+          console.log("¡Pedido registrado exitosamente en Supabase!");
+        }
+      } catch (err) {
+        console.error("Fallo de red con Supabase:", err);
+      }
+    }
       // --- GUARDAR PEDIDO EN SUPABASE ANTES DE WHATSAPP ---
     const client = window.supabaseClient || (typeof supabaseClient !== 'undefined' ? supabaseClient : null);
     if (client) {
