@@ -1,0 +1,67 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Datos de Transferencia | PRONTA</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          colors: {
+            pronta: {
+              bone: '#F9F6F0',
+              blush: '#F3E8E6',
+              roseDeep: '#D4A3A3',
+              sage: '#A3B19B',
+              charcoal: '#333333'
+            }
+          }
+        }
+      }
+    }
+  </script>
+</head>
+<body class="bg-pronta-bone text-pronta-charcoal min-h-screen flex items-center justify-center p-4">
+
+  <div class="max-w-md w-full bg-white rounded-3xl shadow-xl p-8 border border-pronta-blush text-center">
+    <h1 class="text-2xl font-serif mb-2">¡Casi listo!</h1>
+    <p class="text-gray-600 mb-6">Para confirmar tu pedido <strong id="numero-orden" class="text-pronta-charcoal"></strong>, realizá la transferencia por el total de:</p>
+    
+    <div class="text-4xl font-bold text-pronta-roseDeep mb-8" id="total-pagar">$0.00</div>
+
+    <div class="bg-pronta-blush/30 rounded-2xl p-6 mb-8 text-left space-y-3 text-sm">
+      <h3 class="font-bold text-base border-b border-pronta-roseDeep/30 pb-2 mb-3">Datos Bancarios</h3>
+      <p><strong>Titular:</strong> María Agustina López</p>
+      <p><strong>Banco:</strong> (Tu Banco Ej. Galicia)</p>
+      <p><strong>CBU / CVU:</strong> 0000000000000000000000</p>
+      <p><strong>Alias:</strong> pronta.cosmetica</p>
+    </div>
+
+    <p class="text-xs text-gray-500 mb-6">Una vez realizado el pago, envianos el comprobante por WhatsApp para que preparemos tu envío.</p>
+
+    <button onclick="enviarComprobante()" class="w-full bg-pronta-charcoal text-white rounded-full py-4 font-bold tracking-wider uppercase hover:bg-black transition-colors flex items-center justify-center gap-2">
+      Enviar comprobante a WhatsApp
+    </button>
+  </div>
+
+  <script>
+    // Obtener los datos de la URL (Ej: transferencia.html?orden=ord-123&total=15000)
+    const urlParams = new URLSearchParams(window.location.search);
+    const orden = urlParams.get('orden') || 'pendiente';
+    const total = urlParams.get('total') || '0';
+
+    document.getElementById('numero-orden').innerText = '#' + orden;
+    document.getElementById('total-pagar').innerText = '$' + Number(total).toLocaleString('es-AR');
+
+    function enviarComprobante() {
+      // REEMPLAZAR POR TU NÚMERO DE WHATSAPP (código de país sin el +)
+      const telefono = "5492610000000"; 
+      const mensaje = `¡Hola PRONTA! Acá te envío el comprobante de transferencia de mi pedido #${orden} por $${total}.`;
+      const urlWA = `https://wa.me/${telefono}?text=${encodeURIComponent(mensaje)}`;
+      window.location.href = urlWA;
+    }
+  </script>
+</body>
+</html>
