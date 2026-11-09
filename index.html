@@ -1512,27 +1512,32 @@
     let isAdminLogged = loadData(KEYS.IS_ADMIN, false);
     let whatsappNumber = loadData(KEYS.WHATSAPP, DEFAULT_WHATSAPP);
     let whatsappDefaultMsg = loadData(KEYS.WHATSAPP_MSG, DEFAULT_WHATSAPP_MSG);
-// --- SINCRONIZACIÓN CON SUPABASE ---
-  async function syncWithSupabase() {
-    if (!supabaseClient) return;
-    try {
-      const { data: dbProducts, error: prodErr } = await supabaseClient
-        .from('products')
-        .select('*');
+// --- CONEXIÓN SUPABASE ---
+const SUPABASE_URL = 'https://xipumaajfvfxksacigae.supabase.co';
+const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InhpcHVtYWFqZnZmeGtzYWNpZ2FlIiwicm9sZSI6ImFub24iLCJpYXQiOjE3OTQxNzU0NzAsImV4cCI6MjEwOTc1MTQ3MH0.xkVSPpK8FATICtj1JlZw32PapeMllHvKgA4MMV_Zj2Y';
+const supabaseClient = (window.supabase) ? window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY) : null;
 
-      if (!prodErr && dbProducts && dbProducts.length > 0) {
-        products = dbProducts;
-        saveData(KEYS.PRODUCTS, products);
-        if (typeof renderProductsGrid === 'function') renderProductsGrid();
-        if (typeof renderCategoryFilters === 'function') renderCategoryFilters();
-      }
-    } catch (err) {
-      console.warn("Modo local:", err);
+// --- SINCRONIZACIÓN ---
+async function syncWithSupabase() {
+  if (!supabaseClient) return;
+  try {
+    const { data: dbProducts, error: prodErr } = await supabaseClient
+      .from('products')
+      .select('*');
+
+    if (!prodErr && dbProducts && dbProducts.length > 0) {
+      products = dbProducts;
+      saveData(KEYS.PRODUCTS, products);
+      if (typeof renderProductsGrid === 'function') renderProductsGrid();
+      if (typeof renderCategoryFilters === 'function') renderCategoryFilters();
     }
+  } catch (err) {
+    console.warn("Modo local activo:", err);
   }
+}
 
-  // Ejecutar sincronización al inicio
-  syncWithSupabase();
+// Ejecutar sincronización al cargar la web
+syncWithSupabase();
     let selectedCategoryFilter = "all";
     let selectedCartShippingId = shippingMethods[0] ? shippingMethods[0].id : null;
 
