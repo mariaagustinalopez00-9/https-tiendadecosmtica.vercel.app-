@@ -2661,59 +2661,11 @@ syncWithSupabase();
       console.error("Excepción al conectar con Supabase:", errSupabase);
     }
 
-// --- 2. PASARELA DE PAGO O WHATSAPP ---
-    if (paymentMethod.apiUrl && paymentMethod.apiUrl.trim() !== "") {
-      try {
-        showToast("Conectando con Mercado Pago...");
-        const res = await fetch(paymentMethod.apiUrl, {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({
-            orderId,
-            customer: { name, email, phone, address: fullAddress },
-            items: cart.map(i => {
-              const prod = products.find(p => p.id === i.productId);
-              return {
-                productId: i.productId,
-                productName: prod ? prod.name : "Producto",
-                unitPrice: prod ? (prod.salePrice || prod.price) : 0,
-                quantity: i.quantity
-              };
-            }),
-            total
-          })
-        });
-        const data = await res.json();
-        if (data.init_point) {
-          window.location.href = data.init_point;
-          return;
-        }
-      } catch (e) {
-        console.error("Error pasarela:", e);
-      }
-    }
-// --- ENVIAR PEDIDO A SUPABASE ---
-    if (typeof supabaseClient !== 'undefined' && supabaseClient) {
-      supabaseClient
-        .from('orders')
-        .insert([{
-          id: String(newOrder.id || orderId),
-          customer_name: newOrder.customer?.name || (typeof name !== 'undefined' ? name : ''),
-          customer_email: newOrder.customer?.email || (typeof email !== 'undefined' ? email : ''),
-          customer_phone: newOrder.customer?.phone || (typeof phone !== 'undefined' ? phone : ''),
-          shipping_address: newOrder.customer?.address || (typeof fullAddress !== 'undefined' ? fullAddress : ''),
-          shipping_method: newOrder.shippingMethod?.name || (typeof shippingMethod !== 'undefined' ? shippingMethod.name : ''),
-          items: newOrder.items || cart,
-          total: Number(newOrder.total || 0),
-          status: newOrder.status || 'pending',
-          raw_order: newOrder
-        }])
-        .then(({ error }) => {
-          if (error) console.error("Error al guardar pedido en Supabase:", error);
-          else console.log("¡Pedido sincronizado en Supabase con éxito!");
-        })
-        .catch(err => console.error("Fallo al conectar con Supabase:", err));
-    }
+// --- 2. REDIRECCIÓN SEGÚN MEDIO DE PAGO ---
+    const nombrePago = paymentMethod.name.toLowerCase();
+
+    // OPCIÓN A: MERCADO PAGO
+    if (nombrePago.includes("mercado pago") || nombrePago.includes("mercadopago")) {
       if (paymentMethod.apiUrl && paymentMethod.apiUrl.trim() !== "") {
         try {
           showToast("Conectando con Mercado Pago...");
@@ -2729,33 +2681,39 @@ syncWithSupabase();
                   productId: i.productId,
                   productName: prod ? prod.name : "Producto",
                   unitPrice: prod ? (prod.salePrice || prod.price) : 0,
-                  quantity: i.qty
+                  quantity: i.quantity
                 };
               }),
-              totalAmount: total
+              total
             })
           });
-
           const data = await res.json();
-          if (data && data.init_point) {
-            cart = [];
-            saveData(KEYS.CART, cart);
-            updateCartBadge();
-            closeCheckoutModal();
+          if (data.init_point) {
             window.location.href = data.init_point;
-            return;
+            return; // Termina la función acá, redirige a MP
           }
-        } catch (err) {
-          console.warn("No se pudo conectar a la API de Mercado Pago, procediendo con orden normal:", err);
+        } catch (e) {
+          console.error("Error en Mercado Pago:", e);
         }
       }
-
+    } 
+    
+    // OPCIÓN B: TRANSFERENCIA BANCARIA
+    else if (nombrePago.includes("transferencia")) {
+      // Vaciamos el carrito porque la orden ya se creó
       cart = [];
       saveData(KEYS.CART, cart);
       updateCartBadge();
-      closeCheckoutModal();
+      
+      // Redirigimos a la nueva página pasando el número de orden y total
+      window.location.href = `transferencia.html?orden=${orderId}&total=${total}`;
+      return; // Termina la función acá, no llega a WhatsApp todavía
+    }
 
-      const cleanPhone = String(whatsappNumber).replace(/\D/g, "");
+    // OPCIÓN C: EFECTIVO (y cualquier otra opción no contemplada arriba)
+    // Si es Efectivo, el código simplemente ignora los 'if' anteriores y 
+    // sigue de largo hacia abajo, donde ya tenés programado el vaciado del 
+    // carrito y la redirección directa a WhatsApp.
       const mensajeWA = encodeURIComponent(
         `¡Hola PRONTA! Acabo de realizar el pedido *#${orderId}*.\n\n` +
         `👤 *Cliente:* ${name}\n` +
