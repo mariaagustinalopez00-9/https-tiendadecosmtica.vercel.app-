@@ -1516,43 +1516,49 @@
   async function syncWithSupabase() {
     if (!supabaseClient) return;
     try {
-      // 1. Cargar o sembrar productos
-      const { data: dbProducts, error: prodErr } = await supabaseClient.from('products').select('*');
+      // 1. Cargar productos desde Supabase
+      const { data: dbProducts, error: prodErr } = await supabaseClient
+        .from('products')
+        .select('*');
+
       if (!prodErr && dbProducts && dbProducts.length > 0) {
         products = dbProducts;
         saveData(KEYS.PRODUCTS, products);
-        if (typeof renderProducts === 'function') renderProducts();
-      } else if (dbProducts && dbProducts.length === 0 && products.length > 0) {
-        await supabaseClient.from('products').insert(products);
+        if (typeof renderProductsGrid === 'function') renderProductsGrid();
       }
 
-      // 2. Cargar o sembrar categorías
-      const { data: dbCategories, error: catErr } = await supabaseClient.from('categories').select('*');
+      // 2. Cargar categorías desde Supabase
+      const { data: dbCategories, error: catErr } = await supabaseClient
+        .from('categories')
+        .select('*');
+
       if (!catErr && dbCategories && dbCategories.length > 0) {
         categories = dbCategories;
         saveData(KEYS.CATEGORIES, categories);
-        if (typeof renderCategories === 'function') renderCategories();
-      } else if (dbCategories && dbCategories.length === 0 && categories.length > 0) {
-        await supabaseClient.from('categories').insert(categories);
+        if (typeof renderCategoryFilters === 'function') renderCategoryFilters();
       }
 
-      // 3. Cargar o sembrar envíos
-      const { data: dbShipping, error: shipErr } = await supabaseClient.from('shipping_methods').select('*');
+      // 3. Cargar envíos
+      const { data: dbShipping, error: shipErr } = await supabaseClient
+        .from('shipping_methods')
+        .select('*');
+
       if (!shipErr && dbShipping && dbShipping.length > 0) {
         shippingMethods = dbShipping;
         saveData(KEYS.SHIPPING, shippingMethods);
-      } else if (dbShipping && dbShipping.length === 0 && shippingMethods.length > 0) {
-        await supabaseClient.from('shipping_methods').insert(shippingMethods);
       }
 
-      // 4. Cargar pedidos existentes para el panel admin
-      const { data: dbOrders, error: ordErr } = await supabaseClient.from('orders').select('*');
+      // 4. Cargar pedidos
+      const { data: dbOrders, error: ordErr } = await supabaseClient
+        .from('orders')
+        .select('*');
+
       if (!ordErr && dbOrders) {
         orders = dbOrders;
         saveData(KEYS.ORDERS, orders);
       }
     } catch (err) {
-      console.warn("Modo offline: usando datos de respaldo local.", err);
+      console.warn("Modo offline: usando datos locales.", err);
     }
   }
 
