@@ -2626,6 +2626,34 @@ syncWithSupabase();
 
       orders.unshift(newOrder);
       saveData(KEYS.ORDERS, orders);
+      // --- GUARDAR PEDIDO EN SUPABASE ANTES DE WHATSAPP ---
+    const client = window.supabaseClient || (typeof supabaseClient !== 'undefined' ? supabaseClient : null);
+    if (client) {
+      try {
+        const { error } = await client
+          .from('orders')
+          .insert([{
+            id: String(newOrder.id || orderId || ('ord-' + Date.now())),
+            customer_name: newOrder.customer?.name || (typeof name !== 'undefined' ? name : ''),
+            customer_email: newOrder.customer?.email || (typeof email !== 'undefined' ? email : ''),
+            customer_phone: newOrder.customer?.phone || (typeof phone !== 'undefined' ? phone : ''),
+            shipping_address: newOrder.customer?.address || (typeof fullAddress !== 'undefined' ? fullAddress : ''),
+            shipping_method: newOrder.shippingMethod?.name || (typeof shippingMethod !== 'undefined' ? shippingMethod.name : ''),
+            items: newOrder.items || (typeof cart !== 'undefined' ? cart : []),
+            total: Number(newOrder.total || 0),
+            status: newOrder.status || 'pending',
+            raw_order: newOrder
+          }]);
+
+        if (error) {
+          console.error("Error al guardar en Supabase:", error);
+        } else {
+          console.log("¡Pedido guardado exitosamente en Supabase!");
+        }
+      } catch (err) {
+        console.error("Error de conexión con Supabase:", err);
+      }
+    }
 // --- ENVIAR PEDIDO A SUPABASE ---
     if (typeof supabaseClient !== 'undefined' && supabaseClient) {
       supabaseClient
