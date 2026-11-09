@@ -1516,7 +1516,6 @@
   async function syncWithSupabase() {
     if (!supabaseClient) return;
     try {
-      // 1. Cargar productos desde Supabase
       const { data: dbProducts, error: prodErr } = await supabaseClient
         .from('products')
         .select('*');
@@ -1525,40 +1524,10 @@
         products = dbProducts;
         saveData(KEYS.PRODUCTS, products);
         if (typeof renderProductsGrid === 'function') renderProductsGrid();
-      }
-
-      // 2. Cargar categorías desde Supabase
-      const { data: dbCategories, error: catErr } = await supabaseClient
-        .from('categories')
-        .select('*');
-
-      if (!catErr && dbCategories && dbCategories.length > 0) {
-        categories = dbCategories;
-        saveData(KEYS.CATEGORIES, categories);
         if (typeof renderCategoryFilters === 'function') renderCategoryFilters();
       }
-
-      // 3. Cargar envíos
-      const { data: dbShipping, error: shipErr } = await supabaseClient
-        .from('shipping_methods')
-        .select('*');
-
-      if (!shipErr && dbShipping && dbShipping.length > 0) {
-        shippingMethods = dbShipping;
-        saveData(KEYS.SHIPPING, shippingMethods);
-      }
-
-      // 4. Cargar pedidos
-      const { data: dbOrders, error: ordErr } = await supabaseClient
-        .from('orders')
-        .select('*');
-
-      if (!ordErr && dbOrders) {
-        orders = dbOrders;
-        saveData(KEYS.ORDERS, orders);
-      }
     } catch (err) {
-      console.warn("Modo offline: usando datos locales.", err);
+      console.warn("Modo local:", err);
     }
   }
 
