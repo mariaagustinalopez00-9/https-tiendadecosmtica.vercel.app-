@@ -1513,8 +1513,8 @@
     let whatsappNumber = loadData(KEYS.WHATSAPP, DEFAULT_WHATSAPP);
     let whatsappDefaultMsg = loadData(KEYS.WHATSAPP_MSG, DEFAULT_WHATSAPP_MSG);
 // --- CONEXIÓN SUPABASE ---
-const SUPABASE_URL = 'https://xipumaajfvfxksacigae.supabase.co';
-const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InhpcHVtYWFqZnZmeGtzYWNpZ2FlIiwicm9sZSI6ImFub24iLCJpYXQiOjE3OTQxNzU0NzAsImV4cCI6MjEwOTc1MTQ3MH0.xkVSPpK8FATICtj1JlZw32PapeMllHvKgA4MMV_Zj2Y';
+// const SUPABASE_URL = 'https://xipumaajfvfxksacigae.supabase.co';
+// const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InhpcHVtYWFqZnZmeGtzYWNpZ2FlIiwicm9sZSI6ImFub24iLCJpYXQiOjE3OTQxNzU0NzAsImV4cCI6MjEwOTc1MTQ3MH0.xkVSPpK8FATICtj1JlZw32PapeMllHvKgA4MMV_Zj2Y';
 window supabaseClient = (window.supabase) ? window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY) : null;
 
 // --- SINCRONIZACIÓN ---
@@ -2626,7 +2626,6 @@ syncWithSupabase();
 
       orders.unshift(newOrder);
       saveData(KEYS.ORDERS, orders);
-    saveData(KEYS.ORDERS, orders);
 
     // --- 1. GUARDAR EN SUPABASE (ESPERA OBLIGATORIA CON AWAIT) ---
     try {
