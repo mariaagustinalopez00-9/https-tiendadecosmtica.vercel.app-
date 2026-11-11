@@ -61,8 +61,7 @@
     function enviarComprobante() {
       // REEMPLAZAR POR TU NÚMERO DE WHATSAPP (código de país sin el +)
       const telefono = "5491157948612"; 
-      const mensaje = `¡Hola PRONTA! Te envío el comprobante de Pago por transferencia de mi pedido #${orden} por $${total}. Nuestro alias es: pronta.ok. La cuenta a nombre de Maria Agustina Lopez 
-      Entidad bancaria: Naranja X. Avisame cuando realices el pago y adjunta el comprobante.`;
+      const mensaje = `¡Hola PRONTA! Te envío el comprobante de Pago por transferencia de mi pedido #${orden} por $${total}.`;
       const urlWA = `https://wa.me/${telefono}?text=${encodeURIComponent(mensaje)}`;
       window.location.href = urlWA;
     }
