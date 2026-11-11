@@ -1421,7 +1421,7 @@
         name: "Cadetería Express CABA",
         description: "Entrega en 24 a 48 hs hábiles en CABA",
         cost: 4200,
-        freeThreshold: 75000
+        freeThreshold: 100000
       },
       {
         id: "ship-correo",
@@ -2265,7 +2265,7 @@ syncWithSupabase();
         `;
       }).join("");
 
-      const FREE_SHIPPING_LIMIT = 75000;
+      const FREE_SHIPPING_LIMIT = 100000;
       if (subtotalGeneral >= FREE_SHIPPING_LIMIT) {
         freeShippingBar.innerHTML = `<span class="font-bold text-green-800">¡Tenés ENVÍO GRATIS en CABA disponible!</span>`;
       } else {
