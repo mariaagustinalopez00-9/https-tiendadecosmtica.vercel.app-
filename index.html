@@ -2539,8 +2539,11 @@ syncWithSupabase();
       `;
     }
 
+    let procesandoOrden = false;
     async function handleCheckoutSubmit(e) {
       e.preventDefault();
+      if (procesandoOrden) return;
+    procesandoOrden = true;
 
       const name = document.getElementById("chk-name").value.trim();
       const email = document.getElementById("chk-email").value.trim();
