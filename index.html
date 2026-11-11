@@ -2647,6 +2647,8 @@ syncWithSupabase();
           items: Array.isArray(cart) ? [...cart] : [],
           total: Number(total || newOrder.total || 0),
           status: 'pending',
+          payment_method: newOrder.payment_method || newOrder.paymentMethod || 'Transferencia',
+shipping_cost: typeof selectedShip !== 'undefined' && selectedShip ? Number(selectedShip.price || selectedShip.cost || 0) : 0,
           raw_order: newOrder
         }]);
 
