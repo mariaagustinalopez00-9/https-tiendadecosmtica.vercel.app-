@@ -1421,21 +1421,21 @@
         name: "Motomensajería solo CABA",
         description: "Entrega en 24 a 48 hs hábiles en CABA",
         cost: 7000,
-        freeThreshold: 100000
+        free_threshold: 100000
       },
       {
         id: "ship-correo",
         name: "Correo Andreani Domicilio/Sucursal",
         description: "Envíos a todo el país (3 a 5 días hábiles)",
         cost: 8500,
-        freeThreshold: 150000
+        free_threshold: 150000
       },
       {
         id: "ship-retiro",
         name: "Retiro en Showroom (Palermo)",
         description: "Coordinar retiro previa cita",
         cost: 0,
-        freeThreshold: 0
+        free_threshold: 0
       }
     ];
 
@@ -2332,8 +2332,8 @@ shippingCost = isFree ? 0 : currentShip.price;
       }
 
       listContainer.innerHTML = shippingMethods.map(sm => {
-        const isFree = sm.freeThreshold && subtotalItems >= sm.freeThreshold;
-        const effectiveCost = isFree ? 0 : sm.cost;
+        const isFree = sm.free_threshold && subtotalItems >= sm.free_threshold;
+        const effectiveCost = isFree ? 0 : sm.price;
         const isChecked = sm.id === selectedCartShippingId;
 
         return `
@@ -2418,8 +2418,8 @@ shippingCost = isFree ? 0 : currentShip.price;
       });
 
       container.innerHTML = shippingMethods.map((sm) => {
-        const isFreeByThreshold = sm.freeThreshold && subtotalItems >= sm.freeThreshold;
-        const effectiveCost = isFreeByThreshold ? 0 : sm.cost;
+        const isFreeByThreshold = sm.free_threshold && subtotalItems >= sm.free_threshold;
+        const effectiveCost = isFreeByThreshold ? 0 : sm.price;
         const isSelected = selectedCartShippingId ? sm.id === selectedCartShippingId : false;
 
         return `
@@ -2429,7 +2429,7 @@ shippingCost = isFree ? 0 : currentShip.price;
               <div>
                 <p class="font-semibold text-pronta-charcoal">${sm.name}</p>
                 <p class="text-[10px] text-pronta-muted">${sm.description || ''}</p>
-                ${sm.freeThreshold ? `<p class="text-[9px] text-pronta-roseDeep">Gratis superando ${formatCurrency(sm.freeThreshold)}</p>` : ''}
+                ${sm.free_threshold ? `<p class="text-[9px] text-pronta-roseDeep">Gratis superando ${formatCurrency(sm.free_threshold)}</p>` : ''}
               </div>
             </div>
             <span class="font-bold ${effectiveCost === 0 ? 'text-green-700' : 'text-pronta-charcoal'}">
@@ -2589,10 +2589,10 @@ shippingCost = isFree ? 0 : currentShip.price;
         }
       });
 
-      let shippingCost = selectedShip ? selectedShip.cost : 0;
-      if (selectedShip && selectedShip.freeThreshold && subtotal >= selectedShip.freeThreshold) {
-        shippingCost = 0;
-      }
+     let shippingCost = selectedShip ? selectedShip.price : 0;
+if (selectedShip && selectedShip.free_threshold && subtotal >= selectedShip.free_threshold) {
+    shippingCost = 0;
+}
 
       let paymentDiscount = 0;
       if (paymentMethod.hasDiscount) {
@@ -2651,7 +2651,7 @@ shippingCost = isFree ? 0 : currentShip.price;
           total: Number(total || newOrder.total || 0),
           status: 'pending',
           payment_method: newOrder.payment_method || newOrder.paymentMethod || 'Transferencia',
-shipping_cost: typeof selectedShip !== 'undefined' && selectedShip ? Number(selectedShip.price || selectedShip.cost || 0) : 0,
+shipping_cost: typeof selectedShip !== 'undefined' && selectedShip ? Number(selectedShip.price || 0) : 0,
           raw_order: newOrder
         }]);
 
@@ -3223,14 +3223,14 @@ shipping_cost: typeof selectedShip !== 'undefined' && selectedShip ? Number(sele
             <div>
               <div class="flex items-center justify-between mb-2">
                 <h4 class="font-serif font-bold text-pronta-charcoal">${sm.name}</h4>
-                <span class="text-xs font-bold px-2.5 py-0.5 rounded-full ${sm.cost === 0 ? 'bg-green-100 text-green-700' : 'bg-pronta-blush text-pronta-charcoal border border-pronta-border'}">
-                  ${sm.cost === 0 ? 'GRATIS' : formatCurrency(sm.cost)}
+                <span class="text-xs font-bold px-2.5 py-0.5 rounded-full ${sm.price === 0 ? 'bg-green-100 text-green-700' : 'bg-pronta-blush text-pronta-charcoal border border-pronta-border'}">
+                  ${sm.price === 0 ? 'GRATIS' : formatCurrency(sm.price)}
                 </span>
               </div>
-              <p class="text-xs text-pronta-muted mb-2">${sm.description || 'Sin descripción'}</p>
-              ${sm.freeThreshold ? `
+              <p class="text-xs text-pronta-muted mb-2">${sm.desc_text || 'Sin descripción'}</p>
+              ${sm.free_threshold ? `
                 <div class="bg-pronta-blush p-2 rounded-xl border border-pronta-border text-[11px] text-pronta-charcoal mb-2">
-                  <span class="font-bold text-pronta-roseDeep">Envío sin cargo:</span> en compras desde ${formatCurrency(sm.freeThreshold)}
+                  <span class="font-bold text-pronta-roseDeep">Envío sin cargo:</span> en compras desde ${formatCurrency(sm.free_threshold)}
                 </div>
               ` : `
                 <p class="text-[10px] text-pronta-muted">Sin bonificación automática por monto</p>
@@ -3261,8 +3261,8 @@ shipping_cost: typeof selectedShip !== 'undefined' && selectedShip ? Number(sele
         document.getElementById("ship-id").value = sm.id;
         document.getElementById("ship-name").value = sm.name;
         document.getElementById("ship-desc").value = sm.description || "";
-        document.getElementById("ship-cost").value = sm.cost;
-        document.getElementById("ship-free-threshold").value = sm.freeThreshold || "";
+        document.getElementById("ship-cost").value = sm.price;
+        document.getElementById("ship-free-threshold").value = sm.free_threshold || "";
       } else {
         title.textContent = "Nueva Forma de Envío";
         document.getElementById("shipping-form").reset();
@@ -3276,30 +3276,29 @@ shipping_cost: typeof selectedShip !== 'undefined' && selectedShip ? Number(sele
       document.getElementById("shipping-modal").classList.add("hidden");
     }
 
-    function handleShippingFormSubmit(e) {
-      e.preventDefault();
-      const id = document.getElementById("ship-id").value;
-      const name = document.getElementById("ship-name").value.trim();
-      const description = document.getElementById("ship-desc").value.trim();
-      const cost = Number(document.getElementById("ship-cost").value) || 0;
-      const freeThresholdVal = document.getElementById("ship-free-threshold").value;
-      const freeThreshold = freeThresholdVal ? Number(freeThresholdVal) : null;
+function handleShippingFormSubmit(e) {
+    e.preventDefault();
+    const id = document.getElementById("ship-id").value;
+    const name = document.getElementById("ship-name").value.trim();
+    const desc_text = document.getElementById("ship-desc").value.trim();
+    const price = Number(document.getElementById("ship-cost").value) || 0;
+    const freeThresholdVal = document.getElementById("ship-free-threshold").value;
+    const free_threshold = freeThresholdVal ? Number(freeThresholdVal) : null;
 
-      if (id) {
+    if (id) {
         const sm = shippingMethods.find(s => s.id === id);
         if (sm) {
-          Object.assign(sm, { name, description, cost, freeThreshold });
+            Object.assign(sm, { name, desc_text, price, free_threshold });
         }
-      } else {
+    } else {
         shippingMethods.push({
-          id: "ship-" + Date.now(),
-          name,
-          description,
-          cost,
-          freeThreshold
+            id: "ship-" + Date.now(),
+            name,
+            desc_text,
+            price,
+            free_threshold
         });
-      }
-
+    }
       saveData(KEYS.SHIPPING, shippingMethods);
       closeShippingModal();
       renderAdminShippingList();
