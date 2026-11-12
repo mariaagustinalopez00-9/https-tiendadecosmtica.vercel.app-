@@ -2284,7 +2284,7 @@ syncWithSupabase();
 shippingCost = isFree ? 0 : currentShip.price;
       }
 
-      const totalConEnvio = subtotalGeneral + shippingCost - totalAhorroVolumen;
+     const totalConEnvio = subtotalGeneral + shippingCost;
 
       summaryContainer.innerHTML = `
         <div class="space-y-1.5 text-xs">
@@ -2495,11 +2495,11 @@ shippingCost = isFree ? 0 : currentShip.price;
 
       if (selectedShip) {
         shippingName = selectedShip.name;
-        if (selectedShip.freeThreshold && subtotalItems >= selectedShip.freeThreshold) {
+       if (selectedShip.free_threshold && subtotalItems >= selectedShip.free_threshold) {
           shippingCost = 0;
           shippingName += " (Bonificado)";
         } else {
-          shippingCost = selectedShip.cost || 0;
+         shippingCost = selectedShip.price || 0;
         }
       }
 
