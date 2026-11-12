@@ -2280,8 +2280,8 @@ syncWithSupabase();
       let currentShip = shippingMethods.find(s => s.id === selectedCartShippingId) || shippingMethods[0];
       let shippingCost = 0;
       if (currentShip) {
-        const isFree = currentShip.freeThreshold && (subtotalGeneral - totalAhorroVolumen) >= currentShip.freeThreshold;
-        shippingCost = isFree ? 0 : currentShip.cost;
+     const isFree = currentShip.free_threshold && (subtotalGeneral - totalAhorroVolumen) >= currentShip.free_threshold;
+shippingCost = isFree ? 0 : currentShip.price;
       }
 
       const totalConEnvio = subtotalGeneral + shippingCost - totalAhorroVolumen;
