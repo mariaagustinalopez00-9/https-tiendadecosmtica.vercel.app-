@@ -1331,7 +1331,7 @@
       password: "pronta144-1991"
     };
 
-    const DEFAULT_WHATSAPP = "5491100000000";
+    const DEFAULT_WHATSAPP = "5491157948612";
     const DEFAULT_WHATSAPP_MSG = "¡Hola PRONTA! Me gustaría consultar por sus productos.";
 
     // --- DATOS POR DEFECTO: AGRUPADOS POR TIPO DE PRODUCTO ---
@@ -2714,6 +2714,8 @@ if (selectedShip && selectedShip.free_threshold && subtotal >= selectedShip.free
 shipping_cost: typeof selectedShip !== 'undefined' && selectedShip ? Number(selectedShip.price || 0) : 0,
           raw_order: newOrder
         }]);
+
+        localStorage.setItem('pronta_last_order', String(newOrder.id || orderId));
 
         if (sbError) {
           console.error("Error al registrar en Supabase:", sbError);
