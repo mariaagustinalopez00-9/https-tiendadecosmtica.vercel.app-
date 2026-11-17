@@ -2543,6 +2543,10 @@ const effectiveCost = isFree ? 0 : precioEnvio;
       `;
     }
 
+    function cleanPhone(phone) {
+    if (!phone) return "";
+    return phone.replace(/\D/g, '');
+}
     let procesandoOrden = false;
     async function handleCheckoutSubmit(e) {
       e.preventDefault();
