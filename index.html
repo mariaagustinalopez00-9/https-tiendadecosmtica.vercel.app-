@@ -3682,50 +3682,61 @@ function handleShippingFormSubmit(e) {
       showToast(`Estado de ${user.name} actualizado.`);
     }
 
-   async function resetUserPassword(userId) {
-    // 1. Pedir la contraseña actual por seguridad
+async function resetUserPassword(userId) {
     const currentPassword = prompt("CANDADO DE SEGURIDAD: Ingresá tu contraseña ACTUAL para verificar tu identidad:");
-    if (!currentPassword) return; // Si se cancela, se bloquea el proceso
+    if (!currentPassword) return; 
 
-    // 2. Pedir la nueva contraseña
     const newPassword = prompt("Ingresá la NUEVA contraseña (mínimo 6 caracteres):");
     if (!newPassword || newPassword.length < 6) {
         alert("La nueva contraseña debe tener al menos 6 caracteres.");
         return;
     }
 
-    // Conectar con tu base de datos
-    const sb = window.supabaseClient || window.supabase;
-
     try {
-        // Obtener el email del usuario que tiene la sesión abierta ahora mismo
-        const { data: { user } } = await sb.auth.getUser();
+        // Buscamos cómo se llama tu variable de Supabase en este archivo
+        let sb;
+        if (typeof supabase !== 'undefined') sb = supabase;
+        else if (window.supabaseClient) sb = window.supabaseClient;
+        else if (window.supabase) sb = window.supabase;
+
+        if (!sb) {
+            alert("Error de conexión: No se encontró la variable de Supabase. Avisame y lo ajustamos.");
+            return;
+        }
+
+        // Obtener tu usuario actual
+        const { data: { user }, error: userError } = await sb.auth.getUser();
         
-        // 3. Validar la contraseña actual probando un inicio de sesión silencioso
+        if (userError || !user) {
+            alert("No se detectó una sesión activa en Supabase. Detalles: " + (userError?.message || "Usuario nulo"));
+            return;
+        }
+        
+        // Validar contraseña actual
         const { error: signInError } = await sb.auth.signInWithPassword({
             email: user.email,
             password: currentPassword,
         });
 
         if (signInError) {
-            alert("La contraseña actual es INCORRECTA. Cambio bloqueado por seguridad.");
+            alert("La contraseña actual es INCORRECTA. Cambio bloqueado.");
             return;
         }
 
-        // 4. Si la llave actual es correcta, guardamos la nueva
+        // Actualizar a la nueva
         const { error: updateError } = await sb.auth.updateUser({
             password: newPassword
         });
 
         if (updateError) {
-            alert("Hubo un error al actualizar: " + updateError.message);
+            alert("Error al actualizar la nueva clave: " + updateError.message);
         } else {
             alert("¡Contraseña blindada y actualizada con éxito!");
         }
 
     } catch (err) {
-        console.error("Error de conexión:", err);
-        alert("Ocurrió un error inesperado al conectar con el servidor.");
+        // Ahora nos dirá la línea exacta o el motivo técnico del choque
+        alert("Error técnico exacto: " + err.message);
     }
 }
 
