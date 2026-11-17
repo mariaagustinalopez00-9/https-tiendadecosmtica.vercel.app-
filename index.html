@@ -2781,9 +2781,9 @@ shipping_cost: typeof selectedShip !== 'undefined' && selectedShip ? Number(sele
         (orderNotes ? `📝 *Notas:* ${orderNotes}\n` : '') +
         `💰 *Total:* ${formatCurrency(total)}`
       );
-      const urlWA = `https://wa.me/${cleanPhone}?text=${mensajeWA}`;
+      //const urlWA = `https://wa.me/${cleanPhone}?text=${mensajeWA}`;
 
-      const win = window.open(urlWA, "_blank");
+     // const win = window.open(urlWA, "_blank");
       if (!win) {
         window.location.href = urlWA;
       }
