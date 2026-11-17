@@ -1942,28 +1942,33 @@ syncWithSupabase();
         syncWhatsAppSettingsForm();
       }
     }
-    document.addEventListener("DOMContentLoaded", async () => {
+document.addEventListener("DOMContentLoaded", async () => {
     const params = new URLSearchParams(window.location.search);
-    const status = params.get("payment_status");
-    
+    // Leemos las palabras que usa Mercado Pago por defecto
+    const status = params.get("status") || params.get("collection_status") || params.get("payment_status");
     const lastOrderId = localStorage.getItem("pronta_last_order");
 
-    if (status === "success" && lastOrderId) {
-        // REEMPLAZÁ CON TUS CLAVES REALES AQUÍ:
+    if ((status === "approved" || status === "success") && lastOrderId) {
         const sb = window.supabaseClient || (window.supabase ? window.supabase.createClient(
             'https://xipumaajfvfxksacigae.supabase.co', 
             'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InhpcHVtYWFqZnZmeGtzYWNpZ2FlIiwicm9sZSI6ImFub24iLCJpYXQiOjE3OTQxNzU0NzAsImV4cCI6MjEwOTc1MTQ3MH0.xkVSPpK8FATICtj1JlZw32PapeMllHvKgA4MMV_Zj2Y'
         ) : null);
 
         if (sb) {
-            await sb.from('orders').update({ status: 'Pagado' }).eq('id', lastOrderId);
-            localStorage.removeItem("pronta_last_order");
-            window.history.replaceState({}, document.title, window.location.pathname);
-            setTimeout(() => showToast("¡Pago acreditado! Tu orden está confirmada.", "success"), 1500);
+            // Intentamos actualizar y pedimos que nos avise si hay error
+            const { data, error } = await sb.from('orders').update({ status: 'Pagado' }).eq('id', lastOrderId).select();
+            
+            if (error) {
+                console.error("Error en Supabase (Posible bloqueo de seguridad RLS):", error);
+            } else {
+                console.log("¡Orden actualizada con éxito a Pagado!");
+                localStorage.removeItem("pronta_last_order");
+                window.history.replaceState({}, document.title, window.location.pathname);
+                setTimeout(() => showToast("¡Pago acreditado! Tu orden está confirmada.", "success"), 1500);
+            }
         }
     }
 });
-
     // --- SINCRONIZACIÓN Y GESTIÓN DE WHATSAPP ---
     function updateWhatsAppLinks() {
       const cleanPhone = String(whatsappNumber).replace(/\D/g, "");
@@ -2728,7 +2733,7 @@ if (selectedShip && selectedShip.free_threshold && subtotal >= selectedShip.free
           customer_phone: String(phone || ''),
           shipping_address: typeof fullAddress !== 'undefined' ? String(fullAddress) : `${street || ''} ${number || ''}, ${city || ''}`,
           shipping_method: typeof selectedShip !== 'undefined' && selectedShip ? String(selectedShip.name || '') : 'Envío',
-          items: Array.isArray(cart) ? [...cart] : [],
+          items: newOrder.items,
           total: Number(total || newOrder.total || 0),
           status: 'pending',
           payment_method: newOrder.payment_method || newOrder.paymentMethod || 'Transferencia',
