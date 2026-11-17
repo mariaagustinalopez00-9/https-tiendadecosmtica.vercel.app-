@@ -2633,6 +2633,48 @@ if (selectedShip && selectedShip.free_threshold && subtotal >= selectedShip.free
 
       orders.unshift(newOrder);
       saveData(KEYS.ORDERS, orders);
+      
+      // --- CONEXIÓN CON MERCADO PAGO ---
+    try {
+        const response = await fetch('/api/create-preference', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({
+                items: cart.map(item => ({
+                    title: products.find(p => p.id === item.productId)?.name || "Producto PURAH",
+                    quantity: item.qty,
+                    unit_price: products.find(p => p.id === item.productId)?.price || 0
+                })),
+                payer: {
+                    name: name,
+                    email: email
+                },
+                shipping_cost: shippingCost
+            })
+        });
+
+        const data = await response.json();
+        
+        if (data.id) {
+            const mp = new MercadoPago('APP_USR-09ef9980-ad13-43cf-82e5-c41a077786d7', { locale: 'es-AR' });
+            mp.checkout({
+                preference: {
+                    id: data.id
+                },
+                autoOpen: true
+            });
+        } else {
+            console.error("Error al generar la preferencia:", data);
+            showToast("Hubo un problema al conectar con Mercado Pago.", "error");
+        }
+    } catch (error) {
+        console.error("Error en la petición a Mercado Pago:", error);
+        showToast("Error de conexión al procesar el pago.", "error");
+    } finally {
+        procesandoOrden = false; // Liberamos el botón
+    }
 
     // --- 1. GUARDAR EN SUPABASE (ESPERA OBLIGATORIA CON AWAIT) ---
     try {
