@@ -2266,10 +2266,10 @@ syncWithSupabase();
       }).join("");
 
       const FREE_SHIPPING_LIMIT = 100000;
-      if (subtotalGeneral >= FREE_SHIPPING_LIMIT) {
+     if ((subtotalGeneral - totalAhorroVolumen) >= FREE_SHIPPING_LIMIT) {
         freeShippingBar.innerHTML = `<span class="font-bold text-green-800">¡Tenés ENVÍO GRATIS en CABA disponible!</span>`;
       } else {
-        const falta = FREE_SHIPPING_LIMIT - subtotalGeneral;
+        const falta = FREE_SHIPPING_LIMIT - (subtotalGeneral - totalAhorroVolumen);
         freeShippingBar.innerHTML = `<span>Sumá <strong>${formatCurrency(falta)}</strong> más para <strong>ENVÍO GRATIS en CABA</strong></span>`;
       }
 
@@ -2284,7 +2284,7 @@ syncWithSupabase();
 shippingCost = isFree ? 0 : currentShip.price;
       }
 
-     const totalConEnvio = subtotalGeneral + shippingCost;
+     const totalConEnvio = subtotalGeneral - totalAhorroVolumen + shippingCost;
 
       summaryContainer.innerHTML = `
         <div class="space-y-1.5 text-xs">
@@ -2332,7 +2332,7 @@ shippingCost = isFree ? 0 : currentShip.price;
       }
 
       listContainer.innerHTML = shippingMethods.map(sm => {
-        const isFree = sm.free_threshold && subtotalItems >= sm.free_threshold;
+        const isFree = sm.free_threshold && (subtotalGeneral - totalAhorroVolumen) >= sm.free_threshold;
         const effectiveCost = isFree ? 0 : sm.price;
         const isChecked = sm.id === selectedCartShippingId;
 
@@ -2348,7 +2348,7 @@ shippingCost = isFree ? 0 : currentShip.price;
                 class="accent-pronta-charcoal">
               <div>
                 <p class="font-semibold text-pronta-charcoal text-[11px] leading-tight">${sm.name}</p>
-                <p class="text-[10px] text-pronta-muted">${sm.description || ''}</p>
+               <p class="text-[10px] text-pronta-muted">${sm.desc_text || ''}</p>
               </div>
             </div>
             <span class="font-bold text-[11px] ${effectiveCost === 0 ? 'text-green-700' : 'text-pronta-charcoal'}">
