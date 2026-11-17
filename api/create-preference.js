@@ -22,9 +22,9 @@ export default async function handler(req, res) {
             },
             payer: payer,
             back_urls: {
-                success: "https://tudominio.com/exito",
-                failure: "https://tudominio.com/error",
-                pending: "https://tudominio.com/pendiente"
+                success: "https://https-tiendadecosmeticavercelapp.vercel.app/Pagado",
+                failure: "https://https-tiendadecosmeticavercelapp.vercel.app/Error",
+                pending: "https://https-tiendadecosmeticavercelapp.vercel.app/Pendiente"
             },
             auto_return: "approved"
         };
