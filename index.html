@@ -2311,6 +2311,10 @@ shippingCost = isFree ? 0 : precioEnvio;
           <p class="text-[10px] text-pronta-muted">Podrás aplicar descuentos por método de pago (como 10% OFF en transferencia) al confirmar tus datos.</p>
         </div>
 
+function cleanPhone(phone) {
+    if (!phone) return "";
+    return phone.replace(/\D/g, '');
+}
         <button 
           onclick="openCheckoutModal()" 
           class="w-full py-3.5 rounded-full bg-pronta-charcoal hover:bg-black text-white text-xs font-bold tracking-wide uppercase transition-all shadow-md flex items-center justify-center gap-2 mt-2">
