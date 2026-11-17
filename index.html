@@ -2680,7 +2680,13 @@ if (selectedShip && selectedShip.free_threshold && subtotal >= selectedShip.free
     } catch (error) {
         console.error("Error en la petición a Mercado Pago:", error);
         showToast("Error de conexión al procesar el pago.", "error");
-    } finally {
+   } finally {
+        // Vaciamos el carrito local para evitar duplicados
+        cart = [];
+        saveData(KEYS.CART, cart);
+        renderCartUI();
+        closeCheckoutModal(); // Cerramos la ventana de datos
+        
         procesandoOrden = false; // Liberamos el botón
     }
 
