@@ -2266,10 +2266,10 @@ syncWithSupabase();
       }).join("");
 
       const FREE_SHIPPING_LIMIT = 100000;
-     if ((subtotalGeneral - totalAhorroVolumen) >= FREE_SHIPPING_LIMIT) {
+     if (subtotalGeneral >= FREE_SHIPPING_LIMIT) {
         freeShippingBar.innerHTML = `<span class="font-bold text-green-800">¡Tenés ENVÍO GRATIS en CABA disponible!</span>`;
       } else {
-        const falta = FREE_SHIPPING_LIMIT - (subtotalGeneral - totalAhorroVolumen);
+       const falta = FREE_SHIPPING_LIMIT - subtotalGeneral;
         freeShippingBar.innerHTML = `<span>Sumá <strong>${formatCurrency(falta)}</strong> más para <strong>ENVÍO GRATIS en CABA</strong></span>`;
       }
 
@@ -2282,11 +2282,11 @@ syncWithSupabase();
       if (currentShip) {
    const limiteEnvio = currentShip.free_threshold || currentShip.freeThreshold;
 const precioEnvio = currentShip.price || currentShip.cost || 0;
-const isFree = limiteEnvio && (subtotalGeneral - totalAhorroVolumen) >= limiteEnvio;
+const isFree = limiteEnvio && subtotalGeneral >= limiteEnvio;
 shippingCost = isFree ? 0 : precioEnvio;
       }
 
-     const totalConEnvio = subtotalGeneral - totalAhorroVolumen + shippingCost;
+     const totalConEnvio = subtotalGeneral + shippingCost;
 
       summaryContainer.innerHTML = `
         <div class="space-y-1.5 text-xs">
