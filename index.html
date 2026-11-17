@@ -2336,7 +2336,7 @@ shippingCost = isFree ? 0 : precioEnvio;
       listContainer.innerHTML = shippingMethods.map(sm => {
       const limiteEnvio = sm.free_threshold || sm.freeThreshold;
 const precioEnvio = sm.price || sm.cost || 0;
-const isFree = limiteEnvio && (subtotalItems - totalAhorroVolumen) >= limiteEnvio;
+const isFree = limiteEnvio && subtotalItems >= limiteEnvio;
 const effectiveCost = isFree ? 0 : precioEnvio;
         const isChecked = sm.id === selectedCartShippingId;
 
