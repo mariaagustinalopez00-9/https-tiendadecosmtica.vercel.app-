@@ -2280,8 +2280,10 @@ syncWithSupabase();
       let currentShip = shippingMethods.find(s => s.id === selectedCartShippingId) || shippingMethods[0];
       let shippingCost = 0;
       if (currentShip) {
-   const isFree = currentShip.free_threshold && (subtotalGeneral - totalAhorroVolumen) >= currentShip.free_threshold;
-shippingCost = isFree ? 0 : currentShip.price;
+   const limiteEnvio = currentShip.free_threshold || currentShip.freeThreshold;
+const precioEnvio = currentShip.price || currentShip.cost || 0;
+const isFree = limiteEnvio && (subtotalGeneral - totalAhorroVolumen) >= limiteEnvio;
+shippingCost = isFree ? 0 : precioEnvio;
       }
 
      const totalConEnvio = subtotalGeneral - totalAhorroVolumen + shippingCost;
@@ -2332,8 +2334,10 @@ shippingCost = isFree ? 0 : currentShip.price;
       }
 
       listContainer.innerHTML = shippingMethods.map(sm => {
-        const isFree = sm.free_threshold && (subtotalGeneral - totalAhorroVolumen) >= sm.free_threshold;
-        const effectiveCost = isFree ? 0 : sm.price;
+      const limiteEnvio = sm.free_threshold || sm.freeThreshold;
+const precioEnvio = sm.price || sm.cost || 0;
+const isFree = limiteEnvio && (subtotalGeneral - totalAhorroVolumen) >= limiteEnvio;
+const effectiveCost = isFree ? 0 : precioEnvio;
         const isChecked = sm.id === selectedCartShippingId;
 
         return `
