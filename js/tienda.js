@@ -974,10 +974,35 @@ function bindUIEvents() {
     });
   }
 
+const avatarInput = document.getElementById('cust-avatar-file');
+  if (avatarInput) {
+    avatarInput.addEventListener('change', e => {
+      const file = e.target.files && e.target.files[0];
+      if (!file) return;
+      const reader = new FileReader();
+      reader.onload = () => {
+        const result = typeof reader.result === 'string' ? reader.result : '';
+        const previewImg = document.getElementById('cust-avatar-preview');
+        const placeholder = document.getElementById('cust-avatar-placeholder');
+        if (previewImg && result) {
+          previewImg.src = result;
+          previewImg.classList.remove('d-none');
+        }
+        if (placeholder) placeholder.classList.add('d-none');
+      };
+      reader.readAsDataURL(file);
+    });
+  }
+
   const custForm = document.getElementById('customer-profile-form');
   if (custForm) {
     custForm.addEventListener('submit', e => {
       e.preventDefault();
+      const previewImg = document.getElementById('cust-avatar-preview');
+      const currentAvatar = previewImg && !previewImg.classList.contains('d-none') && previewImg.src
+        ? previewImg.src
+        : (customerProfile?.avatar || '');
+
       customerProfile = {
         name: document.getElementById('cust-name').value.trim(),
         email: document.getElementById('cust-email').value.trim(),
@@ -985,7 +1010,8 @@ function bindUIEvents() {
         phone: document.getElementById('cust-phone').value.trim(),
         address: document.getElementById('cust-address').value.trim(),
         province: document.getElementById('cust-province').value.trim(),
-        postal: document.getElementById('cust-postal').value.trim()
+        postal: document.getElementById('cust-postal').value.trim(),
+        avatar: currentAvatar
       };
       upsertCustomerAccount(customerProfile);
       localStorage.setItem('pronta_customer_v1', JSON.stringify(customerProfile));
@@ -993,12 +1019,45 @@ function bindUIEvents() {
       showToast('¡Tus datos quedaron guardados!');
     });
   }
-}
 
 // ============================================================
 // PERFIL DE CLIENTE E HISTORIAL DE PEDIDOS
 // ============================================================
 let customerProfile = JSON.parse(localStorage.getItem('pronta_customer_v1') || 'null');
+
+function renderAvatarPreview(avatarDataUrl, fallbackLabel = '?') {
+  const previewImg = document.getElementById('cust-avatar-preview');
+  const placeholder = document.getElementById('cust-avatar-placeholder');
+  const headerIcon = document.getElementById('header-customer-icon');
+  const headerAvatar = document.getElementById('header-customer-avatar');
+
+  if (avatarDataUrl) {
+    if (previewImg) {
+      previewImg.src = avatarDataUrl;
+      previewImg.classList.remove('d-none');
+    }
+    if (placeholder) placeholder.classList.add('d-none');
+    if (headerAvatar) {
+      headerAvatar.src = avatarDataUrl;
+      headerAvatar.classList.remove('d-none');
+    }
+    if (headerIcon) headerIcon.classList.add('d-none');
+  } else {
+    if (previewImg) {
+      previewImg.src = '';
+      previewImg.classList.add('d-none');
+    }
+    if (placeholder) {
+      placeholder.textContent = (fallbackLabel || '?').charAt(0).toUpperCase();
+      placeholder.classList.remove('d-none');
+    }
+    if (headerAvatar) {
+      headerAvatar.src = '';
+      headerAvatar.classList.add('d-none');
+    }
+    if (headerIcon) headerIcon.classList.remove('d-none');
+  }
+}
 
 function syncCustomerProfileUI() {
   const headerBadge = document.getElementById('header-customer-name');
@@ -1017,13 +1076,14 @@ function syncCustomerProfileUI() {
       headerBadge.textContent = firstName;
       headerBadge.classList.remove('d-none');
     }
+    renderAvatarPreview(customerProfile.avatar || '', firstName);
     if (navLogin) navLogin.classList.add('d-none');
     if (navOrders) navOrders.classList.remove('d-none');
     if (profileBtn) {
       profileBtn.textContent = 'Mis Datos';
       bootstrap.Tab.getOrCreateInstance(profileBtn).show();
     }
-    if (profileSub) profileSub.textContent = 'Sesión iniciada. Podés actualizar tus datos o revisar tus pedidos en la pestaña "Mis Pedidos".';
+    if (profileSub) profileSub.textContent = 'Sesión iniciada. Podés actualizar tus datos, foto o revisar tus pedidos en la pestaña "Mis Pedidos".';
     if (logoutBtn) logoutBtn.classList.remove('d-none');
     if (saveBtn) saveBtn.textContent = 'Guardar Cambios';
 
@@ -1046,6 +1106,7 @@ function syncCustomerProfileUI() {
       headerBadge.textContent = '';
       headerBadge.classList.add('d-none');
     }
+    renderAvatarPreview('', '?');
     if (navLogin) navLogin.classList.remove('d-none');
     if (navOrders) navOrders.classList.add('d-none');
     if (profileBtn) profileBtn.textContent = 'Crear Cuenta';
