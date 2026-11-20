@@ -17,6 +17,46 @@ const PRONTA_CONFIG = {
   }
 };
 
+// Servicios fijos de Limpieza Facial (coordinación directa por WhatsApp)
+const LIMPIEZAS_SERVICES = [
+  {
+    id: 'srv-limpieza-1',
+    name: 'Opción 1 · Limpieza Esencial en 5 Pasos',
+    price: 45000,
+    section: 'servicios',
+    sub_type: 'limpiezas',
+    whatsappOnly: true,
+    presentation: 'Duración: 1h 10min aprox. · Sin extracciones',
+    image: 'https://placehold.co/500x400/F6ECEC/333333?text=Limpieza+Esencial',
+    description:
+      'Protocolo esencial en 5 pasos para recuperar la vitalidad y la barrera cutánea: 1) Higiene con leche/gel limpiador y retorno eudérmico, 2) Exfoliación / Peeling según biotipo, 3) Principios activos concentrados, 4) Máscara específica, 5) Protección solar y pautas domiciliarias. Incluye diagnóstico inicial, productos de gabinete, asesoramiento 24/7 y ambientación. (Opcional: adicional Lectura de Tarot +$15.000).'
+  },
+  {
+    id: 'srv-limpieza-2',
+    name: 'Opción 2 · Limpieza Profunda + Extracciones y Crioterapia',
+    price: 55000,
+    section: 'servicios',
+    sub_type: 'limpiezas',
+    whatsappOnly: true,
+    presentation: 'Duración: 1h 30min aprox. · Con extracciones + Ice Globe',
+    image: 'https://placehold.co/500x400/EEF2EC/333333?text=Limpieza+Profunda',
+    description:
+      'Protocolo completo de 5 pasos esenciales + extracciones de comedones, folículos pilosos y quistes superficiales + parches/mascarillas con agua termal y geles descongestivos + Crioterapia Facial con sistema Ice Globe (antiinflamatorio, tensor, estimula colágeno y atenúa bolsas y ojeras). Ideal para pieles reactivas, con acné inflamatorio, rosácea, opacas o cansadas. (Opcional: adicional Lectura de Tarot +$15.000).'
+  },
+  {
+    id: 'srv-limpieza-3',
+    name: 'Opción 3 · Full Experience (Profunda + Crio + Masajes + Tarot)',
+    price: 70000,
+    section: 'servicios',
+    sub_type: 'limpiezas',
+    whatsappOnly: true,
+    presentation: 'Duración: 2h aprox. · 45 min Drenaje Linfático + Tarot opcional',
+    image: 'https://placehold.co/500x400/E8CACA/333333?text=Full+Experience',
+    description:
+      'Experiencia integral: Limpieza Profunda en 5 pasos + extracciones + Crioterapia Facial con Ice Globe + 45 minutos de masajes drenantes, reafirmantes y descontracturantes en rostro, cuello, zona cervical, hombros y escote + Detox Psicoemocional con Lectura de Tarot (opcional, incluida sin costo adicional).'
+  }
+];
+
 // Cliente Supabase
 const sb = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
@@ -72,6 +112,9 @@ function getCategoryName(catId) {
 
 // Detectar a qué sección principal pertenece un ítem (productos | kits | servicios)
 function detectProductSection(prod) {
+  if (prod.section === 'servicios') return 'servicios';
+  if (prod.section === 'kits') return 'kits';
+
   const raw = [
     prod.section,
     prod.type,
@@ -84,7 +127,10 @@ function detectProductSection(prod) {
     .join(' ')
     .toLowerCase();
 
- if (raw.includes('emulsi') || raw.includes('limpiador') || raw.includes('cremas') || raw.includes('serums') || raw.includes('brumas')) {
+  if (raw.includes('kit') || raw.includes('gift') || raw.includes('pack') || raw.includes('combo') || raw.includes('regalo')) {
+    return 'kits';
+  }
+  if (raw.includes('emulsi') || raw.includes('limpiador') || raw.includes('cremas') || raw.includes('serums') || raw.includes('brumas')) {
     return 'productos';
   }
   if (
@@ -105,7 +151,8 @@ function detectProductSection(prod) {
 
 // Detectar sub-tipo dentro de Servicios (limpiezas | producciones | crea)
 function detectServiceSubtype(prod) {
-  const raw = [prod.sub_type, prod.category, prod.name, prod.description]
+  if (prod.sub_type) return prod.sub_type;
+  const raw = [prod.category, prod.name, prod.description]
     .filter(Boolean)
     .join(' ')
     .toLowerCase();
@@ -120,6 +167,20 @@ function getSectionLabel(section) {
   if (section === 'kits') return 'Kits & Gift';
   if (section === 'servicios') return 'Servicio';
   return 'Producto';
+}
+
+// Link de WhatsApp para coordinar turno de un servicio
+function getServiceWhatsAppUrl(prod) {
+  const text = `¡Hola PRONTA! Quiero coordinar un turno por privado para:\n• ${prod.name} (${formatARS(prod.price)})\n\n¿Qué días y horarios tenés disponibles?`;
+  return `https://wa.me/${PRONTA_CONFIG.whatsapp}?text=${encodeURIComponent(text)}`;
+}
+
+// Buscar ítem tanto en Supabase como en los servicios fijos
+function findItemById(itemId) {
+  return (
+    LIMPIEZAS_SERVICES.find(s => String(s.id) === String(itemId)) ||
+    allProducts.find(p => String(p.id) === String(itemId))
+  );
 }
 
 // ============================================================
@@ -219,8 +280,21 @@ function buildProductCard(prod, isSlide = false) {
   const section = detectProductSection(prod);
   const imgUrl = prod.image || prod.image_url || 'https://placehold.co/400x400/FAF8F6/333333?text=PRONTA';
   const price = Number(prod.price || 0);
-  const subtitle = prod.presentation || prod.volume || getCategoryName(prod.category_id) || getSectionLabel(section);
-  const btnText = section === 'servicios' ? 'Agregar / Reservar' : 'Agregar al carrito';
+  const subtitle = prod.presentation || prod.volume || getCategoryName(prod.category_id || prod.category) || getSectionLabel(section);
+
+  const isWhatsAppService = prod.whatsappOnly === true || (section === 'servicios' && detectServiceSubtype(prod) === 'limpiezas');
+
+  const actionButton = isWhatsAppService
+    ? `<a href="${getServiceWhatsAppUrl(prod)}" target="_blank" class="btn btn-pronta btn-sm w-100 rounded-3 py-2 text-decoration-none">
+         Coordinar Turno por privado
+       </a>`
+    : `<button class="btn btn-pronta btn-sm w-100 rounded-3 py-2" onclick="addToCart('${prod.id}')">
+         Agregar al carrito
+       </button>`;
+
+  const priceRowRight = isWhatsAppService
+    ? `<span class="small text-pronta-sage fw-semibold">Turno previo</span>`
+    : `<span class="small text-success fw-semibold">5% OFF transf.</span>`;
 
   const cardInner = `
     <div class="product-item position-relative">
@@ -235,11 +309,9 @@ function buildProductCard(prod, isSlide = false) {
       <div>
         <div class="d-flex justify-content-between align-items-center mb-3">
           <span class="price">${formatARS(price)}</span>
-          <span class="small text-success fw-semibold">5% OFF transf.</span>
+          ${priceRowRight}
         </div>
-        <button class="btn btn-pronta btn-sm w-100 rounded-3 py-2" onclick="addToCart('${prod.id}')">
-          ${btnText}
-        </button>
+        ${actionButton}
       </div>
     </div>
   `;
@@ -273,14 +345,16 @@ function renderCatalog() {
   const subBar = document.getElementById('services-subfilters');
   if (!grid) return;
 
-  // Mostrar/ocultar barra de sub-filtros de Servicios
   if (subBar) {
     subBar.classList.toggle('d-none', activeSection !== 'servicios');
   }
 
+  // Combinar productos de Supabase con las 3 Limpiezas Faciales
+  const combinedCatalog = [...allProducts, ...LIMPIEZAS_SERVICES];
+
   // Caso especial: pestaña Servicios -> Crea Tu Cosmética
   if (activeSection === 'servicios' && activeServiceSub === 'crea') {
-    const creaItems = allProducts.filter(
+    const creaItems = combinedCatalog.filter(
       p => detectProductSection(p) === 'servicios' && detectServiceSubtype(p) === 'crea'
     );
     if (statusEl) statusEl.textContent = 'Servicios · Crea Tu Cosmética (Manuales & Cursos)';
@@ -292,7 +366,7 @@ function renderCatalog() {
     return;
   }
 
-  const filtered = allProducts.filter(prod => {
+  const filtered = combinedCatalog.filter(prod => {
     const sec = detectProductSection(prod);
     const matchSection = activeSection === 'all' || sec === activeSection;
     const matchServiceSub =
@@ -301,11 +375,11 @@ function renderCatalog() {
       detectServiceSubtype(prod) === activeServiceSub;
 
     const selectedCatName = getCategoryName(activeCategoryId).toLowerCase();
-   const matchCategory =
-   activeCategoryId === 'all' ||
-   String(prod.category_id) === String(activeCategoryId) ||
-   String(prod.category || '').toLowerCase() === String(activeCategoryId).toLowerCase() ||
-   String(prod.category || '').toLowerCase() === selectedCatName;
+    const matchCategory =
+      activeCategoryId === 'all' ||
+      String(prod.category_id) === String(activeCategoryId) ||
+      String(prod.category || '').toLowerCase() === String(activeCategoryId).toLowerCase() ||
+      String(prod.category || '').toLowerCase() === selectedCatName;
 
     const matchSearch =
       !searchTerm ||
@@ -377,7 +451,7 @@ function renderNewlyArrived() {
 }
 
 // ============================================================
-// FILTROS Y DETALLE DE PRODUCTO
+// FILTROS Y DETALLE DE PRODUCTO / SERVICIO
 // ============================================================
 window.selectCatalogTab = function (section) {
   activeSection = section;
@@ -431,12 +505,29 @@ window.resetFilters = function () {
 };
 
 window.openProductDetail = function (prodId) {
-  const prod = allProducts.find(p => String(p.id) === String(prodId));
+  const prod = findItemById(prodId);
   if (!prod) return;
 
   const section = detectProductSection(prod);
   const imgUrl = prod.image || prod.image_url || 'https://placehold.co/500x500/FAF8F6/333333?text=PRONTA';
   const body = document.getElementById('product-detail-body');
+  const isWhatsAppService = prod.whatsappOnly === true || (section === 'servicios' && detectServiceSubtype(prod) === 'limpiezas');
+
+  const modalAction = isWhatsAppService
+    ? `<a href="${getServiceWhatsAppUrl(prod)}" target="_blank" class="btn btn-pronta btn-lg w-100 rounded-3 text-decoration-none">
+         Coordinar Turno por privado
+       </a>`
+    : `<button class="btn btn-pronta btn-lg w-100 rounded-3" onclick="addToCart('${prod.id}'); bootstrap.Modal.getInstance(document.getElementById('productDetailModal')).hide();">
+         Agregar al Carrito
+       </button>`;
+
+  const infoBadge = isWhatsAppService
+    ? `<div class="small bg-light p-2 rounded-3 mb-4">
+         ✨ Incluye diagnóstico previo, insumos esterilizados, aromaterapia y apoyo domiciliario.
+       </div>`
+    : `<div class="small bg-light p-2 rounded-3 mb-4">
+         ✨ <strong>${formatARS(Number(prod.price) * 0.95)}</strong> abonando por Transferencia o Efectivo (5% OFF).
+       </div>`;
 
   body.innerHTML = `
     <div class="row g-4 align-items-center">
@@ -445,15 +536,12 @@ window.openProductDetail = function (prodId) {
       </div>
       <div class="col-md-7">
         <span class="product-badge-section">${getSectionLabel(section)}</span>
-        <h3 class="mb-2">${prod.name}</h3>
+        <h3 class="mb-1">${prod.name}</h3>
+        ${prod.presentation ? `<div class="small text-pronta-sage fw-semibold mb-2">${prod.presentation}</div>` : ''}
         <div class="fs-4 fw-bold mb-3" style="color:#333333;">${formatARS(prod.price)}</div>
         <p class="text-muted small mb-3">${prod.description || 'Consultanos por WhatsApp para conocer más detalles y modo de uso.'}</p>
-        <div class="small bg-light p-2 rounded-3 mb-4">
-          ✨ <strong>${formatARS(Number(prod.price) * 0.95)}</strong> abonando por Transferencia o Efectivo (5% OFF).
-        </div>
-        <button class="btn btn-pronta btn-lg w-100 rounded-3" onclick="addToCart('${prod.id}'); bootstrap.Modal.getInstance(document.getElementById('productDetailModal')).hide();">
-          ${section === 'servicios' ? 'Agregar Servicio al Carrito' : 'Agregar al Carrito'}
-        </button>
+        ${infoBadge}
+        ${modalAction}
       </div>
     </div>
   `;
@@ -470,7 +558,7 @@ function saveCart() {
 }
 
 window.addToCart = function (prodId) {
-  const prod = allProducts.find(p => String(p.id) === String(prodId));
+  const prod = findItemById(prodId);
   if (!prod) return;
 
   const existing = cart.find(i => String(i.productId) === String(prod.id));
