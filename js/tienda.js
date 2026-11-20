@@ -127,7 +127,7 @@ function detectProductSection(prod) {
     .join(' ')
     .toLowerCase();
 
-   (raw.includes('kit') || raw.includes('gift') || raw.includes('pack') || raw.includes('combo') || raw.includes('regalo')) {
+  if (raw.includes('kit') || raw.includes('gift') || raw.includes('pack') || raw.includes('combo') || raw.includes('regalo')) {
     return 'kits';
   }
   if (raw.includes('emulsi') || raw.includes('limpiador') || raw.includes('cremas') || raw.includes('serums') || raw.includes('brumas')) {
