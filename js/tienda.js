@@ -81,7 +81,7 @@ function formatARS(num) {
 // Notificaciones Toast
 function showToast(message) {
  const container = document.getElementById('toast-container');
-   (!container) return;
+if (!container) return;
   const el = document.createElement('div');
   el.className = 'pronta-toast';
   el.textContent = message;
