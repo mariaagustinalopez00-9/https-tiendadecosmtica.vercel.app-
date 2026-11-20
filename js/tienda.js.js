@@ -1,0 +1,717 @@
+// ============================================================
+// PRONTA — Belleza & Cosmética | Motor de Tienda (Supabase + MP)
+// ============================================================
+
+const SUPABASE_URL = 'https://xipumaajfvfxksacigae.supabase.co';
+const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InhpcHVtYWFqZnZmeGtzYWNpZ2FlIiwicm9sZSI6ImFub24iLCJpYXQiOjE3OTQxNzU0NzAsImV4cCI6MjEwOTc1MTQ3MH0.xkVSPpK8FATICtj1JlZw32PapeMllHvKgA4MMV_Zj2Y';
+
+const PRONTA_CONFIG = {
+  whatsapp: '5491157948612',
+  discountPercent: 5,       // 5% OFF en Transferencia y Efectivo
+  senaPercent: 50,          // 50% de seña para pago en Efectivo
+  bank: {
+    titular: 'María Agustina López',
+    banco: 'Naranja',
+    cbu: '4530000800014412407155',
+    alias: 'pronta.ok'
+  }
+};
+
+// Cliente Supabase
+const sb = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+
+// Estado global
+let allProducts = [];
+let allCategories = [];
+let allShippingMethods = [];
+let cart = JSON.parse(localStorage.getItem('pronta_cart_v2') || '[]');
+let activeSection = 'all';
+let activeCategoryId = 'all';
+let searchTerm = '';
+
+// Formateador de moneda ARS
+function formatARS(num) {
+  return '$' + Number(num || 0).toLocaleString('es-AR', {
+    minimumFractionDigits: 0,
+    maximumFractionDigits: 0
+  });
+}
+
+// Notificaciones Toast
+function showToast(message) {
+  const container = document.getElementById('toast-container');
+  if (!container) return;
+  const el = document.createElement('div');
+  el.className = 'pronta-toast';
+  el.textContent = message;
+  container.appendChild(el);
+  setTimeout(() => el.remove(), 3500);
+}
+
+// Copiar al portapapeles
+window.copyText = function (text) {
+  navigator.clipboard.writeText(text).then(() => {
+    showToast(`Copiado: ${text}`);
+  });
+};
+
+// Detectar a qué sección principal pertenece un producto (productos | kits | servicios)
+function detectProductSection(prod) {
+  const raw = [
+    prod.section,
+    prod.type,
+    prod.category,
+    prod.category_name,
+    getCategoryName(prod.category_id),
+    prod.name
+  ]
+    .filter(Boolean)
+    .join(' ')
+    .toLowerCase();
+
+  if (raw.includes('kit') || raw.includes('gift') || raw.includes('pack') || raw.includes('regalo')) {
+    return 'kits';
+  }
+  if (raw.includes('servicio') || raw.includes('limpieza') || raw.includes('facial') || raw.includes('turno') || raw.includes('protocolo')) {
+    return 'servicios';
+  }
+  return 'productos';
+}
+
+function getSectionLabel(section) {
+  if (section === 'kits') return 'Kits & Gift';
+  if (section === 'servicios') return 'Servicio';
+  return 'Producto';
+}
+
+function getCategoryName(catId) {
+  if (!catId) return '';
+  const found = allCategories.find(c => String(c.id) === String(catId) || c.name === catId);
+  return found ? found.name : String(catId);
+}
+
+// ============================================================
+// INICIALIZACIÓN
+// ============================================================
+document.addEventListener('DOMContentLoaded', async () => {
+  handleMercadoPagoReturn();
+  bindUIEvents();
+  await loadStoreData();
+  renderCart();
+});
+
+// Retorno de Mercado Pago
+function handleMercadoPagoReturn() {
+  const params = new URLSearchParams(window.location.search);
+  const status = params.get('status') || params.get('collection_status') || params.get('payment_status');
+  const lastOrderId = localStorage.getItem('pronta_last_order');
+
+  if ((status === 'approved' || status === 'success') && lastOrderId) {
+    cart = [];
+    saveCart();
+    localStorage.removeItem('pronta_last_order');
+    window.history.replaceState({}, document.title, window.location.pathname);
+    setTimeout(() => {
+      showToast('¡Pago acreditado en Mercado Pago! Tu pedido está confirmado.');
+    }, 600);
+  }
+}
+
+// Cargar datos reales desde Supabase
+async function loadStoreData() {
+  try {
+    const [catRes, prodRes, shipRes] = await Promise.all([
+      sb.from('categories').select('*'),
+      sb.from('products').select('*').order('created_at', { ascending: false }),
+      sb.from('shipping_methods').select('*')
+    ]);
+
+    allCategories = catRes.data || [];
+    allProducts = prodRes.data || [];
+    allShippingMethods = shipRes.data || [];
+
+    renderCategories();
+    renderCatalog();
+    renderNewlyArrived();
+    populateShippingOptions();
+  } catch (err) {
+    console.error('Error cargando datos de Supabase:', err);
+    document.getElementById('products-grid').innerHTML =
+      '<div class="col-12 text-center py-5 text-danger">No se pudo conectar con el catálogo. Verificá tu conexión.</div>';
+  }
+}
+
+// ============================================================
+// RENDERIZADO: CATEGORÍAS, CATÁLOGO Y NEWLY ARRIVED
+// ============================================================
+function renderCategories() {
+  const container = document.getElementById('categories-container');
+  if (!container) return;
+
+  if (!allCategories.length) {
+    container.innerHTML = `
+      <div class="swiper-slide"><div class="category-item" onclick="selectCatalogTab('productos')"><h3 class="fs-6 mb-0">Productos</h3></div></div>
+      <div class="swiper-slide"><div class="category-item" onclick="selectCatalogTab('kits')"><h3 class="fs-6 mb-0">Kits & Gift</h3></div></div>
+      <div class="swiper-slide"><div class="category-item" onclick="selectCatalogTab('servicios')"><h3 class="fs-6 mb-0">Servicios</h3></div></div>
+    `;
+  } else {
+    container.innerHTML = allCategories.map(cat => `
+      <div class="swiper-slide">
+        <div class="category-item ${String(activeCategoryId) === String(cat.id) ? 'active-cat' : ''}" onclick="filterByCategory('${cat.id}')">
+          <h3 class="category-title fs-6 mb-0">${cat.name}</h3>
+        </div>
+      </div>
+    `).join('');
+  }
+
+  new Swiper('.category-carousel', {
+    slidesPerView: 2,
+    spaceBetween: 16,
+    navigation: {
+      nextEl: '.category-carousel-next',
+      prevEl: '.category-carousel-prev'
+    },
+    breakpoints: {
+      576: { slidesPerView: 3 },
+      768: { slidesPerView: 4 },
+      1200: { slidesPerView: 6 }
+    }
+  });
+}
+
+function buildProductCard(prod, isSlide = false) {
+  const section = detectProductSection(prod);
+  const imgUrl = prod.image || prod.image_url || 'https://placehold.co/400x400/FAF7F5/8E525A?text=PRONTA';
+  const price = Number(prod.price || 0);
+  const subtitle = prod.presentation || prod.volume || getCategoryName(prod.category_id) || getSectionLabel(section);
+  const btnText = section === 'servicios' ? 'Agregar / Reservar' : 'Agregar al carrito';
+
+  const cardInner = `
+    <div class="product-item position-relative">
+      <div>
+        <figure onclick="openProductDetail('${prod.id}')">
+          <img src="${imgUrl}" alt="${prod.name}" loading="lazy">
+        </figure>
+        <span class="product-badge-section">${getSectionLabel(section)}</span>
+        <h3 onclick="openProductDetail('${prod.id}')">${prod.name}</h3>
+        <div class="small text-muted mb-2">${subtitle}</div>
+      </div>
+      <div>
+        <div class="d-flex justify-content-between align-items-center mb-3">
+          <span class="price">${formatARS(price)}</span>
+          <span class="small text-success fw-semibold">5% OFF transf.</span>
+        </div>
+        <button class="btn btn-pronta btn-sm w-100 rounded-3 py-2" onclick="addToCart('${prod.id}')">
+          ${btnText}
+        </button>
+      </div>
+    </div>
+  `;
+
+  return isSlide
+    ? `<div class="swiper-slide h-auto">${cardInner}</div>`
+    : `<div class="col">${cardInner}</div>`;
+}
+
+function renderCatalog() {
+  const grid = document.getElementById('products-grid');
+  const statusEl = document.getElementById('catalog-filter-status');
+  if (!grid) return;
+
+  const filtered = allProducts.filter(prod => {
+    const sec = detectProductSection(prod);
+    const matchSection = activeSection === 'all' || sec === activeSection;
+    const matchCategory =
+      activeCategoryId === 'all' ||
+      String(prod.category_id) === String(activeCategoryId) ||
+      String(prod.category).toLowerCase() === getCategoryName(activeCategoryId).toLowerCase();
+    const matchSearch =
+      !searchTerm ||
+      (prod.name || '').toLowerCase().includes(searchTerm) ||
+      (prod.description || '').toLowerCase().includes(searchTerm);
+
+    return matchSection && matchCategory && matchSearch;
+  });
+
+  if (statusEl) {
+    const secLabel = activeSection === 'all' ? 'todo el catálogo' : getSectionLabel(activeSection);
+    statusEl.textContent = `Mostrando ${filtered.length} ítem(s) en ${secLabel}`;
+  }
+
+  if (!filtered.length) {
+    grid.innerHTML = `
+      <div class="col-12 text-center py-5 text-muted">
+        No encontramos ítems con ese filtro.
+        <div class="mt-2">
+          <button class="btn btn-sm btn-outline-pronta" onclick="resetFilters()">Ver todo el catálogo</button>
+        </div>
+      </div>
+    `;
+    return;
+  }
+
+  grid.innerHTML = filtered.map(p => buildProductCard(p, false)).join('');
+}
+
+function renderNewlyArrived() {
+  const container = document.getElementById('newly-arrived-container');
+  if (!container) return;
+
+  // Toma los marcados como nuevos (is_new === true) o los últimos 8 cargados
+  const flagged = allProducts.filter(p => p.is_new === true || p.featured === true);
+  const arrivals = (flagged.length ? flagged : allProducts).slice(0, 8);
+
+  if (!arrivals.length) {
+    container.innerHTML = '<div class="swiper-slide text-muted py-4">Próximamente nuevos lanzamientos.</div>';
+    return;
+  }
+
+  container.innerHTML = arrivals.map(p => buildProductCard(p, true)).join('');
+
+  new Swiper('.new-arrivals-carousel', {
+    slidesPerView: 1.2,
+    spaceBetween: 20,
+    navigation: {
+      nextEl: '.new-arrivals-next',
+      prevEl: '.new-arrivals-prev'
+    },
+    breakpoints: {
+      576: { slidesPerView: 2 },
+      992: { slidesPerView: 3 },
+      1200: { slidesPerView: 4 }
+    }
+  });
+}
+
+// ============================================================
+// FILTROS Y DETALLE DE PRODUCTO
+// ============================================================
+window.selectCatalogTab = function (section) {
+  activeSection = section;
+  activeCategoryId = 'all';
+  document.querySelectorAll('#catalog-tabs .nav-link').forEach(btn => {
+    btn.classList.toggle('active', btn.dataset.section === section);
+  });
+  const headerSelect = document.getElementById('header-category-filter');
+  if (headerSelect) headerSelect.value = section;
+  renderCatalog();
+};
+
+window.filterByCategory = function (catId) {
+  activeCategoryId = catId;
+  activeSection = 'all';
+  document.querySelectorAll('#catalog-tabs .nav-link').forEach(btn => {
+    btn.classList.toggle('active', btn.dataset.section === 'all');
+  });
+  renderCategories();
+  renderCatalog();
+  document.getElementById('catalogo')?.scrollIntoView({ behavior: 'smooth' });
+};
+
+window.resetFilters = function () {
+  activeSection = 'all';
+  activeCategoryId = 'all';
+  searchTerm = '';
+  const desktopInput = document.getElementById('desktop-search-input');
+  if (desktopInput) desktopInput.value = '';
+  selectCatalogTab('all');
+};
+
+window.openProductDetail = function (prodId) {
+  const prod = allProducts.find(p => String(p.id) === String(prodId));
+  if (!prod) return;
+
+  const section = detectProductSection(prod);
+  const imgUrl = prod.image || prod.image_url || 'https://placehold.co/500x500/FAF7F5/8E525A?text=PRONTA';
+  const body = document.getElementById('product-detail-body');
+
+  body.innerHTML = `
+    <div class="row g-4 align-items-center">
+      <div class="col-md-5">
+        <img src="${imgUrl}" alt="${prod.name}" class="img-fluid rounded-4 w-100" style="object-fit:cover; max-height:340px;">
+      </div>
+      <div class="col-md-7">
+        <span class="product-badge-section">${getSectionLabel(section)}</span>
+        <h3 class="mb-2">${prod.name}</h3>
+        <div class="fs-4 fw-bold text-pronta mb-3">${formatARS(prod.price)}</div>
+        <p class="text-muted small mb-3">${prod.description || 'Consultanos por WhatsApp para conocer más detalles y modo de uso.'}</p>
+        <div class="small bg-light p-2 rounded-3 mb-4">
+          ✨ <strong>${formatARS(Number(prod.price) * 0.95)}</strong> abonando por Transferencia o Efectivo (5% OFF).
+        </div>
+        <button class="btn btn-pronta btn-lg w-100 rounded-3" onclick="addToCart('${prod.id}'); bootstrap.Modal.getInstance(document.getElementById('productDetailModal')).hide();">
+          ${section === 'servicios' ? 'Agregar Servicio al Carrito' : 'Agregar al Carrito'}
+        </button>
+      </div>
+    </div>
+  `;
+
+  new bootstrap.Modal(document.getElementById('productDetailModal')).show();
+};
+
+// ============================================================
+// CARRITO DE COMPRAS
+// ============================================================
+function saveCart() {
+  localStorage.setItem('pronta_cart_v2', JSON.stringify(cart));
+  renderCart();
+}
+
+window.addToCart = function (prodId) {
+  const prod = allProducts.find(p => String(p.id) === String(prodId));
+  if (!prod) return;
+
+  const existing = cart.find(i => String(i.productId) === String(prod.id));
+  if (existing) {
+    existing.qty += 1;
+  } else {
+    cart.push({
+      productId: prod.id,
+      name: prod.name,
+      price: Number(prod.price || 0),
+      section: detectProductSection(prod),
+      qty: 1
+    });
+  }
+
+  saveCart();
+  showToast(`Agregado: ${prod.name}`);
+};
+
+window.updateCartQty = function (prodId, delta) {
+  const idx = cart.findIndex(i => String(i.productId) === String(prodId));
+  if (idx === -1) return;
+  cart[idx].qty += delta;
+  if (cart[idx].qty <= 0) cart.splice(idx, 1);
+  saveCart();
+};
+
+function getCartSubtotal() {
+  return cart.reduce((acc, item) => acc + Number(item.price) * Number(item.qty), 0);
+}
+
+function renderCart() {
+  const list = document.getElementById('cart-items-list');
+  const subtotal = getCartSubtotal();
+  const totalItems = cart.reduce((acc, item) => acc + item.qty, 0);
+
+  document.getElementById('cart-count-badge').textContent = totalItems;
+  document.getElementById('desktop-cart-count').textContent = totalItems;
+  document.getElementById('mobile-cart-badge').textContent = totalItems;
+  document.getElementById('header-cart-total').textContent = formatARS(subtotal);
+  document.getElementById('cart-subtotal').textContent = formatARS(subtotal);
+  document.getElementById('btn-open-checkout').disabled = cart.length === 0;
+
+  if (!cart.length) {
+    list.innerHTML = '<li class="list-group-item text-center text-muted py-4 border-0">Tu carrito está vacío.</li>';
+    return;
+  }
+
+  list.innerHTML = cart.map(item => `
+    <li class="list-group-item d-flex justify-content-between align-items-center py-3">
+      <div class="me-2">
+        <div class="fw-semibold small">${item.name}</div>
+        <div class="text-muted" style="font-size:0.8rem;">${formatARS(item.price)} c/u</div>
+      </div>
+      <div class="d-flex align-items-center gap-2">
+        <button class="btn btn-sm btn-outline-secondary py-0 px-2" onclick="updateCartQty('${item.productId}', -1)">-</button>
+        <span class="small fw-bold">${item.qty}</span>
+        <button class="btn btn-sm btn-outline-secondary py-0 px-2" onclick="updateCartQty('${item.productId}', 1)">+</button>
+      </div>
+    </li>
+  `).join('');
+}
+
+// ============================================================
+// CHECKOUT & 3 MEDIOS DE PAGO
+// ============================================================
+function populateShippingOptions() {
+  const select = document.getElementById('chk-shipping');
+  if (!select) return;
+
+  if (!allShippingMethods.length) {
+    select.innerHTML = '<option value="0" data-name="Retiro / A coordinar">Retiro / A coordinar ($0)</option>';
+    return;
+  }
+
+  select.innerHTML = allShippingMethods.map(m => {
+    const cost = Number(m.price || m.cost || 0);
+    return `<option value="${cost}" data-name="${m.name}" data-threshold="${m.free_threshold || 0}">
+      ${m.name} (${cost === 0 ? 'Gratis' : formatARS(cost)})
+    </option>`;
+  }).join('');
+}
+
+function getSelectedPaymentMethod() {
+  const checked = document.querySelector('input[name="paymentMethod"]:checked');
+  return checked ? checked.value : 'mercadopago';
+}
+
+function calculateCheckoutTotals() {
+  const subtotal = getCartSubtotal();
+  const paymentMethod = getSelectedPaymentMethod();
+  const hasOnlyServices = cart.length > 0 && cart.every(i => i.section === 'servicios');
+
+  let shippingCost = 0;
+  let shippingName = 'Servicio presencial (Sin envío)';
+
+  const shipSelect = document.getElementById('chk-shipping');
+  const shipNote = document.getElementById('shipping-note');
+
+  if (hasOnlyServices) {
+    if (shipSelect) shipSelect.disabled = true;
+    if (shipNote) shipNote.textContent = 'Tu carrito contiene solo servicios, no se cobra envío.';
+  } else if (shipSelect) {
+    shipSelect.disabled = false;
+    const opt = shipSelect.options[shipSelect.selectedIndex];
+    if (opt) {
+      shippingCost = Number(opt.value || 0);
+      shippingName = opt.dataset.name || 'Envío';
+      const threshold = Number(opt.dataset.threshold || 0);
+      if (threshold > 0 && subtotal >= threshold) {
+        shippingCost = 0;
+        if (shipNote) shipNote.textContent = `¡Envío bonificado por superar ${formatARS(threshold)}!`;
+      } else {
+        if (shipNote) shipNote.textContent = '';
+      }
+    }
+  }
+
+  const hasDiscount = paymentMethod === 'transferencia' || paymentMethod === 'efectivo';
+  const discount = hasDiscount ? Math.round(subtotal * (PRONTA_CONFIG.discountPercent / 100)) : 0;
+  const total = subtotal - discount + shippingCost;
+  const senaAmount = paymentMethod === 'efectivo' ? Math.round(total * (PRONTA_CONFIG.senaPercent / 100)) : 0;
+  const cashRest = paymentMethod === 'efectivo' ? total - senaAmount : 0;
+
+  return { subtotal, discount, shippingCost, shippingName, total, paymentMethod, senaAmount, cashRest };
+}
+
+function updateCheckoutUI() {
+  const t = calculateCheckoutTotals();
+
+  document.getElementById('chk-subtotal').textContent = formatARS(t.subtotal);
+  document.getElementById('chk-shipping-cost').textContent = t.shippingCost === 0 ? 'Gratis' : formatARS(t.shippingCost);
+  document.getElementById('chk-total').textContent = formatARS(t.total);
+
+  const discRow = document.getElementById('chk-discount-row');
+  if (t.discount > 0) {
+    discRow.classList.remove('d-none');
+    document.getElementById('chk-discount').textContent = '-' + formatARS(t.discount);
+  } else {
+    discRow.classList.add('d-none');
+  }
+
+  const bankBox = document.getElementById('bank-info-box');
+  const senaRow = document.getElementById('chk-sena-row');
+
+  if (t.paymentMethod === 'transferencia' || t.paymentMethod === 'efectivo') {
+    bankBox.classList.remove('d-none');
+  } else {
+    bankBox.classList.add('d-none');
+  }
+
+  if (t.paymentMethod === 'efectivo') {
+    senaRow.classList.remove('d-none');
+    document.getElementById('chk-sena-amount').textContent = formatARS(t.senaAmount);
+    document.getElementById('chk-cash-rest').textContent = formatARS(t.cashRest);
+  } else {
+    senaRow.classList.add('d-none');
+  }
+
+  const btn = document.getElementById('btn-confirm-order');
+  if (t.paymentMethod === 'mercadopago') {
+    btn.textContent = `Pagar ${formatARS(t.total)} con Mercado Pago`;
+  } else if (t.paymentMethod === 'transferencia') {
+    btn.textContent = `Confirmar Pedido (${formatARS(t.total)} por Transferencia)`;
+  } else {
+    btn.textContent = `Confirmar Pedido (Seña ${formatARS(t.senaAmount)})`;
+  }
+}
+
+async function handleCheckoutSubmit(e) {
+  e.preventDefault();
+  if (!cart.length) return;
+
+  const btn = document.getElementById('btn-confirm-order');
+  btn.disabled = true;
+  btn.textContent = 'Procesando pedido...';
+
+  const name = document.getElementById('chk-name').value.trim();
+  const email = document.getElementById('chk-email').value.trim();
+  const phone = document.getElementById('chk-phone').value.trim();
+  const address = document.getElementById('chk-address').value.trim();
+  const totals = calculateCheckoutTotals();
+
+  const paymentLabels = {
+    mercadopago: 'Mercado Pago',
+    transferencia: 'Transferencia Bancaria (5% OFF)',
+    efectivo: 'Efectivo con seña 50% (5% OFF)'
+  };
+
+  // 1. Guardar orden en Supabase (política RLS pública INSERT)
+  let savedOrderId = 'PR-' + Date.now().toString().slice(-6);
+  try {
+    const orderPayload = {
+      customer_name: name,
+      customer_email: email,
+      customer_phone: phone,
+      shipping_address: address,
+      shipping_method: totals.shippingName,
+      shipping_cost: totals.shippingCost,
+      payment_method: paymentLabels[totals.paymentMethod],
+      items: cart,
+      total: totals.total,
+      status: 'Pendiente'
+    };
+
+    const { data, error } = await sb.from('orders').insert([orderPayload]).select();
+    if (!error && data && data[0] && data[0].id) {
+      savedOrderId = data[0].id;
+    } else if (error) {
+      console.warn('Aviso al insertar orden en Supabase:', error.message);
+    }
+  } catch (err) {
+    console.warn('Error guardando orden:', err);
+  }
+
+  localStorage.setItem('pronta_last_order', savedOrderId);
+
+  // 2. Flujo según medio de pago
+  if (totals.paymentMethod === 'mercadopago') {
+    try {
+      const response = await fetch('/api/create-preference', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          items: cart.map(item => ({
+            title: item.name || 'Producto PRONTA',
+            quantity: item.qty,
+            unit_price: Number(item.price || 0)
+          })),
+          payer: { name, email },
+          shipping_cost: totals.shippingCost
+        })
+      });
+
+      const mpData = await response.json();
+      const checkoutUrl = mpData.init_point || mpData.sandbox_init_point;
+
+      if (checkoutUrl) {
+        window.location.href = checkoutUrl;
+        return;
+      } else {
+        throw new Error('No se recibió el link de pago de Mercado Pago.');
+      }
+    } catch (err) {
+      console.error('Error Mercado Pago:', err);
+      showToast('Hubo un problema al conectar con Mercado Pago. Probá nuevamente.');
+      btn.disabled = false;
+      updateCheckoutUI();
+      return;
+    }
+  }
+
+  // 3. Flujo Transferencia o Efectivo (con seña) -> Confirmación + WhatsApp
+  const itemsText = cart.map(i => `• ${i.qty}x ${i.name} (${formatARS(i.price * i.qty)})`).join('\n');
+  let amountSummaryHTML = `<strong>Total a transferir (5% OFF incluido):</strong> ${formatARS(totals.total)}`;
+  let paymentMsg = `Medio de pago: Transferencia Bancaria (5% OFF)\nTotal a transferir: ${formatARS(totals.total)}`;
+
+  if (totals.paymentMethod === 'efectivo') {
+    amountSummaryHTML = `
+      <div><strong>Total con 5% OFF:</strong> ${formatARS(totals.total)}</div>
+      <div class="text-pronta"><strong>Seña a transferir ahora (50%):</strong> ${formatARS(totals.senaAmount)}</div>
+      <div><strong>Saldo restante en efectivo:</strong> ${formatARS(totals.cashRest)}</div>
+    `;
+    paymentMsg = `Medio de pago: Efectivo con seña (5% OFF)\nTotal: ${formatARS(totals.total)}\nSeña a transferir (50%): ${formatARS(totals.senaAmount)}\nRestante en efectivo: ${formatARS(totals.cashRest)}`;
+  }
+
+  const waMessage = `¡Hola PRONTA! Acabo de realizar un pedido (#${savedOrderId}):\n\n` +
+    `${itemsText}\n\n` +
+    `Envío: ${totals.shippingName} (${formatARS(totals.shippingCost)})\n` +
+    `${paymentMsg}\n\n` +
+    `Mis datos:\nNombre: ${name}\nTel: ${phone}\nDirección/Nota: ${address || '-'}\n\n` +
+    `¡Te adjunto el comprobante de transferencia!`;
+
+  const waUrl = `https://wa.me/${PRONTA_CONFIG.whatsapp}?text=${encodeURIComponent(waMessage)}`;
+
+  document.getElementById('checkout-form').classList.add('d-none');
+  document.getElementById('checkout-success-view').classList.remove('d-none');
+  document.getElementById('success-order-subtitle').textContent = `Pedido #${savedOrderId} registrado para ${name}.`;
+  document.getElementById('success-amount-summary').innerHTML = amountSummaryHTML;
+  document.getElementById('btn-send-whatsapp').href = waUrl;
+
+  cart = [];
+  saveCart();
+  btn.disabled = false;
+}
+
+// ============================================================
+// EVENTOS DE INTERFAZ
+// ============================================================
+function bindUIEvents() {
+  // Buscador escritorio
+  const desktopSearch = document.getElementById('desktop-search-input');
+  if (desktopSearch) {
+    desktopSearch.addEventListener('input', e => {
+      searchTerm = e.target.value.trim().toLowerCase();
+      renderCatalog();
+    });
+  }
+
+  // Selector de sección en header
+  const headerCat = document.getElementById('header-category-filter');
+  if (headerCat) {
+    headerCat.addEventListener('change', e => {
+      selectCatalogTab(e.target.value);
+      document.getElementById('catalogo')?.scrollIntoView({ behavior: 'smooth' });
+    });
+  }
+
+  // Buscador móvil
+  const mobileBtn = document.getElementById('mobile-search-btn');
+  if (mobileBtn) {
+    mobileBtn.addEventListener('click', () => {
+      const val = document.getElementById('mobile-search-input')?.value || '';
+      searchTerm = val.trim().toLowerCase();
+      renderCatalog();
+      document.getElementById('catalogo')?.scrollIntoView({ behavior: 'smooth' });
+    });
+  }
+
+  // Botón abrir checkout desde carrito
+  const btnOpenCheckout = document.getElementById('btn-open-checkout');
+  if (btnOpenCheckout) {
+    btnOpenCheckout.addEventListener('click', () => {
+      const offcanvasEl = document.getElementById('offcanvasCart');
+      const offcanvas = bootstrap.Offcanvas.getInstance(offcanvasEl);
+      if (offcanvas) offcanvas.hide();
+
+      document.getElementById('checkout-form').classList.remove('d-none');
+      document.getElementById('checkout-success-view').classList.add('d-none');
+      updateCheckoutUI();
+      new bootstrap.Modal(document.getElementById('checkoutModal')).show();
+    });
+  }
+
+  // Cambio de método de envío
+  const shipSelect = document.getElementById('chk-shipping');
+  if (shipSelect) {
+    shipSelect.addEventListener('change', updateCheckoutUI);
+  }
+
+  // Cambio de medio de pago
+  document.querySelectorAll('.payment-option-card').forEach(card => {
+    card.addEventListener('click', () => {
+      document.querySelectorAll('.payment-option-card').forEach(c => c.classList.remove('selected'));
+      card.classList.add('selected');
+      const radio = card.querySelector('input[type="radio"]');
+      if (radio) radio.checked = true;
+      updateCheckoutUI();
+    });
+  });
+
+  // Envío de formulario checkout
+  const checkoutForm = document.getElementById('checkout-form');
+  if (checkoutForm) {
+    checkoutForm.addEventListener('submit', handleCheckoutSubmit);
+  }
+}
