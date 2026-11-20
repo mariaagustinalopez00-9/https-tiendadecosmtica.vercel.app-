@@ -98,12 +98,12 @@ window.copyText = function (text) {
 
 // Obtener nombre real de categoría (usa columna 'label' de Supabase)
 function getCategoryLabel(cat) {
-   (!cat) return '';
+ if  (!cat) return '';
   return cat.label || cat.name || cat.title || 'Sin categoría';
 }
 
 function getCategoryName(catId) {
-   (!catId) return '';
+ if  (!catId) return '';
   const found = allCategories.find(
     c => String(c.id) === String(catId) || getCategoryLabel(c).toLowerCase() === String(catId).toLowerCase()
   );
