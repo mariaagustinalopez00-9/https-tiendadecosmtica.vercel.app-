@@ -84,8 +84,8 @@ function detectProductSection(prod) {
     .join(' ')
     .toLowerCase();
 
-  if (raw.includes('kit') || raw.includes('gift') || raw.includes('pack') || raw.includes('combo') || raw.includes('regalo')) {
-    return 'kits';
+ if (raw.includes('emulsi') || raw.includes('limpiador') || raw.includes('cremas') || raw.includes('serums') || raw.includes('brumas')) {
+    return 'productos';
   }
   if (
     raw.includes('servicio') ||
@@ -301,10 +301,11 @@ function renderCatalog() {
       detectServiceSubtype(prod) === activeServiceSub;
 
     const selectedCatName = getCategoryName(activeCategoryId).toLowerCase();
-    const matchCategory =
-      activeCategoryId === 'all' ||
-      String(prod.category_id) === String(activeCategoryId) ||
-      String(prod.category || '').toLowerCase() === selectedCatName;
+   const matchCategory =
+   activeCategoryId === 'all' ||
+   String(prod.category_id) === String(activeCategoryId) ||
+   String(prod.category || '').toLowerCase() === String(activeCategoryId).toLowerCase() ||
+   String(prod.category || '').toLowerCase() === selectedCatName;
 
     const matchSearch =
       !searchTerm ||
