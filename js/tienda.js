@@ -189,6 +189,7 @@ function findItemById(itemId) {
 document.addEventListener('DOMContentLoaded', async () => {
   handleMercadoPagoReturn();
   bindUIEvents();
+  syncCustomerProfileUI();
   await loadStoreData();
   renderCart();
 });
@@ -740,6 +741,10 @@ async function handleCheckoutSubmit(e) {
   const email = document.getElementById('chk-email').value.trim();
   const phone = document.getElementById('chk-phone').value.trim();
   const address = document.getElementById('chk-address').value.trim();
+
+  customerProfile = { name, email, phone, address };
+  localStorage.setItem('pronta_customer_v1', JSON.stringify(customerProfile));
+  syncCustomerProfileUI();
   const totals = calculateCheckoutTotals();
 
   const paymentLabels = {
@@ -881,6 +886,7 @@ function bindUIEvents() {
 
       document.getElementById('checkout-form').classList.remove('d-none');
       document.getElementById('checkout-success-view').classList.add('d-none');
+      prefillCheckoutFromCustomer();
       updateCheckoutUI();
       new bootstrap.Modal(document.getElementById('checkoutModal')).show();
     });
@@ -905,4 +911,129 @@ function bindUIEvents() {
   if (checkoutForm) {
     checkoutForm.addEventListener('submit', handleCheckoutSubmit);
   }
+
+  const custForm = document.getElementById('customer-profile-form');
+  if (custForm) {
+    custForm.addEventListener('submit', e => {
+      e.preventDefault();
+      customerProfile = {
+        name: document.getElementById('cust-name').value.trim(),
+        email: document.getElementById('cust-email').value.trim(),
+        phone: document.getElementById('cust-phone').value.trim(),
+        address: document.getElementById('cust-address').value.trim()
+      };
+      localStorage.setItem('pronta_customer_v1', JSON.stringify(customerProfile));
+      syncCustomerProfileUI();
+      showToast('¡Tus datos quedaron guardados!');
+    });
+  }
 }
+
+// ============================================================
+// PERFIL DE CLIENTE E HISTORIAL DE PEDIDOS
+// ============================================================
+let customerProfile = JSON.parse(localStorage.getItem('pronta_customer_v1') || 'null');
+
+function syncCustomerProfileUI() {
+  const headerBadge = document.getElementById('header-customer-name');
+  if (customerProfile && customerProfile.name) {
+    const firstName = customerProfile.name.trim().split(' ')[0];
+    if (headerBadge) {
+      headerBadge.textContent = firstName;
+      headerBadge.classList.remove('d-none');
+    }
+    const fields = {
+      'cust-name': customerProfile.name,
+      'cust-email': customerProfile.email,
+      'cust-phone': customerProfile.phone,
+      'cust-address': customerProfile.address,
+      'cust-orders-email': customerProfile.email
+    };
+    Object.entries(fields).forEach(([id, val]) => {
+      const el = document.getElementById(id);
+      if (el && val) el.value = val;
+    });
+  } else if (headerBadge) {
+    headerBadge.textContent = '';
+    headerBadge.classList.add('d-none');
+  }
+}
+
+function prefillCheckoutFromCustomer() {
+  if (!customerProfile) return;
+  const map = {
+    'chk-name': customerProfile.name,
+    'chk-email': customerProfile.email,
+    'chk-phone': customerProfile.phone,
+    'chk-address': customerProfile.address
+  };
+  Object.entries(map).forEach(([id, val]) => {
+    const el = document.getElementById(id);
+    if (el && !el.value && val) el.value = val;
+  });
+}
+
+window.clearCustomerProfile = function () {
+  customerProfile = null;
+  localStorage.removeItem('pronta_customer_v1');
+  document.getElementById('customer-profile-form')?.reset();
+  const ordersEmail = document.getElementById('cust-orders-email');
+  if (ordersEmail) ordersEmail.value = '';
+  document.getElementById('cust-orders-list').innerHTML =
+    '<div class="text-center text-muted small py-4">Sesión cerrada. Ingresá tu email arriba para consultar pedidos.</div>';
+  syncCustomerProfileUI();
+  showToast('Datos de cliente cerrados');
+};
+
+window.loadCustomerOrders = async function () {
+  const emailInput = document.getElementById('cust-orders-email');
+  const email = (emailInput?.value || customerProfile?.email || '').trim().toLowerCase();
+  const listEl = document.getElementById('cust-orders-list');
+  if (!listEl) return;
+
+  if (!email) {
+    listEl.innerHTML = '<div class="text-center text-muted small py-4">Ingresá tu email arriba para ver tus pedidos.</div>';
+    return;
+  }
+
+  listEl.innerHTML = '<div class="text-center text-muted small py-4">Buscando tus pedidos...</div>';
+
+  try {
+    const { data, error } = await sb
+      .from('orders')
+      .select('*')
+      .ilike('customer_email', email)
+      .order('created_at', { ascending: false });
+
+    if (error) throw error;
+
+    if (!data || !data.length) {
+      listEl.innerHTML = '<div class="text-center text-muted small py-4">No encontramos pedidos asociados a ese email todavía.</div>';
+      return;
+    }
+
+    listEl.innerHTML = data.map(o => {
+      const dateStr = o.created_at
+        ? new Date(o.created_at).toLocaleDateString('es-AR', { day: '2-digit', month: '2-digit', year: 'numeric' })
+        : '';
+      const itemsText = Array.isArray(o.items)
+        ? o.items.map(i => `${i.qty}x ${i.name}`).join(' · ')
+        : '';
+      return `
+        <div class="border rounded-3 p-3 bg-light">
+          <div class="d-flex justify-content-between align-items-center mb-1">
+            <strong class="small">Pedido #${String(o.id).slice(0, 8)} ${dateStr ? '· ' + dateStr : ''}</strong>
+            <span class="badge rounded-pill" style="background-color:#D4A3A3; color:#333333;">${o.status || 'Pendiente'}</span>
+          </div>
+          <div class="small text-muted mb-1">${itemsText}</div>
+          <div class="d-flex justify-content-between small fw-bold">
+            <span>${o.payment_method || ''}</span>
+            <span>${formatARS(o.total)}</span>
+          </div>
+        </div>
+      `;
+    }).join('');
+  } catch (err) {
+    listEl.innerHTML = '<div class="text-center text-danger small py-4">No se pudieron cargar los pedidos en este momento.</div>';
+  }
+};
