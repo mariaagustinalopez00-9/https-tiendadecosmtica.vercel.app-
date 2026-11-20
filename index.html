@@ -881,14 +881,14 @@
             <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Cerrar"></button>
           </div>
           <div class="modal-body p-4">
-            <ul class="nav nav-tabs mb-4" id="customer-tabs" role="tablist">
-              <li class="nav-item">
+           <ul class="nav nav-tabs mb-4" id="customer-tabs" role="tablist">
+              <li class="nav-item" id="cust-nav-login">
                 <button class="nav-link active" id="cust-tab-login-btn" data-bs-toggle="tab" data-bs-target="#cust-tab-login" type="button">Iniciar Sesión</button>
               </li>
               <li class="nav-item">
-                <button class="nav-link" id="cust-tab-profile-btn" data-bs-toggle="tab" data-bs-target="#cust-tab-profile" type="button">Crear Cuenta / Mis Datos</button>
+                <button class="nav-link" id="cust-tab-profile-btn" data-bs-toggle="tab" data-bs-target="#cust-tab-profile" type="button">Crear Cuenta</button>
               </li>
-              <li class="nav-item">
+              <li class="nav-item d-none" id="cust-nav-orders">
                 <button class="nav-link" id="cust-tab-orders-btn" data-bs-toggle="tab" data-bs-target="#cust-tab-orders" type="button" onclick="loadCustomerOrders()">Mis Pedidos</button>
               </li>
             </ul>
@@ -897,7 +897,7 @@
               <!-- Pestaña Iniciar Sesión -->
               <div class="tab-pane fade show active" id="cust-tab-login">
                 <p class="small text-muted mb-3">
-                  Si ya tenés una cuenta registrada, ingresá con tu email y contraseña para recuperar tus datos y ver tus pedidos.
+                  Ingresá con tu email y contraseña para acceder a tus datos guardados y ver el historial de tus pedidos.
                 </p>
                 <form id="customer-login-form">
                   <div class="row g-3">
@@ -918,10 +918,10 @@
                 </form>
               </div>
 
-              <!-- Pestaña Crear Cuenta / Mis Datos -->
+              <!-- Pestaña Crear Cuenta / Mis Datos (dentro de sesión) -->
               <div class="tab-pane fade" id="cust-tab-profile">
-                <p class="small text-muted mb-3">
-                  Guardá tus datos una sola vez para agilizar tus próximas compras y consultar el estado de tus pedidos.
+                <p class="small text-muted mb-3" id="cust-profile-subtitle">
+                  Completá tus datos para crear tu cuenta y agilizar tus próximas compras.
                 </p>
                 <form id="customer-profile-form">
                   <div class="row g-3">
@@ -955,28 +955,21 @@
                     </div>
                   </div>
                   <div class="d-flex flex-wrap justify-content-between align-items-center gap-2 mt-4 pt-3 border-top">
-                    <button type="button" class="btn btn-sm btn-outline-secondary" onclick="clearCustomerProfile()">Cerrar sesión / Limpiar datos</button>
-                    <button type="submit" class="btn btn-pronta rounded-3 px-4">Guardar Mis Datos</button>
+                    <button type="button" id="btn-cust-logout" class="btn btn-sm btn-outline-secondary d-none" onclick="clearCustomerProfile()">Cerrar sesión</button>
+                    <button type="submit" id="btn-cust-save" class="btn btn-pronta rounded-3 px-4 ms-auto">Crear Cuenta</button>
                   </div>
                 </form>
               </div>
 
-              <!-- Pestaña Mis Pedidos -->
+              <!-- Pestaña Mis Pedidos (solo visible dentro de sesión) -->
               <div class="tab-pane fade" id="cust-tab-orders">
-                <div class="d-flex gap-2 mb-3">
-                  <input type="email" id="cust-orders-email" class="form-control form-control-sm" placeholder="Ingresá tu email para ver tus pedidos...">
-                  <button type="button" class="btn btn-sm btn-pronta px-3" onclick="loadCustomerOrders()">Buscar</button>
+                <div class="d-flex justify-content-between align-items-center mb-3">
+                  <span class="small text-muted">Pedidos asociados a <strong id="cust-orders-owner"></strong></span>
+                  <button type="button" class="btn btn-sm btn-outline-pronta" onclick="loadCustomerOrders()">↻ Actualizar</button>
                 </div>
-                <div id="cust-orders-list" class="d-flex flex-column gap-2">
-                  <div class="text-center text-muted small py-4">Iniciá sesión o ingresá tu email arriba para ver el estado de tus compras.</div>
-                </div>
+                <div id="cust-orders-list" class="d-flex flex-column gap-2"></div>
               </div>
             </div>
-          </div>
-        </div>
-      </div>
-    </div>
-
     <!-- Contenedor de Toasts -->
     <div class="toast-container-pronta" id="toast-container"></div>
 
