@@ -376,9 +376,10 @@
                 </a>
               </li>
               <li>
-                <a href="admin.html" class="rounded-circle bg-light p-2 mx-1 d-inline-flex" style="color:#333333;" title="Panel Administrador">
+                <button type="button" class="border-0 rounded-circle bg-light p-2 mx-1 d-inline-flex align-items-center gap-1" style="color:#333333;" data-bs-toggle="modal" data-bs-target="#customerModal" title="Mi Cuenta / Mis Pedidos">
                   <svg width="22" height="22"><use xlink:href="#user"></use></svg>
-                </a>
+                  <span id="header-customer-name" class="small fw-bold d-none d-md-inline"></span>
+                </button>
               </li>
               <li class="d-lg-none">
                 <a href="#" class="rounded-circle p-2 mx-1 d-inline-flex position-relative" style="background-color:#D4A3A3; color:#333333;" data-bs-toggle="offcanvas" data-bs-target="#offcanvasCart" aria-label="Carrito">
@@ -866,6 +867,72 @@
               <button type="button" class="btn btn-outline-secondary btn-sm" data-bs-dismiss="modal">Seguir viendo la tienda</button>
             </div>
 
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Modal Cuenta de Cliente (Datos + Historial de Pedidos) -->
+    <div class="modal fade" id="customerModal" tabindex="-1" aria-hidden="true">
+      <div class="modal-dialog modal-dialog-centered modal-lg modal-dialog-scrollable">
+        <div class="modal-content rounded-4 border-0">
+          <div class="modal-header border-bottom">
+            <h5 class="modal-title brand-serif">Mi Cuenta PRONTA</h5>
+            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Cerrar"></button>
+          </div>
+          <div class="modal-body p-4">
+            <ul class="nav nav-tabs mb-4" id="customer-tabs" role="tablist">
+              <li class="nav-item">
+                <button class="nav-link active" data-bs-toggle="tab" data-bs-target="#cust-tab-profile" type="button">Mis Datos</button>
+              </li>
+              <li class="nav-item">
+                <button class="nav-link" data-bs-toggle="tab" data-bs-target="#cust-tab-orders" type="button" onclick="loadCustomerOrders()">Mis Pedidos</button>
+              </li>
+            </ul>
+
+            <div class="tab-content">
+              <!-- Pestaña Mis Datos -->
+              <div class="tab-pane fade show active" id="cust-tab-profile">
+                <p class="small text-muted mb-3">
+                  Guardá tus datos una sola vez para agilizar tus próximas compras y consultar el estado de tus pedidos.
+                </p>
+                <form id="customer-profile-form">
+                  <div class="row g-3">
+                    <div class="col-md-6">
+                      <label class="form-label small fw-bold">Nombre y Apellido *</label>
+                      <input type="text" id="cust-name" class="form-control" required placeholder="Ej: Lucía Gómez">
+                    </div>
+                    <div class="col-md-6">
+                      <label class="form-label small fw-bold">Email *</label>
+                      <input type="email" id="cust-email" class="form-control" required placeholder="tuemail@ejemplo.com">
+                    </div>
+                    <div class="col-md-6">
+                      <label class="form-label small fw-bold">WhatsApp / Teléfono *</label>
+                      <input type="tel" id="cust-phone" class="form-control" required placeholder="Ej: 11 5555-5555">
+                    </div>
+                    <div class="col-md-6">
+                      <label class="form-label small fw-bold">Dirección / Localidad (o preferencia de turno)</label>
+                      <input type="text" id="cust-address" class="form-control" placeholder="Calle, altura, localidad">
+                    </div>
+                  </div>
+                  <div class="d-flex justify-content-between align-items-center mt-4 pt-3 border-top">
+                    <button type="button" class="btn btn-sm btn-outline-secondary" onclick="clearCustomerProfile()">Cerrar sesión / Limpiar datos</button>
+                    <button type="submit" class="btn btn-pronta rounded-3 px-4">Guardar Mis Datos</button>
+                  </div>
+                </form>
+              </div>
+
+              <!-- Pestaña Mis Pedidos -->
+              <div class="tab-pane fade" id="cust-tab-orders">
+                <div class="d-flex gap-2 mb-3">
+                  <input type="email" id="cust-orders-email" class="form-control form-control-sm" placeholder="Ingresá tu email para ver tus pedidos...">
+                  <button type="button" class="btn btn-sm btn-pronta px-3" onclick="loadCustomerOrders()">Buscar</button>
+                </div>
+                <div id="cust-orders-list" class="d-flex flex-column gap-2">
+                  <div class="text-center text-muted small py-4">Guardá tus datos o ingresá tu email arriba para ver el estado de tus compras.</div>
+                </div>
+              </div>
+            </div>
           </div>
         </div>
       </div>
