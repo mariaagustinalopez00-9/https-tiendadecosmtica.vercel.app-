@@ -112,8 +112,8 @@ function getCategoryName(catId) {
 
 // Detectar a qué sección principal pertenece un ítem (productos | kits | servicios)
 function detectProductSection(prod) {
-   (prod.section === 'servicios') return 'servicios';
-   (prod.section === 'kits') return 'kits';
+  if (prod.section === 'servicios') return 'servicios';
+  if (prod.section === 'kits') return 'kits';
 
   const raw = [
     prod.section,
