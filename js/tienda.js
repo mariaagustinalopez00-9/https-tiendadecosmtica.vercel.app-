@@ -1002,12 +1002,31 @@ let customerProfile = JSON.parse(localStorage.getItem('pronta_customer_v1') || '
 
 function syncCustomerProfileUI() {
   const headerBadge = document.getElementById('header-customer-name');
-  if (customerProfile && customerProfile.name) {
-    const firstName = customerProfile.name.trim().split(' ')[0];
+  const navLogin = document.getElementById('cust-nav-login');
+  const navOrders = document.getElementById('cust-nav-orders');
+  const profileBtn = document.getElementById('cust-tab-profile-btn');
+  const profileSub = document.getElementById('cust-profile-subtitle');
+  const logoutBtn = document.getElementById('btn-cust-logout');
+  const saveBtn = document.getElementById('btn-cust-save');
+
+  const isLoggedIn = Boolean(customerProfile && customerProfile.email);
+
+  if (isLoggedIn) {
+    const firstName = (customerProfile.name || customerProfile.email).trim().split(' ')[0];
     if (headerBadge) {
       headerBadge.textContent = firstName;
       headerBadge.classList.remove('d-none');
     }
+    if (navLogin) navLogin.classList.add('d-none');
+    if (navOrders) navOrders.classList.remove('d-none');
+    if (profileBtn) {
+      profileBtn.textContent = 'Mis Datos';
+      bootstrap.Tab.getOrCreateInstance(profileBtn).show();
+    }
+    if (profileSub) profileSub.textContent = 'Sesión iniciada. Podés actualizar tus datos o revisar tus pedidos en la pestaña "Mis Pedidos".';
+    if (logoutBtn) logoutBtn.classList.remove('d-none');
+    if (saveBtn) saveBtn.textContent = 'Guardar Cambios';
+
     const fields = {
       'cust-name': customerProfile.name,
       'cust-email': customerProfile.email,
@@ -1016,16 +1035,26 @@ function syncCustomerProfileUI() {
       'cust-address': customerProfile.address,
       'cust-province': customerProfile.province,
       'cust-postal': customerProfile.postal,
-      'cust-orders-email': customerProfile.email,
       'login-cust-email': customerProfile.email
     };
     Object.entries(fields).forEach(([id, val]) => {
       const el = document.getElementById(id);
       if (el && val) el.value = val;
     });
-  } else if (headerBadge) {
-    headerBadge.textContent = '';
-    headerBadge.classList.add('d-none');
+  } else {
+    if (headerBadge) {
+      headerBadge.textContent = '';
+      headerBadge.classList.add('d-none');
+    }
+    if (navLogin) navLogin.classList.remove('d-none');
+    if (navOrders) navOrders.classList.add('d-none');
+    if (profileBtn) profileBtn.textContent = 'Crear Cuenta';
+    if (profileSub) profileSub.textContent = 'Completá tus datos para crear tu cuenta y agilizar tus próximas compras.';
+    if (logoutBtn) logoutBtn.classList.add('d-none');
+    if (saveBtn) saveBtn.textContent = 'Crear Cuenta';
+
+    const loginBtn = document.getElementById('cust-tab-login-btn');
+    if (loginBtn) bootstrap.Tab.getOrCreateInstance(loginBtn).show();
   }
 }
 
@@ -1055,26 +1084,25 @@ window.clearCustomerProfile = function () {
   customerProfile = null;
   localStorage.removeItem('pronta_customer_v1');
   document.getElementById('customer-profile-form')?.reset();
-  const ordersEmail = document.getElementById('cust-orders-email');
-  if (ordersEmail) ordersEmail.value = '';
-  document.getElementById('cust-orders-list').innerHTML =
-    '<div class="text-center text-muted small py-4">Sesión cerrada. Ingresá tu email arriba para consultar pedidos.</div>';
+  document.getElementById('customer-login-form')?.reset();
+  document.getElementById('cust-orders-list').innerHTML = '';
   syncCustomerProfileUI();
-  showToast('Datos de cliente cerrados');
+  showToast('Sesión cerrada');
 };
 
 window.loadCustomerOrders = async function () {
-  const emailInput = document.getElementById('cust-orders-email');
-  const email = (emailInput?.value || customerProfile?.email || '').trim().toLowerCase();
   const listEl = document.getElementById('cust-orders-list');
+  const ownerEl = document.getElementById('cust-orders-owner');
   if (!listEl) return;
 
-  if (!email) {
-    listEl.innerHTML = '<div class="text-center text-muted small py-4">Ingresá tu email arriba para ver tus pedidos.</div>';
+  if (!customerProfile || !customerProfile.email) {
+    listEl.innerHTML = '<div class="text-center text-muted small py-4">Iniciá sesión para ver tus pedidos.</div>';
     return;
   }
 
-  listEl.innerHTML = '<div class="text-center text-muted small py-4">Buscando tus pedidos...</div>';
+  const email = customerProfile.email.trim().toLowerCase();
+  if (ownerEl) ownerEl.textContent = email;
+  listEl.innerHTML = '<div class="text-center text-muted small py-4">Cargando tus pedidos...</div>';
 
   try {
     const { data, error } = await sb
@@ -1086,7 +1114,7 @@ window.loadCustomerOrders = async function () {
     if (error) throw error;
 
     if (!data || !data.length) {
-      listEl.innerHTML = '<div class="text-center text-muted small py-4">No encontramos pedidos asociados a ese email todavía.</div>';
+      listEl.innerHTML = '<div class="text-center text-muted small py-4">Todavía no tenés pedidos realizados con esta cuenta.</div>';
       return;
     }
 
@@ -1112,10 +1140,9 @@ window.loadCustomerOrders = async function () {
       `;
     }).join('');
   } catch (err) {
-    listEl.innerHTML = '<div class="text-center text-danger small py-4">No se pudieron cargar los pedidos en este momento.</div>';
+    listEl.innerHTML = '<div class="text-center text-danger small py-4">No se pudieron cargar tus pedidos en este momento.</div>';
   }
 };
-
 
 let customerAccounts = JSON.parse(localStorage.getItem('pronta_customer_accounts_v1') || '[]');
 
