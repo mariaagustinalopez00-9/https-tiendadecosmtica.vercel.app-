@@ -81,7 +81,7 @@ function formatARS(num) {
 // Notificaciones Toast
 function showToast(message) {
   const container = document.getElementById('toast-container');
-  if (!container) return;
+   (!container) return;
   const el = document.createElement('div');
   el.className = 'pronta-toast';
   el.textContent = message;
@@ -98,12 +98,12 @@ window.copyText = function (text) {
 
 // Obtener nombre real de categoría (usa columna 'label' de Supabase)
 function getCategoryLabel(cat) {
-  if (!cat) return '';
+   (!cat) return '';
   return cat.label || cat.name || cat.title || 'Sin categoría';
 }
 
 function getCategoryName(catId) {
-  if (!catId) return '';
+   (!catId) return '';
   const found = allCategories.find(
     c => String(c.id) === String(catId) || getCategoryLabel(c).toLowerCase() === String(catId).toLowerCase()
   );
@@ -112,8 +112,8 @@ function getCategoryName(catId) {
 
 // Detectar a qué sección principal pertenece un ítem (productos | kits | servicios)
 function detectProductSection(prod) {
-  if (prod.section === 'servicios') return 'servicios';
-  if (prod.section === 'kits') return 'kits';
+   (prod.section === 'servicios') return 'servicios';
+   (prod.section === 'kits') return 'kits';
 
   const raw = [
     prod.section,
@@ -127,7 +127,7 @@ function detectProductSection(prod) {
     .join(' ')
     .toLowerCase();
 
-  if (raw.includes('kit') || raw.includes('gift') || raw.includes('pack') || raw.includes('combo') || raw.includes('regalo')) {
+   (raw.includes('kit') || raw.includes('gift') || raw.includes('pack') || raw.includes('combo') || raw.includes('regalo')) {
     return 'kits';
   }
   if (raw.includes('emulsi') || raw.includes('limpiador') || raw.includes('cremas') || raw.includes('serums') || raw.includes('brumas')) {
@@ -751,7 +751,7 @@ async function handleCheckoutSubmit(e) {
   const paymentLabels = {
     mercadopago: 'Mercado Pago',
     transferencia: 'Transferencia Bancaria (5% OFF)',
-    efectivo: 'Efectivo con seña 50% (5% OFF)'
+    efectivo: 'Efectivo con seña 30% (5% OFF)'
   };
 
   let savedOrderId = 'PR-' + Date.now().toString().slice(-6);
