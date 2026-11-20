@@ -1,0 +1,890 @@
+<!DOCTYPE html>
+<html lang="es">
+  <head>
+    <title>PRONTA — Belleza & Cosmética</title>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="format-detection" content="telephone=no">
+    <meta name="mobile-web-app-capable" content="yes">
+    <meta name="description" content="PRONTA Belleza & Cosmética: Productos cosméticos, Kits & Gift y Servicios de limpieza facial.">
+
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/swiper@9/swiper-bundle.min.css">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha3/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-KK94CHFLLe+nY2dmCWGMq91rCGa5gtU4mk92HdvYe+M/SXH301p5ILy+dN9+nJOZ" crossorigin="anonymous">
+    <link rel="stylesheet" type="text/css" href="css/vendor.css">
+    <link rel="stylesheet" type="text/css" href="style.css">
+
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;600;700&family=Playfair+Display:ital,wght@0,500;0,700;1,500&display=swap" rel="stylesheet">
+
+    <style>
+      :root {
+        --pronta-bg: #FAF8F6;
+        --pronta-rose: #D4A3A3;
+        --pronta-rose-dark: #B57D7D;
+        --pronta-rose-soft: #F6ECEC;
+        --pronta-sage: #A3B19B;
+        --pronta-sage-dark: #6E7D66;
+        --pronta-sage-soft: #EEF2EC;
+        --pronta-charcoal: #333333;
+        --pronta-muted: #666666;
+      }
+
+      body {
+        background-color: var(--pronta-bg);
+        color: var(--pronta-charcoal);
+        font-family: 'Nunito', sans-serif;
+      }
+
+      h1, h2, h3, h4, .brand-serif {
+        font-family: 'Playfair Display', serif;
+        color: var(--pronta-charcoal);
+      }
+
+      .brand-logo-text {
+        font-family: 'Playfair Display', serif;
+        font-size: 1.9rem;
+        letter-spacing: 0.22em;
+        font-weight: 700;
+        color: var(--pronta-charcoal);
+        line-height: 1;
+        text-decoration: none;
+      }
+      .brand-logo-sub {
+        display: block;
+        font-family: 'Nunito', sans-serif;
+        font-size: 0.65rem;
+        letter-spacing: 0.28em;
+        text-transform: uppercase;
+        color: var(--pronta-rose-dark);
+        margin-top: 4px;
+      }
+
+      .btn-pronta {
+        background-color: var(--pronta-charcoal);
+        color: #FFFFFF;
+        border: 1px solid var(--pronta-charcoal);
+        transition: all 0.2s ease;
+      }
+      .btn-pronta:hover {
+        background-color: var(--pronta-rose);
+        border-color: var(--pronta-rose);
+        color: var(--pronta-charcoal);
+      }
+      .btn-outline-pronta {
+        color: var(--pronta-charcoal);
+        border: 1px solid var(--pronta-charcoal);
+        background: transparent;
+      }
+      .btn-outline-pronta:hover, .btn-outline-pronta.active-pill {
+        background-color: var(--pronta-sage);
+        border-color: var(--pronta-sage);
+        color: var(--pronta-charcoal);
+        font-weight: 700;
+      }
+
+      .text-pronta { color: var(--pronta-rose-dark) !important; }
+      .text-pronta-sage { color: var(--pronta-sage-dark) !important; }
+      .bg-pronta-soft {
+        background-color: var(--pronta-rose-soft) !important;
+        border: 1px solid var(--pronta-rose);
+      }
+      .bg-pronta-sage { background-color: var(--pronta-sage-soft) !important; }
+
+      .badge.bg-success {
+        background-color: var(--pronta-sage) !important;
+        color: var(--pronta-charcoal) !important;
+      }
+      .text-success {
+        color: var(--pronta-sage-dark) !important;
+      }
+
+      .announcement-bar {
+        background-color: var(--pronta-charcoal);
+        color: #FAF8F6;
+        font-size: 0.82rem;
+        letter-spacing: 0.04em;
+      }
+      .announcement-bar strong {
+        color: var(--pronta-rose);
+      }
+
+      .banner-ad.block-1 {
+        background: linear-gradient(135deg, #F6ECEC 0%, #E8CACA 100%) !important;
+        border: 1px solid rgba(212, 163, 163, 0.45);
+      }
+      .banner-ad.block-2 {
+        background: linear-gradient(135deg, #EEF2EC 0%, #D5DFD0 100%) !important;
+        border: 1px solid rgba(163, 177, 155, 0.45);
+      }
+      .banner-ad.block-3 {
+        background: linear-gradient(135deg, #F4F1EE 0%, #E6DFDA 100%) !important;
+        border: 1px solid rgba(51, 51, 51, 0.12);
+      }
+
+      .product-item {
+        background: #FFFFFF;
+        border: 1px solid #EBE6E2;
+        border-radius: 16px;
+        padding: 16px;
+        height: 100%;
+        display: flex;
+        flex-direction: column;
+        justify-content: space-between;
+        transition: transform 0.2s ease, box-shadow 0.2s ease, border-color 0.2s ease;
+      }
+      .product-item:hover {
+        transform: translateY(-4px);
+        border-color: var(--pronta-rose);
+        box-shadow: 0 12px 24px rgba(51, 51, 51, 0.08);
+      }
+      .product-item figure {
+        background: var(--pronta-bg);
+        border-radius: 12px;
+        height: 210px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        overflow: hidden;
+        margin-bottom: 12px;
+        cursor: pointer;
+      }
+      .product-item figure img {
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+      }
+      .product-item h3 {
+        font-size: 1.05rem;
+        margin-bottom: 4px;
+        cursor: pointer;
+      }
+      .product-item .price {
+        font-size: 1.15rem;
+        font-weight: 700;
+        color: var(--pronta-charcoal);
+      }
+      .product-badge-section {
+        font-size: 0.7rem;
+        letter-spacing: 0.06em;
+        text-transform: uppercase;
+        background-color: var(--pronta-rose);
+        color: var(--pronta-charcoal);
+        padding: 3px 10px;
+        border-radius: 999px;
+        display: inline-block;
+        margin-bottom: 6px;
+        font-weight: 700;
+      }
+
+      .nav-tabs .nav-link {
+        color: var(--pronta-muted);
+        border: none;
+        border-bottom: 2px solid transparent;
+        font-weight: 700;
+        letter-spacing: 0.06em;
+      }
+      .nav-tabs .nav-link:hover {
+        color: var(--pronta-charcoal);
+      }
+      .nav-tabs .nav-link.active {
+        color: var(--pronta-charcoal);
+        background: transparent;
+        border-bottom: 2px solid var(--pronta-rose);
+      }
+
+      .category-item {
+        background: #FFFFFF;
+        border: 1px solid #EBE6E2;
+        border-radius: 16px;
+        padding: 22px 14px !important;
+        text-align: center;
+        cursor: pointer;
+        transition: all 0.2s ease;
+      }
+      .category-item:hover, .category-item.active-cat {
+        border-color: var(--pronta-sage);
+        background: var(--pronta-sage-soft);
+      }
+
+      .payment-option-card {
+        border: 1.5px solid #E5DFDA;
+        border-radius: 12px;
+        padding: 12px 14px;
+        cursor: pointer;
+        transition: all 0.2s ease;
+        background: #fff;
+      }
+      .payment-option-card.selected {
+        border-color: var(--pronta-rose);
+        background-color: var(--pronta-rose-soft);
+      }
+
+      .toast-container-pronta {
+        position: fixed;
+        bottom: 24px;
+        right: 24px;
+        z-index: 9999;
+      }
+      .pronta-toast {
+        background: var(--pronta-charcoal);
+        color: #fff;
+        border-left: 4px solid var(--pronta-rose);
+        padding: 12px 20px;
+        border-radius: 12px;
+        box-shadow: 0 8px 24px rgba(51,51,51,0.2);
+        font-size: 0.9rem;
+        margin-top: 8px;
+        animation: fadeInToast 0.25s ease;
+      }
+      @keyframes fadeInToast {
+        from { opacity: 0; transform: translateY(10px); }
+        to { opacity: 1; transform: translateY(0); }
+      }
+    </style>
+  </head>
+  <body>
+
+    <!-- Iconos SVG -->
+    <svg xmlns="http://www.w3.org/2000/svg" style="display: none;">
+      <defs>
+        <symbol id="arrow-right" viewBox="0 0 24 24">
+          <path fill="currentColor" d="M17.92 11.62a1 1 0 0 0-.21-.33l-5-5a1 1 0 0 0-1.42 1.42l3.3 3.29H7a1 1 0 0 0 0 2h7.59l-3.3 3.29a1 1 0 0 0 0 1.42a1 1 0 0 0 1.42 0l5-5a1 1 0 0 0 .21-.33a1 1 0 0 0 0-.76Z"/>
+        </symbol>
+        <symbol id="plus" viewBox="0 0 24 24">
+          <path fill="currentColor" d="M19 11h-6V5a1 1 0 0 0-2 0v6H5a1 1 0 0 0 0 2h6v6a1 1 0 0 0 2 0v-6h6a1 1 0 0 0 0-2Z"/>
+        </symbol>
+        <symbol id="minus" viewBox="0 0 24 24">
+          <path fill="currentColor" d="M19 11H5a1 1 0 0 0 0 2h14a1 1 0 0 0 0-2Z"/>
+        </symbol>
+        <symbol id="cart" viewBox="0 0 24 24">
+          <path fill="currentColor" d="M8.5 19a1.5 1.5 0 1 0 1.5 1.5A1.5 1.5 0 0 0 8.5 19ZM19 16H7a1 1 0 0 1 0-2h8.491a3.013 3.013 0 0 0 2.885-2.176l1.585-5.55A1 1 0 0 0 19 5H6.74a3.007 3.007 0 0 0-2.82-2H3a1 1 0 0 0 0 2h.921a1.005 1.005 0 0 1 .962.725l.155.545v.005l1.641 5.742A3 3 0 0 0 7 18h12a1 1 0 0 0 0-2Zm-1.326-9l-1.22 4.274a1.005 1.005 0 0 1-.963.726H8.754l-.255-.892L7.326 7ZM16.5 19a1.5 1.5 0 1 0 1.5 1.5a1.5 1.5 0 0 0-1.5-1.5Z"/>
+        </symbol>
+        <symbol id="trash" viewBox="0 0 24 24">
+          <path fill="currentColor" d="M10 18a1 1 0 0 0 1-1v-6a1 1 0 0 0-2 0v6a1 1 0 0 0 1 1ZM20 6h-4V5a3 3 0 0 0-3-3h-2a3 3 0 0 0-3 3v1H4a1 1 0 0 0 0 2h1v11a3 3 0 0 0 3 3h8a3 3 0 0 0 3-3V8h1a1 1 0 0 0 0-2ZM10 5a1 1 0 0 1 1-1h2a1 1 0 0 1 1 1v1h-4Zm7 14a1 1 0 0 1-1 1H8a1 1 0 0 1-1-1V8h10Zm-3-1a1 1 0 0 0 1-1v-6a1 1 0 0 0-2 0v6a1 1 0 0 0 1 1Z"/>
+        </symbol>
+        <symbol id="search" viewBox="0 0 24 24">
+          <path fill="currentColor" d="M21.71 20.29L18 16.61A9 9 0 1 0 16.61 18l3.68 3.68a1 1 0 0 0 1.42 0a1 1 0 0 0 0-1.39ZM11 18a7 7 0 1 1 7-7a7 7 0 0 1-7 7Z"/>
+        </symbol>
+        <symbol id="user" viewBox="0 0 24 24">
+          <path fill="currentColor" d="M15.71 12.71a6 6 0 1 0-7.42 0a10 10 0 0 0-6.22 8.18a1 1 0 0 0 2 .22a8 8 0 0 1 15.9 0a1 1 0 0 0 1 .89h.11a1 1 0 0 0 .88-1.1a10 10 0 0 0-6.25-8.19ZM12 12a4 4 0 1 1 4-4a4 4 0 0 1-4 4Z"/>
+        </symbol>
+      </defs>
+    </svg>
+
+    <div class="preloader-wrapper">
+      <div class="preloader"></div>
+    </div>
+
+    <!-- Barra superior de beneficios -->
+    <div class="announcement-bar py-2 text-center">
+      <div class="container-fluid">
+        <span>✨ <strong>5% OFF</strong> abonando por Transferencia Bancaria o Efectivo (con seña) · Mercado Pago disponible ✨</span>
+      </div>
+    </div>
+
+    <!-- Carrito lateral (Offcanvas) -->
+    <div class="offcanvas offcanvas-end" data-bs-scroll="true" tabindex="-1" id="offcanvasCart" aria-labelledby="Mi Carrito">
+      <div class="offcanvas-header border-bottom">
+        <h5 class="mb-0 brand-serif">Tu Carrito PRONTA</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="offcanvas" aria-label="Cerrar"></button>
+      </div>
+      <div class="offcanvas-body d-flex flex-column justify-content-between">
+        <div>
+          <div class="d-flex justify-content-between align-items-center mb-3">
+            <span class="text-muted small">Productos seleccionados</span>
+            <span class="badge rounded-pill" style="background-color:#333333; color:#fff;" id="cart-count-badge">0</span>
+          </div>
+          <ul class="list-group mb-3" id="cart-items-list">
+            <li class="list-group-item text-center text-muted py-4 border-0">
+              Tu carrito está vacío.
+            </li>
+          </ul>
+        </div>
+
+        <div class="border-top pt-3">
+          <div class="d-flex justify-content-between align-items-center mb-2">
+            <span class="text-muted">Subtotal</span>
+            <strong id="cart-subtotal">$0</strong>
+          </div>
+          <p class="small text-pronta-sage mb-3">
+            💡 Pagando por Transferencia o Efectivo tenés <strong>5% OFF</strong> en el paso siguiente.
+          </p>
+          <button class="w-100 btn btn-pronta btn-lg rounded-3" type="button" id="btn-open-checkout" disabled>
+            Finalizar Compra
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Buscador móvil -->
+    <div class="offcanvas offcanvas-end" data-bs-scroll="true" tabindex="-1" id="offcanvasSearch" aria-labelledby="Buscar">
+      <div class="offcanvas-header">
+        <h5 class="mb-0 brand-serif">Buscar en PRONTA</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="offcanvas" aria-label="Cerrar"></button>
+      </div>
+      <div class="offcanvas-body">
+        <div class="d-flex gap-2">
+          <input id="mobile-search-input" class="form-control bg-light" type="text" placeholder="Buscar sérums, kits, limpiezas...">
+          <button class="btn btn-pronta" type="button" id="mobile-search-btn" data-bs-dismiss="offcanvas">Buscar</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Header -->
+    <header class="bg-white shadow-sm sticky-top">
+      <div class="container-fluid">
+        <div class="row py-3 border-bottom align-items-center">
+
+          <div class="col-6 col-lg-3 text-start">
+            <div class="main-logo">
+              <a href="index.html" class="brand-logo-text">
+                PRONTA
+                <span class="brand-logo-sub">Belleza & Cosmética</span>
+              </a>
+            </div>
+          </div>
+
+          <div class="col-lg-5 d-none d-lg-block">
+            <div class="search-bar row bg-light p-2 rounded-4 align-items-center">
+              <div class="col-md-4">
+                <select id="header-category-filter" class="form-select border-0 bg-transparent small">
+                  <option value="all">Todas las secciones</option>
+                  <option value="productos">Productos</option>
+                  <option value="kits">Kits & Gift</option>
+                  <option value="servicios">Servicios</option>
+                </select>
+              </div>
+              <div class="col-md-7">
+                <input id="desktop-search-input" type="text" class="form-control border-0 bg-transparent" placeholder="Buscar cosméticos, kits o limpiezas..." />
+              </div>
+              <div class="col-md-1 text-end">
+                <svg width="20" height="20" class="text-muted"><use xlink:href="#search"></use></svg>
+              </div>
+            </div>
+          </div>
+
+          <div class="col-6 col-lg-4 d-flex justify-content-end gap-3 align-items-center">
+            <div class="support-box text-end d-none d-xl-block">
+              <span class="small text-muted d-block">Consultas & Turnos</span>
+              <a href="https://wa.me/5491157948612" target="_blank" class="text-decoration-none fw-bold" style="color:#333333;">
+                WhatsApp +54 9 11 5794-8612
+              </a>
+            </div>
+
+            <ul class="d-flex justify-content-end list-unstyled m-0 align-items-center">
+              <li class="d-lg-none">
+                <a href="#" class="rounded-circle bg-light p-2 mx-1 d-inline-flex" style="color:#333333;" data-bs-toggle="offcanvas" data-bs-target="#offcanvasSearch" aria-label="Buscar">
+                  <svg width="22" height="22"><use xlink:href="#search"></use></svg>
+                </a>
+              </li>
+              <li>
+                <a href="admin.html" class="rounded-circle bg-light p-2 mx-1 d-inline-flex" style="color:#333333;" title="Panel Administrador">
+                  <svg width="22" height="22"><use xlink:href="#user"></use></svg>
+                </a>
+              </li>
+              <li class="d-lg-none">
+                <a href="#" class="rounded-circle p-2 mx-1 d-inline-flex position-relative" style="background-color:#D4A3A3; color:#333333;" data-bs-toggle="offcanvas" data-bs-target="#offcanvasCart" aria-label="Carrito">
+                  <svg width="22" height="22"><use xlink:href="#cart"></use></svg>
+                  <span id="mobile-cart-badge" class="position-absolute top-0 start-100 translate-middle badge rounded-pill" style="background-color:#333333; color:#fff; font-size:0.65rem;">0</span>
+                </a>
+              </li>
+            </ul>
+
+            <div class="cart text-end d-none d-lg-block">
+              <button class="border-0 bg-transparent d-flex flex-column gap-1 lh-1 text-end" type="button" data-bs-toggle="offcanvas" data-bs-target="#offcanvasCart" aria-controls="offcanvasCart">
+                <span class="small text-muted">Tu Carrito (<span id="desktop-cart-count">0</span>)</span>
+                <span class="cart-total fs-5 fw-bold" style="color:#333333;" id="header-cart-total">$0</span>
+              </button>
+            </div>
+          </div>
+
+        </div>
+      </div>
+
+      <!-- Menú de navegación -->
+      <div class="container-fluid">
+        <div class="row py-2">
+          <div class="d-flex justify-content-between align-items-center">
+            <nav class="main-menu d-flex navbar navbar-expand-lg w-100 py-0">
+              <button class="navbar-toggler border-0" type="button" data-bs-toggle="offcanvas" data-bs-target="#offcanvasNavbar" aria-controls="offcanvasNavbar">
+                <span class="navbar-toggler-icon"></span>
+              </button>
+
+              <div class="offcanvas offcanvas-end" tabindex="-1" id="offcanvasNavbar">
+                <div class="offcanvas-header">
+                  <h5 class="brand-serif mb-0">Menú PRONTA</h5>
+                  <button type="button" class="btn-close" data-bs-dismiss="offcanvas" aria-label="Cerrar"></button>
+                </div>
+                <div class="offcanvas-body justify-content-center">
+                  <ul class="navbar-nav menu-list list-unstyled d-flex gap-md-4 mb-0">
+                    <li class="nav-item"><a href="#catalogo" class="nav-link fw-semibold" onclick="selectCatalogTab('all')">Tienda</a></li>
+                    <li class="nav-item"><a href="#catalogo" class="nav-link fw-semibold" onclick="selectCatalogTab('productos')">Productos</a></li>
+                    <li class="nav-item"><a href="#catalogo" class="nav-link fw-semibold" onclick="selectCatalogTab('kits')">Kits & Gift</a></li>
+                    <li class="nav-item"><a href="#catalogo" class="nav-link fw-semibold" onclick="selectCatalogTab('servicios')">Servicios</a></li>
+                    <li class="nav-item"><a href="#newly-arrived" class="nav-link fw-semibold">Nuevos Lanzamientos</a></li>
+                    <li class="nav-item"><a href="#latest-blog" class="nav-link fw-semibold">Blog</a></li>
+                    <li class="nav-item"><a href="#contacto" class="nav-link fw-semibold">Contacto</a></li>
+                  </ul>
+                </div>
+              </div>
+            </nav>
+          </div>
+        </div>
+      </div>
+    </header>
+
+    <!-- Banners Principales (3 Pilares) -->
+    <section class="py-4">
+      <div class="container-fluid">
+        <div class="row">
+          <div class="col-md-12">
+            <div class="banner-blocks">
+
+              <!-- Bloque Principal -->
+              <div class="banner-ad large block-1 rounded-4">
+                <div class="swiper main-swiper">
+                  <div class="swiper-wrapper">
+                    <div class="swiper-slide">
+                      <div class="row banner-content p-4 p-md-5 align-items-center">
+                        <div class="content-wrapper col-md-8">
+                          <div class="categories my-2 text-pronta fw-bold text-uppercase small">Cosmética & Cuidado Facial</div>
+                          <h1 class="display-5 mb-3">Productos formulados para tu piel</h1>
+                          <p class="text-muted">Activos efectivos, texturas nobles y rutinas pensadas para acompañarte todos los días.</p>
+                          <a href="#catalogo" onclick="selectCatalogTab('productos')" class="btn btn-pronta btn-lg text-uppercase fs-6 rounded-2 px-4 py-3 mt-2">Ver Productos</a>
+                        </div>
+                      </div>
+                    </div>
+                    <div class="swiper-slide">
+                      <div class="row banner-content p-4 p-md-5 align-items-center">
+                        <div class="content-wrapper col-md-8">
+                          <div class="categories my-2 text-pronta-sage fw-bold text-uppercase small">Ediciones Especiales</div>
+                          <h2 class="display-5 mb-3">Kits & Gift PRONTA</h2>
+                          <p class="text-muted">Combinaciones armadas listas para regalar o renovar tu rutina completa.</p>
+                          <a href="#catalogo" onclick="selectCatalogTab('kits')" class="btn btn-pronta btn-lg text-uppercase fs-6 rounded-2 px-4 py-3 mt-2">Ver Kits & Gift</a>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                  <div class="swiper-pagination"></div>
+                </div>
+              </div>
+
+              <!-- Bloque 2: Kits & Gift -->
+              <div class="banner-ad block-2 rounded-4">
+                <div class="row banner-content p-4 p-md-5">
+                  <div class="content-wrapper col-md-10">
+                    <div class="categories mb-2 text-pronta-sage fw-bold small text-uppercase">Rutinas Armadas</div>
+                    <h3 class="banner-title mb-3">Kits & Gift</h3>
+                    <p class="small text-muted mb-3">Packs combinados de cosmética listos para regalar.</p>
+                    <a href="#catalogo" onclick="selectCatalogTab('kits')" class="d-inline-flex align-items-center nav-link fw-bold" style="color:#333333;">
+                      Explorar Kits <svg width="20" height="20" class="ms-1"><use xlink:href="#arrow-right"></use></svg>
+                    </a>
+                  </div>
+                </div>
+              </div>
+
+              <!-- Bloque 3: Servicios -->
+              <div class="banner-ad block-3 rounded-4">
+                <div class="row banner-content p-4 p-md-5">
+                  <div class="content-wrapper col-md-10">
+                    <div class="categories mb-2 text-pronta fw-bold small text-uppercase">Gabinete & Formación</div>
+                    <h3 class="banner-title mb-3">Servicios</h3>
+                    <p class="small text-muted mb-3">Limpiezas faciales, producciones personalizadas y Crea Tu Cosmética.</p>
+                    <a href="#catalogo" onclick="selectCatalogTab('servicios')" class="d-inline-flex align-items-center nav-link fw-bold" style="color:#333333;">
+                      Ver Servicios <svg width="20" height="20" class="ms-1"><use xlink:href="#arrow-right"></use></svg>
+                    </a>
+                  </div>
+                </div>
+              </div>
+
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Explorá por Categoría (Solo Cosmética Individual) -->
+    <section class="py-4 overflow-hidden">
+      <div class="container-fluid">
+        <div class="section-header d-flex flex-wrap justify-content-between align-items-center mb-4">
+          <div>
+            <span class="text-pronta-sage text-uppercase small fw-bold">Cosmética Individual</span>
+            <h2 class="section-title mb-0">Explorá por Categoría</h2>
+          </div>
+          <div class="d-flex align-items-center gap-2">
+            <button class="btn btn-sm btn-outline-pronta rounded-pill px-3" onclick="filterByCategory('all')">Ver Todo</button>
+            <div class="swiper-buttons">
+              <button class="swiper-prev category-carousel-prev btn btn-light border">❮</button>
+              <button class="swiper-next category-carousel-next btn btn-light border">❯</button>
+            </div>
+          </div>
+        </div>
+
+        <div class="category-carousel swiper">
+          <div class="swiper-wrapper" id="categories-container">
+            <div class="swiper-slide">
+              <div class="category-item">
+                <h3 class="category-title fs-6 mb-0">Cargando categorías...</h3>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Catálogo Principal (3 Secciones: Productos, Kits & Gift, Servicios) -->
+    <section id="catalogo" class="py-5">
+      <div class="container-fluid">
+        <div class="bootstrap-tabs product-tabs">
+          <div class="tabs-header d-flex flex-wrap justify-content-between align-items-center border-bottom pb-3 mb-4 gap-3">
+            <div>
+              <h2 class="mb-0">Catálogo PRONTA</h2>
+              <small class="text-muted" id="catalog-filter-status">Mostrando todo el catálogo</small>
+            </div>
+            <nav>
+              <div class="nav nav-tabs border-0" id="catalog-tabs" role="tablist">
+                <button class="nav-link text-uppercase fs-6 active" data-section="all" type="button" onclick="selectCatalogTab('all')">Todos</button>
+                <button class="nav-link text-uppercase fs-6" data-section="productos" type="button" onclick="selectCatalogTab('productos')">Productos</button>
+                <button class="nav-link text-uppercase fs-6" data-section="kits" type="button" onclick="selectCatalogTab('kits')">Kits & Gift</button>
+                <button class="nav-link text-uppercase fs-6" data-section="servicios" type="button" onclick="selectCatalogTab('servicios')">Servicios</button>
+              </div>
+            </nav>
+          </div>
+
+          <!-- Sub-filtros de Servicios (visibles solo en la pestaña Servicios) -->
+          <div id="services-subfilters" class="d-none mb-4 d-flex flex-wrap gap-2 align-items-center">
+            <span class="small text-muted me-1">Filtrar servicios:</span>
+            <button type="button" class="btn btn-sm btn-outline-pronta rounded-pill px-3 active-pill" data-sub="all" onclick="selectServiceSub('all')">Todos los Servicios</button>
+            <button type="button" class="btn btn-sm btn-outline-pronta rounded-pill px-3" data-sub="limpiezas" onclick="selectServiceSub('limpiezas')">Limpiezas Faciales</button>
+            <button type="button" class="btn btn-sm btn-outline-pronta rounded-pill px-3" data-sub="producciones" onclick="selectServiceSub('producciones')">Producciones Personalizadas</button>
+            <button type="button" class="btn btn-sm btn-outline-pronta rounded-pill px-3" data-sub="crea" onclick="selectServiceSub('crea')">Crea Tu Cosmética ✨</button>
+          </div>
+
+          <div id="products-grid" class="product-grid row row-cols-1 row-cols-sm-2 row-cols-md-3 row-cols-lg-4 row-cols-xl-5 g-4">
+            <div class="col-12 text-center py-5 text-muted">
+              Cargando productos desde Supabase...
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Newly Arrived (Nuevos Lanzamientos) -->
+    <section id="newly-arrived" class="py-5 overflow-hidden bg-white">
+      <div class="container-fluid">
+        <div class="section-header d-flex flex-wrap justify-content-between align-items-center mb-4">
+          <div>
+            <span class="text-pronta-sage text-uppercase small fw-bold">Recién Llegados</span>
+            <h2 class="section-title mb-0">Newly Arrived — Nuevos Lanzamientos</h2>
+          </div>
+          <div class="swiper-buttons">
+            <button class="swiper-prev new-arrivals-prev btn btn-light border">❮</button>
+            <button class="swiper-next new-arrivals-next btn btn-light border">❯</button>
+          </div>
+        </div>
+
+        <div class="new-arrivals-carousel swiper">
+          <div class="swiper-wrapper" id="newly-arrived-container">
+            <div class="swiper-slide text-muted py-4">Cargando nuevos lanzamientos...</div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Banner Beneficio 5% OFF -->
+    <section class="py-5">
+      <div class="container-fluid">
+        <div class="bg-pronta-soft py-5 px-4 px-md-5 rounded-4">
+          <div class="row align-items-center">
+            <div class="col-md-8">
+              <span class="text-pronta fw-bold text-uppercase small">Beneficio Exclusivo</span>
+              <h2 class="display-6 mt-1 mb-2">5% OFF abonando por Transferencia o Efectivo</h2>
+              <p class="text-muted mb-0">
+                El descuento se aplica automáticamente en tu carrito al elegir <strong>Transferencia Bancaria</strong> o <strong>Efectivo (con seña)</strong>. También aceptamos todas las tarjetas a través de Mercado Pago.
+              </p>
+            </div>
+            <div class="col-md-4 text-md-end mt-3 mt-md-0">
+              <a href="https://wa.me/5491157948612?text=Hola%20PRONTA!%20Quisiera%20hacer%20una%20consulta." target="_blank" class="btn btn-pronta btn-lg rounded-3 px-4">
+                Consultar por WhatsApp
+              </a>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Blog (Sección Próximamente) -->
+    <section id="latest-blog" class="py-5 bg-white">
+      <div class="container-fluid">
+        <div class="section-header text-center py-5">
+          <span class="text-pronta-sage text-uppercase small fw-bold">Skincare & Consejos</span>
+          <h2 class="section-title mt-1 mb-3">Blog PRONTA</h2>
+          <p class="fs-4 text-muted fst-italic mb-0">Próximamente...</p>
+        </div>
+      </div>
+    </section>
+
+    <!-- Beneficios -->
+    <section class="py-5">
+      <div class="container-fluid">
+        <div class="row row-cols-1 row-cols-sm-2 row-cols-lg-4 g-4">
+          <div class="col">
+            <div class="card h-100 border-0 bg-white p-3 rounded-4 shadow-sm" style="border-top: 3px solid #D4A3A3 !important;">
+              <div class="card-body">
+                <h5 class="mb-2">Envíos y Retiros</h5>
+                <p class="card-text small text-muted mb-0">Opciones de envío flexibles y coordinación rápida para tus pedidos.</p>
+              </div>
+            </div>
+          </div>
+          <div class="col">
+            <div class="card h-100 border-0 bg-white p-3 rounded-4 shadow-sm" style="border-top: 3px solid #A3B19B !important;">
+              <div class="card-body">
+                <h5 class="mb-2">Pago 100% Seguro</h5>
+                <p class="card-text small text-muted mb-0">Mercado Pago, Transferencia Bancaria o Efectivo con seña.</p>
+              </div>
+            </div>
+          </div>
+          <div class="col">
+            <div class="card h-100 border-0 bg-white p-3 rounded-4 shadow-sm" style="border-top: 3px solid #D4A3A3 !important;">
+              <div class="card-body">
+                <h5 class="mb-2">5% OFF Directo</h5>
+                <p class="card-text small text-muted mb-0">Ahorrá un 5% en tu compra eligiendo transferencia o efectivo.</p>
+              </div>
+            </div>
+          </div>
+          <div class="col">
+            <div class="card h-100 border-0 bg-white p-3 rounded-4 shadow-sm" style="border-top: 3px solid #A3B19B !important;">
+              <div class="card-body">
+                <h5 class="mb-2">Asesoramiento Real</h5>
+                <p class="card-text small text-muted mb-0">Te ayudamos por WhatsApp a elegir los productos o limpiezas ideales para tu piel.</p>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Footer -->
+    <footer id="contacto" class="py-5 bg-white border-top">
+      <div class="container-fluid">
+        <div class="row gy-4">
+          <div class="col-lg-4 col-md-6">
+            <a href="index.html" class="brand-logo-text">
+              PRONTA
+              <span class="brand-logo-sub">Belleza & Cosmética</span>
+            </a>
+            <p class="text-muted small mt-3">
+              Cosmética pensada para cuidar tu piel, kits listos para regalar y servicios de limpieza facial profesional.
+            </p>
+          </div>
+          <div class="col-lg-4 col-md-6">
+            <h5 class="mb-3">Secciones</h5>
+            <ul class="list-unstyled small d-flex flex-column gap-2">
+              <li><a href="#catalogo" onclick="selectCatalogTab('productos')" class="text-decoration-none text-muted">Productos Cosméticos</a></li>
+              <li><a href="#catalogo" onclick="selectCatalogTab('kits')" class="text-decoration-none text-muted">Kits & Gift</a></li>
+              <li><a href="#catalogo" onclick="selectCatalogTab('servicios')" class="text-decoration-none text-muted">Servicios & Limpiezas</a></li>
+              <li><a href="#newly-arrived" class="text-decoration-none text-muted">Nuevos Lanzamientos</a></li>
+            </ul>
+          </div>
+          <div class="col-lg-4 col-md-12">
+            <h5 class="mb-3">Contacto & Pagos</h5>
+            <p class="small text-muted mb-2">
+              WhatsApp: <a href="https://wa.me/5491157948612" target="_blank" class="fw-bold text-decoration-none" style="color:#333333;">+54 9 11 5794-8612</a>
+            </p>
+            <p class="small text-muted mb-0">
+              Medios de pago: Mercado Pago · Transferencia (5% OFF) · Efectivo con seña (5% OFF).
+            </p>
+          </div>
+        </div>
+      </div>
+    </footer>
+    <div id="footer-bottom" class="py-3" style="background-color:#333333; color:#FAF8F6;">
+      <div class="container-fluid">
+        <div class="row align-items-center">
+          <div class="col-md-6 small" style="color:#D4A3A3;">
+            © 2026 PRONTA Belleza & Cosmética. Todos los derechos reservados.
+          </div>
+          <div class="col-md-6 text-md-end small">
+            <a href="admin.html" class="text-decoration-none" style="color:#A3B19B;">Acceso Administrador</a>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Modal Detalle de Producto -->
+    <div class="modal fade" id="productDetailModal" tabindex="-1" aria-hidden="true">
+      <div class="modal-dialog modal-dialog-centered modal-lg">
+        <div class="modal-content rounded-4 border-0">
+          <div class="modal-header border-0 pb-0">
+            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Cerrar"></button>
+          </div>
+          <div class="modal-body p-4 pt-2" id="product-detail-body"></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Modal Checkout (3 Medios de Pago) -->
+    <div class="modal fade" id="checkoutModal" tabindex="-1" aria-hidden="true">
+      <div class="modal-dialog modal-dialog-centered modal-lg modal-dialog-scrollable">
+        <div class="modal-content rounded-4 border-0">
+          <div class="modal-header border-bottom">
+            <h5 class="modal-title brand-serif">Finalizar Compra — PRONTA</h5>
+            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Cerrar"></button>
+          </div>
+          <div class="modal-body p-4">
+
+            <!-- Formulario de Checkout -->
+            <form id="checkout-form">
+              <div class="row g-3 mb-4">
+                <div class="col-12">
+                  <h6 class="fw-bold mb-0">1. Tus Datos</h6>
+                </div>
+                <div class="col-md-6">
+                  <label class="form-label small">Nombre y Apellido *</label>
+                  <input type="text" id="chk-name" class="form-control" required placeholder="Ej: Lucía Gómez">
+                </div>
+                <div class="col-md-6">
+                  <label class="form-label small">Email *</label>
+                  <input type="email" id="chk-email" class="form-control" required placeholder="tuemail@ejemplo.com">
+                </div>
+                <div class="col-md-6">
+                  <label class="form-label small">WhatsApp / Teléfono *</label>
+                  <input type="tel" id="chk-phone" class="form-control" required placeholder="Ej: 11 5555-5555">
+                </div>
+                <div class="col-md-6">
+                  <label class="form-label small">Dirección / Localidad (o preferencia de turno)</label>
+                  <input type="text" id="chk-address" class="form-control" placeholder="Calle, altura, localidad">
+                </div>
+              </div>
+
+              <!-- Envío -->
+              <div class="mb-4" id="shipping-section">
+                <h6 class="fw-bold mb-2">2. Envío o Retiro</h6>
+                <select id="chk-shipping" class="form-select"></select>
+                <small class="text-muted d-block mt-1" id="shipping-note"></small>
+              </div>
+
+              <!-- Medios de Pago -->
+              <div class="mb-4">
+                <h6 class="fw-bold mb-2">3. Elegí tu Medio de Pago</h6>
+                <div class="d-flex flex-column gap-2">
+                  <label class="payment-option-card selected" data-pay="mercadopago">
+                    <div class="d-flex align-items-center justify-content-between">
+                      <div>
+                        <input class="form-check-input me-2" type="radio" name="paymentMethod" value="mercadopago" checked>
+                        <strong>Mercado Pago</strong>
+                        <div class="small text-muted ms-4">Tarjetas de crédito, débito o dinero en cuenta.</div>
+                      </div>
+                      <span class="badge bg-light text-dark border">Directo online</span>
+                    </div>
+                  </label>
+
+                  <label class="payment-option-card" data-pay="transferencia">
+                    <div class="d-flex align-items-center justify-content-between">
+                      <div>
+                        <input class="form-check-input me-2" type="radio" name="paymentMethod" value="transferencia">
+                        <strong>Transferencia Bancaria</strong>
+                        <div class="small text-muted ms-4">Banco Naranja · Alias: <code>pronta.ok</code></div>
+                      </div>
+                      <span class="badge bg-success">5% OFF</span>
+                    </div>
+                  </label>
+
+                  <label class="payment-option-card" data-pay="efectivo">
+                    <div class="d-flex align-items-center justify-content-between">
+                      <div>
+                        <input class="form-check-input me-2" type="radio" name="paymentMethod" value="efectivo">
+                        <strong>Efectivo (con seña)</strong>
+                        <div class="small text-muted ms-4">Seña del 50% por transferencia y el resto en efectivo al retirar/asistir.</div>
+                      </div>
+                      <span class="badge bg-success">5% OFF</span>
+                    </div>
+                  </label>
+                </div>
+
+                <!-- Caja informativa de datos bancarios -->
+                <div id="bank-info-box" class="alert alert-light border mt-3 d-none small">
+                  <div class="fw-bold mb-1">Datos para transferir:</div>
+                  <div><strong>Titular:</strong> María Agustina López</div>
+                  <div><strong>Banco:</strong> Naranja</div>
+                  <div><strong>Alias:</strong> <code id="bank-alias">pronta.ok</code> <button type="button" class="btn btn-sm btn-link p-0 ms-1" onclick="copyText('pronta.ok')">Copiar</button></div>
+                  <div><strong>CBU / CVU:</strong> <code id="bank-cbu">4530000800014412407155</code> <button type="button" class="btn btn-sm btn-link p-0 ms-1" onclick="copyText('4530000800014412407155')">Copiar</button></div>
+                </div>
+              </div>
+
+              <!-- Resumen Final -->
+              <div class="bg-light p-3 rounded-3 mb-4">
+                <div class="d-flex justify-content-between small mb-1">
+                  <span>Subtotal productos</span>
+                  <span id="chk-subtotal">$0</span>
+                </div>
+                <div class="d-flex justify-content-between small text-success mb-1 d-none" id="chk-discount-row">
+                  <span>Descuento 5% (Transferencia / Efectivo)</span>
+                  <span id="chk-discount">-$0</span>
+                </div>
+                <div class="d-flex justify-content-between small mb-2">
+                  <span>Envío</span>
+                  <span id="chk-shipping-cost">$0</span>
+                </div>
+                <div class="d-flex justify-content-between fs-5 fw-bold border-top pt-2">
+                  <span>Total</span>
+                  <span id="chk-total" style="color:#333333;">$0</span>
+                </div>
+                <div id="chk-sena-row" class="mt-2 pt-2 border-top small d-none">
+                  <div class="d-flex justify-content-between fw-bold" style="color:#333333;">
+                    <span>Seña a transferir ahora (50%)</span>
+                    <span id="chk-sena-amount">$0</span>
+                  </div>
+                  <div class="d-flex justify-content-between text-muted">
+                    <span>Saldo restante en efectivo</span>
+                    <span id="chk-cash-rest">$0</span>
+                  </div>
+                </div>
+              </div>
+
+              <button type="submit" id="btn-confirm-order" class="btn btn-pronta btn-lg w-100 rounded-3">
+                Confirmar Pedido
+              </button>
+            </form>
+
+            <!-- Pantalla de Confirmación -->
+            <div id="checkout-success-view" class="d-none text-center py-3">
+              <div class="fs-1 mb-2">✨</div>
+              <h4 class="brand-serif mb-2">¡Pedido registrado con éxito!</h4>
+              <p class="text-muted small mb-3" id="success-order-subtitle"></p>
+
+              <div class="bg-light p-3 rounded-3 text-start small mb-4">
+                <div class="fw-bold mb-2">Datos para realizar la transferencia:</div>
+                <div><strong>Titular:</strong> María Agustina López</div>
+                <div><strong>Banco:</strong> Naranja</div>
+                <div><strong>Alias:</strong> <code>pronta.ok</code> <button type="button" class="btn btn-sm btn-link p-0 ms-1" onclick="copyText('pronta.ok')">Copiar</button></div>
+                <div><strong>CBU / CVU:</strong> <code>4530000800014412407155</code> <button type="button" class="btn btn-sm btn-link p-0 ms-1" onclick="copyText('4530000800014412407155')">Copiar</button></div>
+                <div class="mt-2 pt-2 border-top" id="success-amount-summary"></div>
+              </div>
+
+              <a id="btn-send-whatsapp" href="#" target="_blank" class="btn btn-pronta btn-lg w-100 rounded-3 mb-2">
+                Enviar Comprobante por WhatsApp
+              </a>
+              <button type="button" class="btn btn-outline-secondary btn-sm" data-bs-dismiss="modal">Seguir viendo la tienda</button>
+            </div>
+
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Contenedor de Toasts -->
+    <div class="toast-container-pronta" id="toast-container"></div>
+
+    <!-- Scripts -->
+    <script src="js/jquery-1.11.0.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/swiper@9/swiper-bundle.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha3/dist/js/bootstrap.bundle.min.js" integrity="sha384-ENjdO4Dr2bkBIFxQpeoTz1HIcje39Wm4jDKdf19U8gI4ddQ3GYNS7NTKfAdVQSZe" crossorigin="anonymous"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <script src="js/plugins.js"></script>
+    <script src="js/script.js"></script>
+    <script src="js/tienda.js"></script>
+  </body>
+</html>
