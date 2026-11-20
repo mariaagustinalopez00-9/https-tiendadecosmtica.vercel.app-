@@ -80,7 +80,7 @@ function formatARS(num) {
 
 // Notificaciones Toast
 function showToast(message) {
-  const container = document.getElementById('toast-container');
+ const container = document.getElementById('toast-container');
    (!container) return;
   const el = document.createElement('div');
   el.className = 'pronta-toast';
