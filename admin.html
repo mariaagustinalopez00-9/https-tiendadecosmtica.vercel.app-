@@ -877,12 +877,46 @@
       showToast('Opción de envío eliminada');
       await loadAllData();
     };
+function renderQtyTiersEditor(tiers = []) {
+  const container = document.getElementById('prod-qty-tiers-list');
+  if (!container) return;
+  const list = Array.isArray(tiers) ? tiers : [];
+  container.innerHTML = '';
+  list.forEach(tier => addQtyTierRow(tier.minQty, tier.percent));
+}
 
+function addQtyTierRow(minQty = '', percent = '') {
+  const container = document.getElementById('prod-qty-tiers-list');
+  if (!container) return;
+  const row = document.createElement('div');
+  row.className = 'd-flex align-items-center gap-2 qty-tier-row';
+  row.innerHTML = `
+    <input type="number" min="2" step="1" class="form-control form-control-sm tier-min-qty" placeholder="Cant. mín. (ej: 3)" value="${minQty}">
+    <input type="number" min="1" max="90" step="1" class="form-control form-control-sm tier-percent" placeholder="% OFF (ej: 10)" value="${percent}">
+    <button type="button" class="btn btn-sm btn-outline-danger px-2" onclick="this.parentElement.remove()" title="Quitar">×</button>
+  `;
+  container.appendChild(row);
+}
+
+function getQtyTiersFromEditor() {
+  const rows = document.querySelectorAll('#prod-qty-tiers-list .qty-tier-row');
+  const tiers = [];
+  rows.forEach(row => {
+    const minQty = parseInt(row.querySelector('.tier-min-qty')?.value, 10);
+    const percent = parseFloat(row.querySelector('.tier-percent')?.value);
+    if (!isNaN(minQty) && minQty >= 2 && !isNaN(percent) && percent > 0 && percent < 100) {
+      tiers.push({ minQty, percent });
+    }
+  });
+  return tiers.sort((a, b) => a.minQty - b.minQty);
+}
+
+document.getElementById('btn-add-qty-tier')?.addEventListener('click', () => {
+  addQtyTierRow('', '');
+});
     // Inicio
     checkSession();
   </script>
 </body>
 </html>
-```[cite: 23]
 
-Esperá 30 segundos después de tocar **Commit changes** y probá entrar a `tu-link-de-vercel/admin.html`. ¡Avisame si ya te deja ingresar!
