@@ -875,19 +875,23 @@ async function handleCheckoutSubmit(e) {
 
   if (totals.paymentMethod === 'mercadopago') {
     try {
-      const response = await fetch('/api/create-preference', {
-        method: 'POST',
+      const response = await fetch('/api/create-preference', {        method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
-          items: cart.map(item => ({
-            title: item.name || 'Producto PRONTA',
-            quantity: item.qty,
-            unit_price: Number(item.price || 0)
-          })),
-          payer: { name, email },
-          shipping_cost: totals.shippingCost
-        })
-      });
+...(() => {
+      const factor = totals.qtyDiscountPercent > 0 ? (1 - totals.qtyDiscountPercent / 100) : 1;
+      return {
+        items: cart.map(item => ({
+          title: item.name || 'Producto PRONTA',
+          quantity: item.qty,
+          unit_price: Math.round(Number(item.price || 0) * (item.section !== 'servicios' ? factor : 1))
+        }))
+      };
+    })(),
+    payer: { name, email },
+    shipping_cost: totals.shippingCost
+  })
+});
 
       const mpData = await response.json();
       const checkoutUrl = mpData.init_point || mpData.sandbox_init_point;
