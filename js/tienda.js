@@ -874,11 +874,18 @@ const subtotal = rawSubtotal - qtyDisc.amount;
   } else if (shipSelect) {
     shipSelect.disabled = false;
     const opt = shipSelect.options[shipSelect.selectedIndex];
+    
+    const hasDiscount = paymentMethod === 'transferencia' || paymentMethod === 'efectivo';
+  const discountPct = Number(PRONTA_CONFIG?.discountPercent || 0);
+  const effectiveSubtotal = hasDiscount
+    ? Math.round(subtotal * (1 - discountPct / 100))
+    : subtotal;
+    
     if (opt) {
       shippingCost = Number(opt.value || 0);
       shippingName = opt.dataset.name || 'Envío';
       const threshold = Number(opt.dataset.threshold || 0);
-      if (threshold > 0 && subtotal >= threshold) {
+      if (threshold > 0 && effectiveSubtotal >= threshold) {
         shippingCost = 0;
         if (shipNote) shipNote.textContent = `¡Envío bonificado por superar ${formatARS(threshold)}!`;
       } else {
