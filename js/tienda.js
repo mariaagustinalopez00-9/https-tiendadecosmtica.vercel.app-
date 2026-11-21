@@ -619,7 +619,19 @@ function getQuantityDiscountInfo() {
 
   return { eligibleQty, percent, amount, nextRule };
 }
+function getItemQuantityDiscountPercent(productOrTiers, qty) {
+  const tiers = Array.isArray(productOrTiers)
+    ? productOrTiers
+    : (productOrTiers?.quantity_discounts || []);
+  const count = Number(qty || 0);
+  if (!Array.isArray(tiers) || tiers.length === 0 || count <= 0) return 0;
 
+  const validTiers = tiers
+    .filter(t => Number(t.minQty) <= count && Number(t.percent) > 0)
+    .sort((a, b) => Number(b.minQty) - Number(a.minQty));
+
+  return validTiers.length > 0 ? Number(validTiers[0].percent) : 0;
+}
 function renderCart() {
   const list = document.getElementById('cart-items-list');
   const rawSubtotal = getCartSubtotal();
