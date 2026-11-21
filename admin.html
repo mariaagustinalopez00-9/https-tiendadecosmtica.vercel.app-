@@ -929,6 +929,60 @@ document.getElementById('btn-add-qty-tier')?.addEventListener('click', () => {
     // Inicio
     checkSession();
   </script>
+  <script>
+(function () {
+  const STORAGE_KEY = 'pronta_admin_cart_rules_html';
+  const btnEdit = document.getElementById('btn-edit-cart-rules');
+  const btnCancel = document.getElementById('btn-cancel-cart-rules');
+  const btnSave = document.getElementById('btn-save-cart-rules');
+  const viewEl = document.getElementById('cart-rules-view');
+  const editorEl = document.getElementById('cart-rules-editor');
+  const textareaEl = document.getElementById('cart-rules-textarea');
+
+  if (!btnEdit || !viewEl || !editorEl || !textareaEl) return;
+
+  const saved = localStorage.getItem(STORAGE_KEY);
+  if (saved) {
+    viewEl.innerHTML = saved;
+  }
+
+  btnEdit.addEventListener('click', () => {
+    textareaEl.value = Array.from(viewEl.querySelectorAll('li'))
+      .map(li => li.innerText.replace(/^✅\s*/, '').trim())
+      .join('\n');
+    viewEl.classList.add('d-none');
+    editorEl.classList.remove('d-none');
+    textareaEl.focus();
+  });
+
+  btnCancel.addEventListener('click', () => {
+    editorEl.classList.add('d-none');
+    viewEl.classList.remove('d-none');
+  });
+
+  btnSave.addEventListener('click', () => {
+    const lines = textareaEl.value
+      .split('\n')
+      .map(l => l.trim())
+      .filter(Boolean);
+
+    const html = lines.map(line => {
+      const idx = line.indexOf(':');
+      if (idx > -1) {
+        const label = line.slice(0, idx).trim();
+        const rest = line.slice(idx + 1).trim();
+        return `<li>✅ <strong>${label}:</strong> ${rest}</li>`;
+      }
+      return `<li>✅ ${line}</li>`;
+    }).join('');
+
+    viewEl.innerHTML = html;
+    localStorage.setItem(STORAGE_KEY, html);
+    editorEl.classList.add('d-none');
+    viewEl.classList.remove('d-none');
+  });
+})();
+</script>
 </body>
 </html>
 
