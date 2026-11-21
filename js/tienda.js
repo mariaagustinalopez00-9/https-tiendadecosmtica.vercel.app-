@@ -607,12 +607,12 @@ function getQuantityDiscountInfo() {
   let maxPercent = 0;
   let nextRule = null;
 
-  cart.forEach((item) => {
-    if (item.section === 'servicios') return;
+  for (const item of cart) {
+    if (item.section === 'servicios') continue;
 
     const qty = Number(item.qty || 0);
     const unitPrice = Number(item.price || 0);
-    if (qty <= 0 || unitPrice <= 0) return;
+    if (qty <= 0 || unitPrice <= 0) continue;
 
     const prodId = item.productId ?? item.id;
     const prod = productCatalog.find((p) => String(p.id) === String(prodId));
@@ -640,7 +640,8 @@ function getQuantityDiscountInfo() {
 
     if (upcoming && (!nextRule || Number(upcoming.minQty) - qty < Number(nextRule.minQty) - eligibleQty)) {
       nextRule = upcoming;
-});
+    }
+  }
 
   return { eligibleQty, percent: maxPercent, amount, nextRule };
 }
