@@ -365,13 +365,25 @@
 
             <div class="col-lg-4">
               <div class="kpi-card rose">
-                <h5 class="mb-3">Reglas Activas del Carrito</h5>
-                <ul class="list-unstyled small d-flex flex-column gap-2 mb-0">
-                  <li>✅ <strong>Mercado Pago:</strong> Conectado a <code>/api/create-preference</code>.</li>
-                  <li>✅ <strong>Transferencia Bancaria:</strong> 5% OFF automático · Banco Naranja (Alias: <code>pronta.ok</code>).</li>
-                  <li>✅ <strong>Efectivo con Seña:</strong> 5% OFF + Seña del 50% por transferencia.</li>
-                  <li>✅ <strong>Limpiezas Faciales:</strong> Coordinación directa por WhatsApp (no pasan por carrito).</li>
-                </ul>
+                <div class="d-flex align-items-center justify-content-between mb-3">
+  <h5 class="mb-0">Reglas Activas del Carrito</h5>
+  <button type="button" id="btn-edit-cart-rules" class="btn btn-sm btn-outline-secondary">Editar</button>
+</div>
+
+<ul id="cart-rules-view" class="list-unstyled small d-flex flex-column gap-2 mb-0">
+  <li>✅ <strong>Mercado Pago:</strong> Conectado a <code>/api/create-preference</code>.</li>
+  <li>✅ <strong>Transferencia Bancaria:</strong> 5% OFF automático · Banco Naranja (Alias: <code>pronta.ok</code>).</li>
+  <li>✅ <strong>Efectivo con Seña:</strong> 5% OFF + Seña del 50% por transferencia.</li>
+  <li>✅ <strong>Limpiezas Faciales:</strong> Coordinación directa por WhatsApp (no pasan por carrito).</li>
+</ul>
+
+<div id="cart-rules-editor" class="d-none">
+  <textarea id="cart-rules-textarea" class="form-control form-control-sm mb-2" rows="6"></textarea>
+  <div class="d-flex gap-2 justify-content-end">
+    <button type="button" id="btn-cancel-cart-rules" class="btn btn-sm btn-light">Cancelar</button>
+    <button type="button" id="btn-save-cart-rules" class="btn btn-sm btn-dark">Guardar</button>
+  </div>
+</div>
               </div>
             </div>
           </div>
