@@ -764,6 +764,91 @@ function populateShippingOptions() {
   }).join('');
 }
 
+function renderCartShipping(currentSubtotal) {
+  const box = document.getElementById('cart-shipping-box');
+  if (!box) return;
+
+  const hasOnlyServices = cart.length > 0 && cart.every(i => i.section === 'servicios');
+  if (!cart.length || hasOnlyServices) {
+    box.innerHTML = '';
+    return;
+  }
+
+  const methods = (typeof allShippingMethods !== 'undefined' && Array.isArray(allShippingMethods))
+    ? allShippingMethods
+    : [];
+
+  if (!methods.length) {
+    box.innerHTML = '';
+    return;
+  }
+
+  const savedName = localStorage.getItem('pronta_selected_shipping_name') || '';
+
+  const optionsHtml = methods.map((m, idx) => {
+    const label = m.name || m.label || 'Envío';
+    const baseCost = Number(m.price ?? m.cost ?? 0);
+    const threshold = Number(m.free_threshold ?? 0);
+    const isFree = threshold > 0 && currentSubtotal >= threshold;
+    const effectiveCost = isFree ? 0 : baseCost;
+    const selected = savedName ? savedName === label : idx === 0;
+
+    return `<option value="${effectiveCost}" data-name="${label}" data-threshold="${threshold}" ${selected ? 'selected' : ''}>
+      ${label} (${effectiveCost === 0 ? 'Gratis' : formatARS(effectiveCost)})
+    </option>`;
+  }).join('');
+
+  const freeHintsHtml = methods
+    .filter(m => Number(m.free_threshold ?? 0) > 0)
+    .map(m => {
+      const label = m.name || m.label || 'Envío';
+      const threshold = Number(m.free_threshold);
+      const missing = Math.max(0, threshold - currentSubtotal);
+      return missing === 0
+        ? `<div class="small text-success">✅ Envío gratis habilitado en <strong>${label}</strong> (desde ${formatARS(threshold)}).</div>`
+        : `<div class="small text-muted">🚚 Envío gratis en <strong>${label}</strong> a partir de <strong>${formatARS(threshold)}</strong> (te faltan ${formatARS(missing)}).</div>`;
+    }).join('');
+
+  box.innerHTML = `
+    <label for="cart-shipping-select" class="form-label small fw-bold mb-1">Envío o retiro</label>
+    <select id="cart-shipping-select" class="form-select form-select-sm mb-2">
+      ${optionsHtml}
+    </select>
+    ${freeHintsHtml}
+  `;
+
+  const sel = document.getElementById('cart-shipping-select');
+  if (sel) {
+    const currentOpt = sel.options[sel.selectedIndex];
+    if (currentOpt) {
+      localStorage.setItem('pronta_selected_shipping_name', currentOpt.dataset.name || '');
+    }
+    sel.addEventListener('change', () => {
+      const opt = sel.options[sel.selectedIndex];
+      if (opt) {
+        localStorage.setItem('pronta_selected_shipping_name', opt.dataset.name || '');
+      }
+      syncCheckoutShippingFromCart();
+      if (typeof calculateCheckoutTotals === 'function') {
+        calculateCheckoutTotals();
+      }
+    });
+  }
+}
+
+function syncCheckoutShippingFromCart() {
+  const chkSelect = document.getElementById('chk-shipping');
+  const savedName = localStorage.getItem('pronta_selected_shipping_name');
+  if (!chkSelect || !savedName) return;
+
+  const idx = Array.from(chkSelect.options).findIndex(
+    o => (o.dataset.name || o.textContent || '').trim() === savedName.trim()
+  );
+  if (idx >= 0) {
+    chkSelect.selectedIndex = idx;
+    chkSelect.dispatchEvent(new Event('change', { bubbles: true }));
+  }
+}
 function getSelectedPaymentMethod() {
   const checked = document.querySelector('input[name="paymentMethod"]:checked');
   return checked ? checked.value : 'mercadopago';
