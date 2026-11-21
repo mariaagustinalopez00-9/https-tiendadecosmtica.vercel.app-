@@ -597,28 +597,46 @@ function getCartSubtotal() {
 }
 
 function getQuantityDiscountInfo() {
-  const rules = (PRONTA_CONFIG.quantityDiscounts || [])
-    .slice()
-    .sort((a, b) => b.minQty - a.minQty);
-  const eligibleQty = cart
-    .filter(i => i.section !== 'servicios')
-    .reduce((acc, i) => acc + Number(i.qty || 0), 0);
+  const productCatalog = typeof products !== 'undefined' && Array.isArray(products) ? products : [];
+  let eligibleQty = 0;
+  let amount = 0;
+  let maxPercent = 0;
+  let nextRule = null;
 
-  const matched = rules.find(r => eligibleQty >= r.minQty);
-  const percent = matched ? Number(matched.percent) : 0;
-  const eligibleSubtotal = cart
-    .filter(i => i.section !== 'servicios')
-    .reduce((acc, i) => acc + Number(i.price) * Number(i.qty), 0);
-  const amount = percent > 0 ? Math.round(eligibleSubtotal * (percent / 100)) : 0;
+  cart.forEach((item) => {
+    if (item.section === 'servicios') return;
 
-  // Próximo escalón para avisar cuánto falta
-  const nextRule = (PRONTA_CONFIG.quantityDiscounts || [])
-    .slice()
-    .sort((a, b) => a.minQty - b.minQty)
-    .find(r => eligibleQty < r.minQty);
+    const qty = Number(item.qty || 0);
+    const unitPrice = Number(item.price || 0);
+    if (qty <= 0 || unitPrice <= 0) return;
 
-  return { eligibleQty, percent, amount, nextRule };
+    const prodId = item.productId ?? item.id;
+    const prod = productCatalog.find((p) => String(p.id) === String(prodId));
+    const tiers = Array.isArray(prod?.quantity_discounts) ? prod.quantity_discounts : [];
+
+    if (tiers.length > 0) {
+      eligibleQty += qty;
+    }
+
+    const itemPct = getItemQuantityDiscountPercent(tiers, qty);
+    if (itemPct > 0) {
+      amount += Math.round((unitPrice * qty) * (itemPct / 100));
+      if (itemPct > maxPercent) maxPercent = itemPct;
+    }
+
+    const upcoming = tiers
+      .slice()
+      .sort((a, b) => Number(a.minQty) - Number(b.minQty))
+      .find((r) => qty < Number(r.minQty));
+
+    if (upcoming && (!nextRule || Number(upcoming.minQty) - qty < Number(nextRule.minQty) - eligibleQty)) {
+      nextRule = upcoming;
+    }
+  });
+
+  return { eligibleQty, percent: maxPercent, amount, nextRule };
 }
+
 function getItemQuantityDiscountPercent(productOrTiers, qty) {
   const tiers = Array.isArray(productOrTiers)
     ? productOrTiers
