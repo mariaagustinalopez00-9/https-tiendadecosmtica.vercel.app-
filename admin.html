@@ -764,7 +764,9 @@
         document.getElementById('prod-image').value = p.image || p.image_url || '';
         document.getElementById('prod-description').value = p.description || '';
         document.getElementById('prod-is-new').checked = Boolean(p.is_new || p.featured);
+        renderQtyTiersEditor(p.quantity_discounts);
       } else {
+        renderQtyTiersEditor([]);
         document.getElementById('productModalTitle').textContent = 'Nuevo Producto / Kit / Servicio';
         document.getElementById('prod-edit-mode').value = 'create';
         document.getElementById('prod-id').value = 'prod-' + Date.now().toString().slice(-5);
@@ -786,7 +788,10 @@
         presentation: document.getElementById('prod-presentation').value.trim(),
         image: document.getElementById('prod-image').value.trim(),
         description: document.getElementById('prod-description').value.trim(),
-        is_new: document.getElementById('prod-is-new').checked
+        is_new: document.getElementById('prod-is-new').checked,
+        is_new: document.getElementById('prod-is-new').checked,
+  quantity_discounts: getQtyTiersFromEditor()
+};
       };
 
       let res;
