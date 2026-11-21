@@ -640,27 +640,7 @@ function getQuantityDiscountInfo() {
 
     if (upcoming && (!nextRule || Number(upcoming.minQty) - qty < Number(nextRule.minQty) - eligibleQty)) {
       nextRule = upcoming;
-    }
-  });
-
-  return { eligibleQty, percent: maxPercent, amount, nextRule };
-}
-
-    const itemPct = getItemQuantityDiscountPercent(tiers, qty);
-    if (itemPct > 0) {
-      amount += Math.round((unitPrice * qty) * (itemPct / 100));
-      if (itemPct > maxPercent) maxPercent = itemPct;
-    }
-
-    const upcoming = tiers
-      .slice()
-      .sort((a, b) => Number(a.minQty) - Number(b.minQty))
-      .find((r) => qty < Number(r.minQty));
-
-    if (upcoming && (!nextRule || Number(upcoming.minQty) - qty < Number(nextRule.minQty) - eligibleQty)) {
-      nextRule = upcoming;
-    }
-  });
+});
 
   return { eligibleQty, percent: maxPercent, amount, nextRule };
 }
