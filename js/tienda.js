@@ -597,7 +597,11 @@ function getCartSubtotal() {
 }
 
 function getQuantityDiscountInfo() {
-  const productCatalog = typeof products !== 'undefined' && Array.isArray(products) ? products : [];
+  const productCatalog =
+    typeof allProducts !== 'undefined' && Array.isArray(allProducts)
+      ? allProducts
+      : (typeof products !== 'undefined' && Array.isArray(products) ? products : []);
+
   let eligibleQty = 0;
   let amount = 0;
   let maxPercent = 0;
@@ -612,11 +616,35 @@ function getQuantityDiscountInfo() {
 
     const prodId = item.productId ?? item.id;
     const prod = productCatalog.find((p) => String(p.id) === String(prodId));
-    const tiers = Array.isArray(prod?.quantity_discounts) ? prod.quantity_discounts : [];
+
+    let rawTiers = prod?.quantity_discounts ?? [];
+    if (typeof rawTiers === 'string') {
+      try { rawTiers = JSON.parse(rawTiers); } catch (_) { rawTiers = []; }
+    }
+    const tiers = Array.isArray(rawTiers) ? rawTiers : [];
 
     if (tiers.length > 0) {
       eligibleQty += qty;
     }
+
+    const itemPct = getItemQuantityDiscountPercent(tiers, qty);
+    if (itemPct > 0) {
+      amount += Math.round((unitPrice * qty) * (itemPct / 100));
+      if (itemPct > maxPercent) maxPercent = itemPct;
+    }
+
+    const upcoming = tiers
+      .slice()
+      .sort((a, b) => Number(a.minQty) - Number(b.minQty))
+      .find((r) => qty < Number(r.minQty));
+
+    if (upcoming && (!nextRule || Number(upcoming.minQty) - qty < Number(nextRule.minQty) - eligibleQty)) {
+      nextRule = upcoming;
+    }
+  });
+
+  return { eligibleQty, percent: maxPercent, amount, nextRule };
+}
 
     const itemPct = getItemQuantityDiscountPercent(tiers, qty);
     if (itemPct > 0) {
