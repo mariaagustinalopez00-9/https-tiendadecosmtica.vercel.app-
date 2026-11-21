@@ -596,9 +596,35 @@ function getCartSubtotal() {
   return cart.reduce((acc, item) => acc + Number(item.price) * Number(item.qty), 0);
 }
 
+function getQuantityDiscountInfo() {
+  const rules = (PRONTA_CONFIG.quantityDiscounts || [])
+    .slice()
+    .sort((a, b) => b.minQty - a.minQty);
+  const eligibleQty = cart
+    .filter(i => i.section !== 'servicios')
+    .reduce((acc, i) => acc + Number(i.qty || 0), 0);
+
+  const matched = rules.find(r => eligibleQty >= r.minQty);
+  const percent = matched ? Number(matched.percent) : 0;
+  const eligibleSubtotal = cart
+    .filter(i => i.section !== 'servicios')
+    .reduce((acc, i) => acc + Number(i.price) * Number(i.qty), 0);
+  const amount = percent > 0 ? Math.round(eligibleSubtotal * (percent / 100)) : 0;
+
+  // Próximo escalón para avisar cuánto falta
+  const nextRule = (PRONTA_CONFIG.quantityDiscounts || [])
+    .slice()
+    .sort((a, b) => a.minQty - b.minQty)
+    .find(r => eligibleQty < r.minQty);
+
+  return { eligibleQty, percent, amount, nextRule };
+}
+
 function renderCart() {
   const list = document.getElementById('cart-items-list');
-  const subtotal = getCartSubtotal();
+  const rawSubtotal = getCartSubtotal();
+  const qtyDisc = getQuantityDiscountInfo();
+  const netSubtotal = rawSubtotal - qtyDisc.amount;
   const totalItems = cart.reduce((acc, item) => acc + item.qty, 0);
 
   const countBadge = document.getElementById('cart-count-badge');
@@ -611,9 +637,43 @@ function renderCart() {
   if (countBadge) countBadge.textContent = totalItems;
   if (desktopCount) desktopCount.textContent = totalItems;
   if (mobileBadge) mobileBadge.textContent = totalItems;
-  if (headerTotal) headerTotal.textContent = formatARS(subtotal);
-  if (subtotalEl) subtotalEl.textContent = formatARS(subtotal);
+  if (headerTotal) headerTotal.textContent = formatARS(netSubtotal);
+  if (subtotalEl) {
+    subtotalEl.innerHTML = qtyDisc.amount > 0
+      ? `<span class="text-muted text-decoration-line-through small me-1">${formatARS(rawSubtotal)}</span> ${formatARS(netSubtotal)}`
+      : formatARS(rawSubtotal);
+  }
   if (checkoutBtn) checkoutBtn.disabled = cart.length === 0;
+
+  // Aviso dinámico de descuento por cantidad dentro del carrito
+  let qtyBanner = document.getElementById('cart-qty-discount-banner');
+  if (!qtyBanner && list && list.parentElement) {
+    qtyBanner = document.createElement('div');
+    qtyBanner.id = 'cart-qty-discount-banner';
+    qtyBanner.className = 'small rounded-3 p-2 mt-2';
+    list.parentElement.insertBefore(qtyBanner, list.nextSibling);
+  }
+  if (qtyBanner) {
+    if (!cart.length) {
+      qtyBanner.classList.add('d-none');
+    } else if (qtyDisc.amount > 0) {
+      qtyBanner.classList.remove('d-none');
+      qtyBanner.style.backgroundColor = '#EEF2EC';
+      qtyBanner.style.color = '#2f4f2f';
+      const nextHint = qtyDisc.nextRule
+        ? ` Sumá ${qtyDisc.nextRule.minQty - qtyDisc.eligibleQty} más para llegar al ${qtyDisc.nextRule.percent}% OFF.`
+        : '';
+      qtyBanner.innerHTML = `🎉 <strong>${qtyDisc.percent}% OFF por cantidad aplicado</strong> (-${formatARS(qtyDisc.amount)}).${nextHint}`;
+    } else if (qtyDisc.nextRule) {
+      qtyBanner.classList.remove('d-none');
+      qtyBanner.style.backgroundColor = '#FAF8F6';
+      qtyBanner.style.color = '#555555';
+      const missing = qtyDisc.nextRule.minQty - qtyDisc.eligibleQty;
+      qtyBanner.innerHTML = `✨ Sumá <strong>${missing} producto(s)</strong> más y obtené un <strong>${qtyDisc.nextRule.percent}% OFF</strong> por cantidad.`;
+    } else {
+      qtyBanner.classList.add('d-none');
+    }
+  }
 
   if (!list) return;
 
@@ -663,7 +723,9 @@ function getSelectedPaymentMethod() {
 }
 
 function calculateCheckoutTotals() {
-  const subtotal = getCartSubtotal();
+const rawSubtotal = getCartSubtotal();
+const qtyDisc = getQuantityDiscountInfo();
+const subtotal = rawSubtotal - qtyDisc.amount;
   const paymentMethod = getSelectedPaymentMethod();
   const hasOnlyServices = cart.length > 0 && cart.every(i => i.section === 'servicios');
 
@@ -698,7 +760,7 @@ function calculateCheckoutTotals() {
   const senaAmount = paymentMethod === 'efectivo' ? Math.round(total * (PRONTA_CONFIG.senaPercent / 100)) : 0;
   const cashRest = paymentMethod === 'efectivo' ? total - senaAmount : 0;
 
-  return { subtotal, discount, shippingCost, shippingName, total, paymentMethod, senaAmount, cashRest };
+  return { subtotal, discount, shippingCost, shippingName, total, paymentMethod, senaAmount, cashRest, qtyDiscount: qtyDisc.amount, qtyDiscountPercent: qtyDisc.percent };
 }
 
 function updateCheckoutUI() {
