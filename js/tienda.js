@@ -690,6 +690,7 @@ function renderCart() {
       : formatARS(rawSubtotal);
   }
   if (checkoutBtn) checkoutBtn.disabled = cart.length === 0;
+  renderCartShipping(netSubtotal);
 
   // Aviso dinámico de descuento por cantidad dentro del carrito
   let qtyBanner = document.getElementById('cart-qty-discount-banner');
@@ -1119,6 +1120,7 @@ function bindUIEvents() {
       document.getElementById('checkout-form')?.classList.remove('d-none');
       document.getElementById('checkout-success-view')?.classList.add('d-none');
       prefillCheckoutFromCustomer();
+      syncCheckoutShippingFromCart();
       updateCheckoutUI();
       new bootstrap.Modal(document.getElementById('checkoutModal')).show();
     });
