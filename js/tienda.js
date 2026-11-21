@@ -592,6 +592,13 @@ window.updateCartQty = function (prodId, delta) {
   saveCart();
 };
 
+window.removeCartItem = function (prodId) {
+  const idx = cart.findIndex(i => String(i.productId) === String(prodId));
+  if (idx === -1) return;
+  cart.splice(idx, 1);
+  saveCart();
+};
+
 function getCartSubtotal() {
   return cart.reduce((acc, item) => acc + Number(item.price) * Number(item.qty), 0);
 }
@@ -727,10 +734,11 @@ function renderCart() {
         <div class="fw-semibold small">${item.name}</div>
         <div class="text-muted" style="font-size:0.8rem;">${formatARS(item.price)} c/u</div>
       </div>
-      <div class="d-flex align-items-center gap-2">
+     <div class="d-flex align-items-center gap-2">
         <button class="btn btn-sm btn-outline-secondary py-0 px-2" onclick="updateCartQty('${item.productId}', -1)">-</button>
         <span class="small fw-bold">${item.qty}</span>
         <button class="btn btn-sm btn-outline-secondary py-0 px-2" onclick="updateCartQty('${item.productId}', 1)">+</button>
+        <button type="button" class="btn btn-sm btn-outline-danger py-0 px-1" title="Eliminar producto" aria-label="Eliminar producto" onclick="removeCartItem('${item.productId}')">🗑️</button>
       </div>
     </li>
   `).join('');
