@@ -626,8 +626,71 @@ window.openProductDetail = function (prodId) {
 };
 
 // ============================================================
-// CARRITO DE COMPRAS
+// CARRITO DE COMPRAS (CON DESCUENTOS POR CANTIDAD Y ENVÍO GRATIS)
 // ============================================================
+function getProductQtyRules(prod) {
+  if (!prod) return [];
+  const rawList =
+    Array.isArray(prod.quantity_discounts) && prod.quantity_discounts.length
+      ? prod.quantity_discounts
+      : Array.isArray(prod.volumeRules) && prod.volumeRules.length
+        ? prod.volumeRules
+        : [];
+
+  return rawList
+    .map(r => ({
+      minQty: Number(r.minQty || r.min_qty || 0),
+      percent: Number(r.percent ?? r.discountPercent ?? r.discount_percent ?? 0)
+    }))
+    .filter(r => r.minQty > 0 && r.percent > 0)
+    .sort((a, b) => a.minQty - b.minQty);
+}
+
+function getCartItemPricing(item) {
+  const prod = findItemById(item.productId);
+  const rules = getProductQtyRules(prod);
+  const qty = Number(item.qty || 1);
+  const baseUnitPrice = Number(item.price || 0);
+
+  let appliedRule = null;
+  let nextRule = null;
+  for (const r of rules) {
+    if (qty >= r.minQty) appliedRule = r;
+    else if (!nextRule) nextRule = r;
+  }
+
+  const discountPercent = appliedRule ? appliedRule.percent : 0;
+  const finalUnitPrice = Math.round(baseUnitPrice * (1 - discountPercent / 100));
+  const lineBaseTotal = baseUnitPrice * qty;
+  const lineFinalTotal = finalUnitPrice * qty;
+  const lineSavings = lineBaseTotal - lineFinalTotal;
+
+  return {
+    baseUnitPrice,
+    finalUnitPrice,
+    discountPercent,
+    lineBaseTotal,
+    lineFinalTotal,
+    lineSavings,
+    nextRule
+  };
+}
+
+function getCartTotals() {
+  let rawSubtotal = 0;
+  let subtotal = 0;
+  for (const item of cart) {
+    const p = getCartItemPricing(item);
+    rawSubtotal += p.lineBaseTotal;
+    subtotal += p.lineFinalTotal;
+  }
+  return {
+    rawSubtotal,
+    qtyDiscountTotal: rawSubtotal - subtotal,
+    subtotal
+  };
+}
+
 function saveCart() {
   localStorage.setItem('pronta_cart_v2', JSON.stringify(cart));
   renderCart();
@@ -663,19 +726,57 @@ window.updateCartQty = function (prodId, delta) {
 };
 
 function getCartSubtotal() {
-  return cart.reduce((acc, item) => acc + Number(item.price) * Number(item.qty), 0);
+  return getCartTotals().subtotal;
+}
+
+function buildCartFreeShippingBanner(subtotal) {
+  const hasOnlyServices = cart.length > 0 && cart.every(i => i.section === 'servicios');
+  if (!cart.length || hasOnlyServices) return '';
+
+  const thresholds = allShippingMethods
+    .filter(m => m.active !== false && Number(m.free_threshold || 0) > 0)
+    .sort((a, b) => Number(a.free_threshold) - Number(b.free_threshold));
+
+  if (!thresholds.length) return '';
+
+  const rows = thresholds.map(m => {
+    const limit = Number(m.free_threshold);
+    const label = escapeHTML(m.name || m.label || 'Envío');
+    if (subtotal >= limit) {
+      return `<div class="small text-success fw-semibold">✓ ¡Tenés ${label} GRATIS!</div>`;
+    }
+    const missing = limit - subtotal;
+    const pct = Math.min(100, Math.round((subtotal / limit) * 100));
+    return `
+      <div class="mb-2">
+        <div class="small text-muted">
+          Te faltan <strong class="text-dark">${formatARS(missing)}</strong> para <strong>${label} GRATIS</strong>
+        </div>
+        <div class="progress mt-1" style="height:5px;">
+          <div class="progress-bar" role="progressbar" style="width:${pct}%; background-color:#A3B19B;"></div>
+        </div>
+      </div>
+    `;
+  }).join('');
+
+  return `
+    <li class="list-group-item bg-light border-0 rounded-3 mt-2 p-3">
+      <div class="small fw-bold mb-1" style="color:#333;">🚚 Envío gratis</div>
+      ${rows}
+    </li>
+  `;
 }
 
 function renderCart() {
   const list = document.getElementById('cart-items-list');
-  const subtotal = getCartSubtotal();
+  const totals = getCartTotals();
   const totalItems = cart.reduce((acc, item) => acc + item.qty, 0);
 
   document.getElementById('cart-count-badge').textContent = totalItems;
   document.getElementById('desktop-cart-count').textContent = totalItems;
   document.getElementById('mobile-cart-badge').textContent = totalItems;
-  document.getElementById('header-cart-total').textContent = formatARS(subtotal);
-  document.getElementById('cart-subtotal').textContent = formatARS(subtotal);
+  document.getElementById('header-cart-total').textContent = formatARS(totals.subtotal);
+  document.getElementById('cart-subtotal').textContent = formatARS(totals.subtotal);
   document.getElementById('btn-open-checkout').disabled = cart.length === 0;
 
   if (!cart.length) {
@@ -683,19 +784,43 @@ function renderCart() {
     return;
   }
 
-  list.innerHTML = cart.map(item => `
-    <li class="list-group-item d-flex justify-content-between align-items-center py-3">
-      <div class="me-2">
-        <div class="fw-semibold small">${escapeHTML(item.name)}</div>
-        <div class="text-muted" style="font-size:0.8rem;">${formatARS(item.price)} c/u</div>
-      </div>
-      <div class="d-flex align-items-center gap-2">
-        <button class="btn btn-sm btn-outline-secondary py-0 px-2" onclick="updateCartQty('${escapeHTML(item.productId)}', -1)">-</button>
-        <span class="small fw-bold">${item.qty}</span>
-        <button class="btn btn-sm btn-outline-secondary py-0 px-2" onclick="updateCartQty('${escapeHTML(item.productId)}', 1)">+</button>
-      </div>
-    </li>
-  `).join('');
+  const itemsHtml = cart.map(item => {
+    const p = getCartItemPricing(item);
+    const priceLine = p.discountPercent > 0
+      ? `<span class="text-decoration-line-through text-muted me-1">${formatARS(p.baseUnitPrice)}</span>
+         <span class="text-success fw-semibold">${formatARS(p.finalUnitPrice)} c/u (${p.discountPercent}% OFF)</span>`
+      : `${formatARS(p.baseUnitPrice)} c/u`;
+
+    const nextHint = p.nextRule
+      ? `<div class="text-pronta-sage" style="font-size:0.75rem;">
+           Sumá ${p.nextRule.minQty - item.qty} más para ${p.nextRule.percent}% OFF
+         </div>`
+      : '';
+
+    return `
+      <li class="list-group-item d-flex justify-content-between align-items-center py-3">
+        <div class="me-2">
+          <div class="fw-semibold small">${escapeHTML(item.name)}</div>
+          <div class="text-muted" style="font-size:0.8rem;">${priceLine}</div>
+          ${nextHint}
+        </div>
+        <div class="d-flex align-items-center gap-2">
+          <button class="btn btn-sm btn-outline-secondary py-0 px-2" onclick="updateCartQty('${escapeHTML(item.productId)}', -1)">-</button>
+          <span class="small fw-bold">${item.qty}</span>
+          <button class="btn btn-sm btn-outline-secondary py-0 px-2" onclick="updateCartQty('${escapeHTML(item.productId)}', 1)">+</button>
+        </div>
+      </li>
+    `;
+  }).join('');
+
+  const savingsHtml = totals.qtyDiscountTotal > 0
+    ? `<li class="list-group-item d-flex justify-content-between small text-success fw-semibold bg-light border-0 rounded-3 mt-2 py-2 px-3">
+         <span>Ahorro por cantidad</span>
+         <span>-${formatARS(totals.qtyDiscountTotal)}</span>
+       </li>`
+    : '';
+
+  list.innerHTML = itemsHtml + savingsHtml + buildCartFreeShippingBanner(totals.subtotal);
 }
 
 // ============================================================
@@ -881,7 +1006,7 @@ async function handleCheckoutSubmit(e) {
           items: cart.map(item => ({
             title: item.name || 'Producto PRONTA',
             quantity: item.qty,
-            unit_price: Number(item.price || 0)
+            unit_price: getCartItemPricing(item).finalUnitPrice
           })),
           payer: { name, email },
           shipping_cost: totals.shippingCost
