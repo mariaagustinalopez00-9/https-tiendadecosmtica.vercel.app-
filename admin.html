@@ -259,23 +259,30 @@
 
         <!-- ================= PESTAÑA 1: PEDIDOS ================= -->
         <div class="tab-pane fade show active" id="tab-orders">
-          <div class="d-flex flex-wrap justify-content-between align-items-center mb-3 gap-2">
-            <h4 class="mb-0">Gestión de Pedidos</h4>
-          <div class="d-flex gap-2">
-              <input
-                type="search"
-                id="search-orders"
-                class="form-control form-control-sm"
-                style="min-width: 240px;"
-                placeholder="Buscar por #orden, nombre, mail, tel, dirección..."
-              >
-              <select id="filter-order-status" class="form-select form-select-sm" style="width:auto;">
-                <option value="all">Todos los estados</option>
-                ...
-              </select>
-              <button class="btn btn-sm btn-outline-pronta" onclick="loadAllData()">↻ Actualizar</button>
+       <div class="mb-3">
+            <h4 class="mb-2">Gestión de Pedidos</h4>
+            <div class="d-flex flex-wrap align-items-center justify-content-between gap-2 bg-white p-3 rounded-4 border" style="border-color: #EBE6E2 !important;">
+              <div class="flex-grow-1" style="min-width: 260px;">
+                <input
+                  type="search"
+                  id="search-orders"
+                  class="form-control form-control-sm"
+                  placeholder="Buscar por #orden, nombre, mail, teléfono, dirección o nota..."
+                >
+              </div>
+              <div class="d-flex align-items-center gap-2">
+                <select id="filter-order-status" class="form-select form-select-sm" style="width:auto;">
+                  <option value="all">Todos los estados</option>
+                  <option value="Pendiente">Pendiente</option>
+                  <option value="Pagado">Pagado</option>
+                  <option value="Enviado">Enviado</option>
+                  <option value="Entregado">Entregado</option>
+                  <option value="Cancelado">Cancelado</option>
+                </select>
+                <button type="button" class="btn btn-sm btn-outline-pronta text-nowrap" onclick="loadAllData()">↻ Actualizar</button>
+              </div>
             </div>
-
+          </div>
           <div class="table-card">
             <div class="table-responsive">
               <table class="table table-hover align-middle mb-0">
