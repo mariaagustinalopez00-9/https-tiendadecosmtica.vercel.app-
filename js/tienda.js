@@ -8,7 +8,7 @@ const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBh
 const PRONTA_CONFIG = {
   whatsapp: '5491157948612',
   discountPercent: 5,       // 5% OFF en Transferencia y Efectivo
-  senaPercent: 50,          // 50% de seña para pago en Efectivo
+  senaPercent: 30,          // 30% de seña para pago en Efectivo
   bank: {
     titular: 'María Agustina López',
     banco: 'Naranja',
