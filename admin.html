@@ -261,18 +261,20 @@
         <div class="tab-pane fade show active" id="tab-orders">
           <div class="d-flex flex-wrap justify-content-between align-items-center mb-3 gap-2">
             <h4 class="mb-0">Gestión de Pedidos</h4>
-            <div class="d-flex gap-2">
+          <div class="d-flex gap-2">
+              <input
+                type="search"
+                id="search-orders"
+                class="form-control form-control-sm"
+                style="min-width: 240px;"
+                placeholder="Buscar por #orden, nombre, mail, tel, dirección..."
+              >
               <select id="filter-order-status" class="form-select form-select-sm" style="width:auto;">
                 <option value="all">Todos los estados</option>
-                <option value="Pendiente">Pendiente</option>
-                <option value="Pagado">Pagado</option>
-                <option value="Enviado">Enviado</option>
-                <option value="Entregado">Entregado</option>
-                <option value="Cancelado">Cancelado</option>
+                ...
               </select>
               <button class="btn btn-sm btn-outline-pronta" onclick="loadAllData()">↻ Actualizar</button>
             </div>
-          </div>
 
           <div class="table-card">
             <div class="table-responsive">
@@ -506,6 +508,59 @@
     </div>
   </div>
 
+  <!-- MODAL: EDITAR PEDIDO / CLIENTE Y NOTAS INTERNAS -->
+  <div class="modal fade" id="orderEditModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered modal-lg">
+      <div class="modal-content rounded-4 border-0">
+        <div class="modal-header border-bottom">
+          <h5 class="modal-title brand-serif" id="orderEditModalTitle">Editar Pedido y Nota Interna</h5>
+          <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Cerrar"></button>
+        </div>
+        <form id="order-edit-form">
+          <div class="modal-body p-4">
+            <input type="hidden" id="edit-order-id">
+            <div class="row g-3">
+              <div class="col-md-6">
+                <label class="form-label small fw-bold">Nombre del Cliente</label>
+                <input type="text" id="edit-customer-name" class="form-control">
+              </div>
+              <div class="col-md-6">
+                <label class="form-label small fw-bold">Teléfono</label>
+                <input type="text" id="edit-customer-phone" class="form-control">
+              </div>
+              <div class="col-md-6">
+                <label class="form-label small fw-bold">Email</label>
+                <input type="email" id="edit-customer-email" class="form-control">
+              </div>
+              <div class="col-md-6">
+                <label class="form-label small fw-bold">Estado del Pedido</label>
+                <select id="edit-order-status" class="form-select">
+                  <option value="Pendiente">Pendiente</option>
+                  <option value="Pagado">Pagado</option>
+                  <option value="Enviado">Enviado</option>
+                  <option value="Entregado">Entregado</option>
+                  <option value="Cancelado">Cancelado</option>
+                </select>
+              </div>
+              <div class="col-12">
+                <label class="form-label small fw-bold">Dirección / Detalle de Envío o Retiro</label>
+                <input type="text" id="edit-shipping-address" class="form-control">
+              </div>
+              <div class="col-12">
+                <label class="form-label small fw-bold">Nota Interna de Administradora (no visible para el cliente)</label>
+                <textarea id="edit-admin-notes" class="form-control" rows="3" placeholder="Ej: Coordinar horario por WhatsApp antes de despachar, verificar comprobante, etc."></textarea>
+              </div>
+            </div>
+          </div>
+          <div class="modal-footer border-top">
+            <button type="button" class="btn btn-outline-secondary rounded-3" data-bs-dismiss="modal">Cancelar</button>
+            <button type="submit" id="btn-save-order-edit" class="btn btn-pronta rounded-3 px-4">Guardar Cambios</button>
+          </div>
+        </form>
+      </div>
+    </div>
+  </div>
+  
   <!-- Contenedor Toasts -->
   <div class="toast-container-pronta" id="toast-container"></div>
 
@@ -640,42 +695,83 @@
 
     // ==================== PEDIDOS ====================
     
-    function renderOrders() {
+function renderOrders() {
       const tbody = document.getElementById('orders-tbody');
       const filterStatus = document.getElementById('filter-order-status').value;
+      const query = String(document.getElementById('search-orders')?.value || '')
+        .trim()
+        .toLowerCase();
 
-      const filtered = filterStatus === 'all'
-        ? orders
-        : orders.filter(o => (o.status || 'Pendiente') === filterStatus);
+      const filtered = orders.filter(o => {
+        const status = o.status || 'Pendiente';
+        const matchesStatus = filterStatus === 'all' || status === filterStatus;
+        if (!matchesStatus) return false;
+
+        if (!query) return true;
+
+        const itemsText = Array.isArray(o.items)
+          ? o.items.map(i => `${i.qty || ''} ${i.name || ''}`).join(' ')
+          : '';
+
+        const searchable = [
+          o.id,
+          o.order_number,
+          o.customer_name,
+          o.customer_email,
+          o.customer_phone,
+          o.shipping_address,
+          o.shipping_method,
+          o.payment_method,
+          status,
+          o.admin_notes,
+          itemsText
+        ]
+          .map(v => String(v ?? '').toLowerCase())
+          .join(' ');
+
+        return searchable.includes(query);
+      });
 
       if (!filtered.length) {
-        tbody.innerHTML = '<tr><td colspan="7" class="text-center py-4 text-muted">No hay pedidos para mostrar.</td></tr>';
+        tbody.innerHTML = '<tr><td colspan="7" class="text-center py-4 text-muted">No hay pedidos que coincidan con el filtro.</td></tr>';
         return;
       }
 
       tbody.innerHTML = filtered.map(o => {
-        const dateStr = o.created_at ? new Date(o.created_at).toLocaleString('es-AR', { dateStyle: 'short', timeStyle: 'short' }) : '-';
+        const dateStr = o.created_at
+          ? new Date(o.created_at).toLocaleString('es-AR', { dateStyle: 'short', timeStyle: 'short' })
+          : '-';
         const itemsList = Array.isArray(o.items)
           ? o.items.map(i => `<div>• ${escapeHTML(i.qty)}x ${escapeHTML(i.name)}</div>`).join('')
           : '<span class="text-muted small">Sin detalle</span>';
+
         const status = o.status || 'Pendiente';
         const safeStatus = escapeHTML(status);
         const safeOrderId = escapeHTML(o.id);
+        const orderCode = escapeHTML(o.order_number || String(o.id || '').slice(0, 8));
         const cleanPhone = String(o.customer_phone || '').replace(/\D/g, '');
+
+        const noteBadge = o.admin_notes
+          ? `<div class="mt-1 p-1 px-2 rounded-2 small" style="background:#FFF8E7; border-left:3px solid #D4A3A3; font-size:0.75rem;"><strong>Nota admin:</strong> ${escapeHTML(o.admin_notes)}</div>`
+          : '';
+
         const waBtn = cleanPhone
           ? `<a href="https://wa.me/${escapeHTML(cleanPhone)}" target="_blank" rel="noopener noreferrer" class="btn btn-sm btn-outline-success" title="Escribir por WhatsApp">WhatsApp</a>`
           : '';
 
+        const editBtn = `<button type="button" class="btn btn-sm btn-outline-pronta" onclick="openOrderEditModal('${safeOrderId}')">Editar</button>`;
+
         return `
           <tr>
             <td>
-              <div class="fw-bold small">#${escapeHTML(String(o.id).slice(0, 8))}</div>
+              <div class="fw-bold small">#${orderCode}</div>
               <div class="text-muted" style="font-size:0.75rem;">${escapeHTML(dateStr)}</div>
             </td>
             <td>
               <div class="fw-semibold small">${escapeHTML(o.customer_name || '-')}</div>
               <div class="text-muted" style="font-size:0.75rem;">${escapeHTML(o.customer_email || '')}</div>
               <div class="text-muted" style="font-size:0.75rem;">${escapeHTML(o.customer_phone || '')}</div>
+              ${noteBadge}
             </td>
             <td class="small">${itemsList}</td>
             <td class="small">
@@ -691,218 +787,55 @@
                 ).join('')}
               </select>
             </td>
-            <td class="text-end">${waBtn}</td>
-          </tr>
-        `;
-      }).join('');
-    }
-    document.getElementById('filter-order-status').addEventListener('change', renderOrders);
-
-    window.updateOrderStatus = async function (orderId, newStatus) {
-      const { error } = await sb.from('orders').update({ status: newStatus }).eq('id', orderId);
-      if (error) {
-        showToast('Error al actualizar estado: ' + error.message);
-        return;
-      }
-      showToast(`Pedido actualizado a "${newStatus}"`);
-      await loadAllData();
-    };
-
-    // ==================== PRODUCTOS, KITS Y SERVICIOS ====================
-    function getCategoryLabelById(catId) {
-      const mapExtra = {
-        kits: 'Kits & Gift',
-        limpiezas: 'Limpiezas Faciales',
-        producciones: 'Producciones Personalizadas',
-        crea: 'Crea Tu Cosmética'
-      };
-      if (mapExtra[catId]) return mapExtra[catId];
-      const found = categories.find(c => String(c.id) === String(catId));
-      return found ? (found.label || found.name || catId) : (catId || 'Sin categoría');
-    }
-
-    function populateCategorySelect() {
-      const select = document.getElementById('prod-category');
-      const catOptions = categories.length
-        ? categories.map(c => `<option value="${c.id}">${c.label || c.name || c.id}</option>`).join('')
-        : '<option value="cremas">Cremas & Geles</option><option value="serums">Serums & Activos</option><option value="brumas">Tónicos & Brumas</option>';
-
-      select.innerHTML = `
-        <optgroup label="Categorías de Cosmética">
-          ${catOptions}
-        </optgroup>
-        <optgroup label="Kits y Servicios">
-          <option value="kits">Kits & Gift</option>
-          <option value="limpiezas">Limpiezas Faciales</option>
-          <option value="producciones">Producciones Personalizadas</option>
-          <option value="crea">Crea Tu Cosmética</option>
-        </optgroup>
-      `;
-    }
-
-    function renderProducts() {
-      const tbody = document.getElementById('products-tbody');
-      const areaFilter = document.getElementById('filter-prod-area').value;
-
-      const filtered = areaFilter === 'all'
-        ? products
-        : products.filter(p => (p.section || 'productos') === areaFilter);
-
-      if (!filtered.length) {
-        tbody.innerHTML = '<tr><td colspan="6" class="text-center py-4 text-muted">No hay ítems cargados en esta área.</td></tr>';
-        return;
-      }
-
-      tbody.innerHTML = filtered.map(p => {
-        const img = escapeHTML(safeImageUrl(p.image || p.image_url));
-        const area = p.section || 'productos';
-        const safeArea = escapeHTML(area);
-        const safeId = escapeHTML(p.id);
-        const safeName = escapeHTML(p.name);
-        const safePres = escapeHTML(p.presentation);
-        const safeCat = escapeHTML(getCategoryLabelById(p.category || p.category_id));
-
-        return `
-          <tr>
-            <td>
-              <div class="d-flex align-items-center gap-3">
-                <img src="${img}" class="prod-thumb" alt="${safeName}">
-                <div>
-                  <div class="fw-bold small">${safeName}</div>
-                  <div class="text-muted" style="font-size:0.75rem;">ID: ${safeId} ${p.presentation ? '· ' + safePres : ''}</div>
-                </div>
+            <td class="text-end">
+              <div class="d-inline-flex gap-1">
+                ${editBtn}
+                ${waBtn}
               </div>
             </td>
-            <td><span class="area-badge area-${safeArea}">${escapeHTML(getAreaLabel(area))}</span></td>
-            <td class="small">${safeCat}</td>
-            <td class="fw-bold">${formatARS(p.price)}</td>
-            <td>${p.is_new || p.featured ? '<span class="badge bg-dark">Nuevo</span>' : '<span class="text-muted small">-</span>'}</td>
-            <td class="text-end">
-              <button class="btn btn-sm btn-outline-pronta me-1" onclick="openProductModal('${safeId}')">Editar</button>
-              <button class="btn btn-sm btn-outline-danger" onclick="deleteProduct('${safeId}')">Eliminar</button>
-            </td>
           </tr>
         `;
       }).join('');
     }
-    document.getElementById('filter-prod-area').addEventListener('change', renderProducts);
 
-    window.openProductModal = function (prodId = null) {
-      document.getElementById('product-form').reset();
-      if (prodId) {
-        const p = products.find(x => String(x.id) === String(prodId));
-        if (!p) return;
-        document.getElementById('productModalTitle').textContent = 'Editar Ítem';
-        document.getElementById('prod-edit-mode').value = 'edit';
-        document.getElementById('prod-id').value = p.id;
-        document.getElementById('prod-name').value = p.name || '';
-        document.getElementById('prod-price').value = p.price || 0;
-        document.getElementById('prod-section').value = p.section || 'productos';
-        document.getElementById('prod-category').value = p.category || p.category_id || '';
-        document.getElementById('prod-presentation').value = p.presentation || p.volume || '';
-        document.getElementById('prod-image').value = p.image || p.image_url || '';
-        document.getElementById('prod-description').value = p.description || '';
-        document.getElementById('prod-is-new').checked = Boolean(p.is_new || p.featured);
-        renderQtyTiersEditor(p.quantity_discounts);
-      } else {
-        renderQtyTiersEditor([]);
-        document.getElementById('productModalTitle').textContent = 'Nuevo Producto / Kit / Servicio';
-        document.getElementById('prod-edit-mode').value = 'create';
-        document.getElementById('prod-id').value = 'prod-' + Date.now().toString().slice(-5);
-        document.getElementById('prod-section').value = 'productos';
-      }
-      new bootstrap.Modal(document.getElementById('productModal')).show();
+    document.getElementById('filter-order-status').addEventListener('change', renderOrders);
+    document.getElementById('search-orders')?.addEventListener('input', renderOrders);
+
+    window.openOrderEditModal = function (orderId) {
+      const order = orders.find(o => String(o.id) === String(orderId));
+      if (!order) return;
+
+      document.getElementById('edit-order-id').value = order.id;
+      document.getElementById('edit-customer-name').value = order.customer_name || '';
+      document.getElementById('edit-customer-phone').value = order.customer_phone || '';
+      document.getElementById('edit-customer-email').value = order.customer_email || '';
+      document.getElementById('edit-order-status').value = order.status || 'Pendiente';
+      document.getElementById('edit-shipping-address').value = order.shipping_address || '';
+      document.getElementById('edit-admin-notes').value = order.admin_notes || '';
+
+      new bootstrap.Modal(document.getElementById('orderEditModal')).show();
     };
 
-    document.getElementById('product-form').addEventListener('submit', async (e) => {
+    document.getElementById('order-edit-form')?.addEventListener('submit', async (e) => {
       e.preventDefault();
-      const mode = document.getElementById('prod-edit-mode').value;
-      const id = document.getElementById('prod-id').value;
-
+      const orderId = document.getElementById('edit-order-id').value;
       const payload = {
-        name: document.getElementById('prod-name').value.trim(),
-        price: Number(document.getElementById('prod-price').value || 0),
-        section: document.getElementById('prod-section').value,
-        category: document.getElementById('prod-category').value,
-        presentation: document.getElementById('prod-presentation').value.trim(),
-        image: document.getElementById('prod-image').value.trim(),
-        description: document.getElementById('prod-description').value.trim(),
-        is_new: document.getElementById('prod-is-new').checked,
-      
-  quantity_discounts: getQtyTiersFromEditor()
-};
-    
-
-      let res;
-      if (mode === 'edit') {
-        res = await sb.from('products').update(payload).eq('id', id);
-      } else {
-        res = await sb.from('products').insert([{ id, ...payload }]);
-      }
-
-      if (res.error) {
-        showToast('Error al guardar: ' + res.error.message);
-        return;
-      }
-
-      bootstrap.Modal.getInstance(document.getElementById('productModal')).hide();
-      showToast(mode === 'edit' ? 'Ítem actualizado correctamente' : 'Ítem creado con éxito');
-      await loadAllData();
-    });
-
-    window.deleteProduct = async function (prodId) {
-      if (!confirm('¿Segura que querés eliminar este ítem del catálogo?')) return;
-      const { error } = await sb.from('products').delete().eq('id', prodId);
-      if (error) {
-        showToast('Error al eliminar: ' + error.message);
-        return;
-      }
-      showToast('Ítem eliminado');
-      await loadAllData();
-    };
-
-    // ==================== ENVÍOS (CARRITO) ====================
-    function renderShipping() {
-      const tbody = document.getElementById('shipping-tbody');
-      if (!shippingMethods.length) {
-        tbody.innerHTML = '<tr><td colspan="4" class="text-center py-4 text-muted">No hay métodos de envío cargados.</td></tr>';
-        return;
-      }
-
-      tbody.innerHTML = shippingMethods.map(m => `
-        <tr>
-          <td class="fw-semibold small">${m.name || m.label}</td>
-          <td class="fw-bold">${Number(m.price || m.cost || 0) === 0 ? 'Gratis' : formatARS(m.price || m.cost)}</td>
-          <td class="small text-muted">${Number(m.free_threshold || 0) > 0 ? formatARS(m.free_threshold) : 'Sin tope'}</td>
-          <td class="text-end">
-            <button class="btn btn-sm btn-outline-danger" onclick="deleteShipping('${m.id}')">Eliminar</button>
-          </td>
-        </tr>
-      `).join('');
-    }
-
-    window.openShippingModal = function () {
-      document.getElementById('shipping-form').reset();
-      document.getElementById('ship-id').value = '';
-      new bootstrap.Modal(document.getElementById('shippingModal')).show();
-    };
-
-    document.getElementById('shipping-form').addEventListener('submit', async (e) => {
-      e.preventDefault();
-      const payload = {
-        name: document.getElementById('ship-name').value.trim(),
-        price: Number(document.getElementById('ship-price').value || 0),
-        free_threshold: Number(document.getElementById('ship-threshold').value || 0)
+        customer_name: document.getElementById('edit-customer-name').value.trim(),
+        customer_phone: document.getElementById('edit-customer-phone').value.trim(),
+        customer_email: document.getElementById('edit-customer-email').value.trim(),
+        status: document.getElementById('edit-order-status').value,
+        shipping_address: document.getElementById('edit-shipping-address').value.trim(),
+        admin_notes: document.getElementById('edit-admin-notes').value.trim()
       };
 
-      const { error } = await sb.from('shipping_methods').insert([payload]);
+      const { error } = await sb.from('orders').update(payload).eq('id', orderId);
       if (error) {
-        showToast('Error al guardar envío: ' + error.message);
+        showToast('Error al guardar cambios del pedido: ' + error.message);
         return;
       }
 
-      bootstrap.Modal.getInstance(document.getElementById('shippingModal')).hide();
-      showToast('Método de envío agregado');
+      bootstrap.Modal.getInstance(document.getElementById('orderEditModal')).hide();
+      showToast('Pedido y nota interna actualizados');
       await loadAllData();
     });
 
