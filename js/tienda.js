@@ -850,7 +850,10 @@ function getSelectedPaymentMethod() {
 }
 
 function calculateCheckoutTotals() {
-  const subtotal = getCartSubtotal();
+  const cartTotals = getCartTotals();
+  const rawSubtotal = cartTotals.rawSubtotal;
+  const qtyDiscountTotal = cartTotals.qtyDiscountTotal;
+  const subtotal = cartTotals.subtotal;
   const paymentMethod = getSelectedPaymentMethod();
   const hasOnlyServices = cart.length > 0 && cart.every(i => i.section === 'servicios');
 
@@ -885,13 +888,37 @@ function calculateCheckoutTotals() {
   const senaAmount = paymentMethod === 'efectivo' ? Math.round(total * (PRONTA_CONFIG.senaPercent / 100)) : 0;
   const cashRest = paymentMethod === 'efectivo' ? total - senaAmount : 0;
 
-  return { subtotal, discount, shippingCost, shippingName, total, paymentMethod, senaAmount, cashRest };
+  return { rawSubtotal, qtyDiscountTotal, subtotal, discount, shippingCost, shippingName, total, paymentMethod, senaAmount, cashRest };
 }
 
 function updateCheckoutUI() {
   const t = calculateCheckoutTotals();
 
-  document.getElementById('chk-subtotal').textContent = formatARS(t.subtotal);
+  const subtotalEl = document.getElementById('chk-subtotal');
+  subtotalEl.textContent = formatARS(t.rawSubtotal);
+
+  // Fila dinámica de Descuento por cantidad debajo de Subtotal productos
+  let qtyDiscRow = document.getElementById('chk-qty-discount-row');
+  if (!qtyDiscRow && subtotalEl) {
+    const parentRow = subtotalEl.closest('.d-flex');
+    if (parentRow) {
+      qtyDiscRow = document.createElement('div');
+      qtyDiscRow.id = 'chk-qty-discount-row';
+      qtyDiscRow.className = 'd-flex justify-content-between small text-success mb-2 d-none';
+      qtyDiscRow.innerHTML = '<span>Descuento por cantidad</span><span id="chk-qty-discount">-$0</span>';
+      parentRow.insertAdjacentElement('afterend', qtyDiscRow);
+    }
+  }
+
+  if (qtyDiscRow) {
+    if (t.qtyDiscountTotal > 0) {
+      qtyDiscRow.classList.remove('d-none');
+      document.getElementById('chk-qty-discount').textContent = '-' + formatARS(t.qtyDiscountTotal);
+    } else {
+      qtyDiscRow.classList.add('d-none');
+    }
+  }
+
   document.getElementById('chk-shipping-cost').textContent = t.shippingCost === 0 ? 'Gratis' : formatARS(t.shippingCost);
   document.getElementById('chk-total').textContent = formatARS(t.total);
 
@@ -929,7 +956,6 @@ function updateCheckoutUI() {
     btn.textContent = `Confirmar Pedido (Seña ${formatARS(t.senaAmount)})`;
   }
 }
-
 async function handleCheckoutSubmit(e) {
   e.preventDefault();
   if (!cart.length) return;
