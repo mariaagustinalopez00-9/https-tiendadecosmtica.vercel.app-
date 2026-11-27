@@ -877,7 +877,7 @@
       </div>
     </div>
 
-    <!-- Modal Cuenta de Cliente (Datos + Historial de Pedidos) -->
+   <!-- Modal Cuenta de Cliente (Supabase Auth + Perfil + Historial de Pedidos) -->
     <div class="modal fade" id="customerModal" tabindex="-1" aria-hidden="true">
       <div class="modal-dialog modal-dialog-centered modal-lg modal-dialog-scrollable">
         <div class="modal-content rounded-4 border-0">
@@ -886,14 +886,14 @@
             <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Cerrar"></button>
           </div>
           <div class="modal-body p-4">
-           <ul class="nav nav-tabs mb-4" id="customer-tabs" role="tablist">
-              <li class="nav-item" id="cust-nav-login">
+            <ul class="nav nav-tabs mb-4" id="customer-tabs" role="tablist">
+              <li class="nav-item">
                 <button class="nav-link active" id="cust-tab-login-btn" data-bs-toggle="tab" data-bs-target="#cust-tab-login" type="button">Iniciar Sesión</button>
               </li>
               <li class="nav-item">
-                <button class="nav-link" id="cust-tab-profile-btn" data-bs-toggle="tab" data-bs-target="#cust-tab-profile" type="button">Crear Cuenta</button>
+                <button class="nav-link" id="cust-tab-profile-btn" data-bs-toggle="tab" data-bs-target="#cust-tab-profile" type="button">Crear Cuenta / Mis Datos</button>
               </li>
-              <li class="nav-item d-none" id="cust-nav-orders">
+              <li class="nav-item">
                 <button class="nav-link" id="cust-tab-orders-btn" data-bs-toggle="tab" data-bs-target="#cust-tab-orders" type="button" onclick="loadCustomerOrders()">Mis Pedidos</button>
               </li>
             </ul>
@@ -902,18 +902,21 @@
               <!-- Pestaña Iniciar Sesión -->
               <div class="tab-pane fade show active" id="cust-tab-login">
                 <p class="small text-muted mb-3">
-                  Ingresá con tu email y contraseña para acceder a tus datos guardados y ver el historial de tus pedidos.
+                  Ingresá con tu email y contraseña para acceder a tus datos guardados y a tu historial de pedidos.
                 </p>
                 <form id="customer-login-form">
                   <div class="row g-3">
                     <div class="col-md-6">
                       <label class="form-label small fw-bold">Email *</label>
-                      <input type="email" id="login-cust-email" class="form-control" required placeholder="tuemail@ejemplo.com">
+                      <input type="email" id="login-cust-email" class="form-control" required autocomplete="email" placeholder="tuemail@ejemplo.com">
                     </div>
                     <div class="col-md-6">
                       <label class="form-label small fw-bold">Contraseña *</label>
-                      <input type="password" id="login-cust-password" class="form-control" required placeholder="••••••••">
+                      <input type="password" id="login-cust-password" class="form-control" required autocomplete="current-password" placeholder="••••••••">
                     </div>
+                  </div>
+                  <div class="mt-2">
+                    <button type="button" class="btn btn-link btn-sm p-0 text-decoration-none text-pronta" onclick="handleForgotPassword()">¿Olvidaste tu contraseña?</button>
                   </div>
                   <div id="cust-login-feedback" class="small mt-2 d-none"></div>
                   <div class="d-flex flex-wrap justify-content-between align-items-center gap-2 mt-4 pt-3 border-top">
@@ -923,42 +926,32 @@
                 </form>
               </div>
 
-              <!-- Pestaña Crear Cuenta / Mis Datos (dentro de sesión) -->
+              <!-- Pestaña Crear Cuenta / Mis Datos -->
               <div class="tab-pane fade" id="cust-tab-profile">
-                <p class="small text-muted mb-3" id="cust-profile-subtitle">
-                  Completá tus datos para crear tu cuenta y agilizar tus próximas compras.
+                <p class="small text-muted mb-3" id="cust-profile-help">
+                  Creá tu cuenta o actualizá tus datos de envío para agilizar tus próximas compras.
                 </p>
                 <form id="customer-profile-form">
-                  <div class="d-flex align-items-center gap-3 mb-3 p-3 rounded-3 bg-light">
-                    <img id="cust-avatar-preview" src="" alt="Foto de perfil" class="rounded-circle d-none" style="width:56px; height:56px; object-fit:cover; border:2px solid #D4A3A3;">
-                    <div id="cust-avatar-placeholder" class="rounded-circle d-flex align-items-center justify-content-center fw-bold" style="width:56px; height:56px; background:#F6ECEC; color:#333333; border:2px solid #D4A3A3;">
-                      ?
-                    </div>
-                    <div class="flex-grow-1">
-                      <label for="cust-avatar-file" class="form-label small fw-bold mb-1 d-block">Foto de perfil (opcional)</label>
-                      <input type="file" id="cust-avatar-file" accept="image/*" class="form-control form-control-sm">
-                    </div>
-                  </div>
                   <div class="row g-3">
                     <div class="col-md-6">
                       <label class="form-label small fw-bold">Nombre y Apellido *</label>
-                      <input type="text" id="cust-name" class="form-control" required placeholder="Ej: Lucía Gómez">
+                      <input type="text" id="cust-name" class="form-control" required autocomplete="name" placeholder="Ej: Lucía Gómez">
                     </div>
                     <div class="col-md-6">
                       <label class="form-label small fw-bold">Email *</label>
-                      <input type="email" id="cust-email" class="form-control" required placeholder="tuemail@ejemplo.com">
+                      <input type="email" id="cust-email" class="form-control" required autocomplete="email" placeholder="tuemail@ejemplo.com">
                     </div>
-                    <div class="col-md-6">
+                    <div class="col-md-6" id="cust-password-group">
                       <label class="form-label small fw-bold">Contraseña *</label>
-                      <input type="password" id="cust-password" class="form-control" required placeholder="••••••••">
+                      <input type="password" id="cust-password" class="form-control" minlength="6" autocomplete="new-password" placeholder="Mínimo 6 caracteres">
                     </div>
                     <div class="col-md-6">
                       <label class="form-label small fw-bold">WhatsApp / Teléfono *</label>
-                      <input type="tel" id="cust-phone" class="form-control" required placeholder="Ej: 11 5555-5555">
+                      <input type="tel" id="cust-phone" class="form-control" required autocomplete="tel" placeholder="Ej: 11 5555-5555">
                     </div>
                     <div class="col-md-6">
                       <label class="form-label small fw-bold">Dirección / Localidad</label>
-                      <input type="text" id="cust-address" class="form-control" placeholder="Calle, altura, localidad">
+                      <input type="text" id="cust-address" class="form-control" autocomplete="street-address" placeholder="Calle, altura, localidad">
                     </div>
                     <div class="col-md-3">
                       <label class="form-label small fw-bold">Provincia</label>
@@ -966,28 +959,32 @@
                     </div>
                     <div class="col-md-3">
                       <label class="form-label small fw-bold">Código Postal</label>
-                      <input type="text" id="cust-postal" class="form-control" placeholder="Ej: 5511">
+                      <input type="text" id="cust-postal" class="form-control" autocomplete="postal-code" placeholder="Ej: 5511">
                     </div>
                   </div>
+                  <div id="cust-profile-feedback" class="small mt-2 d-none"></div>
                   <div class="d-flex flex-wrap justify-content-between align-items-center gap-2 mt-4 pt-3 border-top">
-                    <button type="button" id="btn-cust-logout" class="btn btn-sm btn-outline-secondary d-none" onclick="clearCustomerProfile()">Cerrar sesión</button>
-                    <button type="submit" id="btn-cust-save" class="btn btn-pronta rounded-3 px-4 ms-auto">Crear Cuenta</button>
+                    <button type="button" class="btn btn-sm btn-outline-secondary" onclick="clearCustomerProfile()">Cerrar sesión</button>
+                    <button type="submit" id="btn-save-profile" class="btn btn-pronta rounded-3 px-4">Guardar Mis Datos</button>
                   </div>
                 </form>
               </div>
 
-              <!-- Pestaña Mis Pedidos (solo visible dentro de sesión) -->
+              <!-- Pestaña Mis Pedidos -->
               <div class="tab-pane fade" id="cust-tab-orders">
-                <div class="d-flex justify-content-between align-items-center mb-3">
-                  <span class="small text-muted">Pedidos asociados a <strong id="cust-orders-owner"></strong></span>
-                  <button type="button" class="btn btn-sm btn-outline-pronta" onclick="loadCustomerOrders()">↻ Actualizar</button>
+                <div class="d-flex gap-2 mb-3">
+                  <input type="email" id="cust-orders-email" class="form-control form-control-sm" placeholder="Tu email de cuenta...">
+                  <button type="button" class="btn btn-sm btn-pronta px-3" onclick="loadCustomerOrders()">Buscar</button>
                 </div>
-                <div id="cust-orders-list" class="d-flex flex-column gap-2"></div>
+                <div id="cust-orders-list" class="d-flex flex-column gap-2">
+                  <div class="text-center text-muted small py-4">Iniciá sesión para ver el estado de tus compras.</div>
+                </div>
               </div>
             </div>
-    <!-- Contenedor de Toasts -->
-    <div class="toast-container-pronta" id="toast-container"></div>
-
+          </div>
+        </div>
+      </div>
+    </div>
     <!-- Scripts -->
     <script src="js/jquery-1.11.0.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/swiper@9/swiper-bundle.min.js"></script>
