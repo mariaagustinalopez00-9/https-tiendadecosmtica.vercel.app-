@@ -619,6 +619,7 @@
     }
 
     // ==================== PEDIDOS ====================
+    
     function renderOrders() {
       const tbody = document.getElementById('orders-tbody');
       const filterStatus = document.getElementById('filter-order-status').value;
@@ -635,36 +636,38 @@
       tbody.innerHTML = filtered.map(o => {
         const dateStr = o.created_at ? new Date(o.created_at).toLocaleString('es-AR', { dateStyle: 'short', timeStyle: 'short' }) : '-';
         const itemsList = Array.isArray(o.items)
-          ? o.items.map(i => `<div>• ${i.qty}x ${i.name}</div>`).join('')
+          ? o.items.map(i => `<div>• ${escapeHTML(i.qty)}x ${escapeHTML(i.name)}</div>`).join('')
           : '<span class="text-muted small">Sin detalle</span>';
         const status = o.status || 'Pendiente';
-        const cleanPhone = (o.customer_phone || '').replace(/\D/g, '');
+        const safeStatus = escapeHTML(status);
+        const safeOrderId = escapeHTML(o.id);
+        const cleanPhone = String(o.customer_phone || '').replace(/\D/g, '');
         const waBtn = cleanPhone
-          ? `<a href="https://wa.me/${cleanPhone}" target="_blank" class="btn btn-sm btn-outline-success" title="Escribir por WhatsApp">WhatsApp</a>`
+          ? `<a href="https://wa.me/${escapeHTML(cleanPhone)}" target="_blank" rel="noopener noreferrer" class="btn btn-sm btn-outline-success" title="Escribir por WhatsApp">WhatsApp</a>`
           : '';
 
         return `
           <tr>
             <td>
-              <div class="fw-bold small">#${String(o.id).slice(0, 8)}</div>
-              <div class="text-muted" style="font-size:0.75rem;">${dateStr}</div>
+              <div class="fw-bold small">#${escapeHTML(String(o.id).slice(0, 8))}</div>
+              <div class="text-muted" style="font-size:0.75rem;">${escapeHTML(dateStr)}</div>
             </td>
             <td>
-              <div class="fw-semibold small">${o.customer_name || '-'}</div>
-              <div class="text-muted" style="font-size:0.75rem;">${o.customer_email || ''}</div>
-              <div class="text-muted" style="font-size:0.75rem;">${o.customer_phone || ''}</div>
+              <div class="fw-semibold small">${escapeHTML(o.customer_name || '-')}</div>
+              <div class="text-muted" style="font-size:0.75rem;">${escapeHTML(o.customer_email || '')}</div>
+              <div class="text-muted" style="font-size:0.75rem;">${escapeHTML(o.customer_phone || '')}</div>
             </td>
             <td class="small">${itemsList}</td>
             <td class="small">
-              <div><strong>${o.payment_method || '-'}</strong></div>
-              <div class="text-muted">${o.shipping_method || '-'} (${formatARS(o.shipping_cost)})</div>
-              <div class="text-muted" style="font-size:0.75rem;">${o.shipping_address || ''}</div>
+              <div><strong>${escapeHTML(o.payment_method || '-')}</strong></div>
+              <div class="text-muted">${escapeHTML(o.shipping_method || '-')} (${formatARS(o.shipping_cost)})</div>
+              <div class="text-muted" style="font-size:0.75rem;">${escapeHTML(o.shipping_address || '')}</div>
             </td>
             <td class="fw-bold">${formatARS(o.total)}</td>
             <td>
-              <select class="form-select form-select-sm status-badge status-${status}" onchange="updateOrderStatus('${o.id}', this.value)" style="width:auto; cursor:pointer;">
+              <select class="form-select form-select-sm status-badge status-${safeStatus}" onchange="updateOrderStatus('${safeOrderId}', this.value)" style="width:auto; cursor:pointer;">
                 ${['Pendiente', 'Pagado', 'Enviado', 'Entregado', 'Cancelado'].map(st =>
-                  `<option value="${st}" ${st === status ? 'selected' : ''}>${st}</option>`
+                  `<option value="${escapeHTML(st)}" ${st === status ? 'selected' : ''}>${escapeHTML(st)}</option>`
                 ).join('')}
               </select>
             </td>
@@ -673,7 +676,6 @@
         `;
       }).join('');
     }
-
     document.getElementById('filter-order-status').addEventListener('change', renderOrders);
 
     window.updateOrderStatus = async function (orderId, newStatus) {
@@ -732,32 +734,37 @@
       }
 
       tbody.innerHTML = filtered.map(p => {
-        const img = p.image || p.image_url || 'https://placehold.co/100x100/FAF8F6/333333?text=P';
+        const img = escapeHTML(safeImageUrl(p.image || p.image_url));
         const area = p.section || 'productos';
+        const safeArea = escapeHTML(area);
+        const safeId = escapeHTML(p.id);
+        const safeName = escapeHTML(p.name);
+        const safePres = escapeHTML(p.presentation);
+        const safeCat = escapeHTML(getCategoryLabelById(p.category || p.category_id));
+
         return `
           <tr>
             <td>
               <div class="d-flex align-items-center gap-3">
-                <img src="${img}" class="prod-thumb" alt="${p.name}">
+                <img src="${img}" class="prod-thumb" alt="${safeName}">
                 <div>
-                  <div class="fw-bold small">${p.name}</div>
-                  <div class="text-muted" style="font-size:0.75rem;">ID: ${p.id} ${p.presentation ? '· ' + p.presentation : ''}</div>
+                  <div class="fw-bold small">${safeName}</div>
+                  <div class="text-muted" style="font-size:0.75rem;">ID: ${safeId} ${p.presentation ? '· ' + safePres : ''}</div>
                 </div>
               </div>
             </td>
-            <td><span class="area-badge area-${area}">${getAreaLabel(area)}</span></td>
-            <td class="small">${getCategoryLabelById(p.category || p.category_id)}</td>
+            <td><span class="area-badge area-${safeArea}">${escapeHTML(getAreaLabel(area))}</span></td>
+            <td class="small">${safeCat}</td>
             <td class="fw-bold">${formatARS(p.price)}</td>
             <td>${p.is_new || p.featured ? '<span class="badge bg-dark">Nuevo</span>' : '<span class="text-muted small">-</span>'}</td>
             <td class="text-end">
-              <button class="btn btn-sm btn-outline-pronta me-1" onclick="openProductModal('${p.id}')">Editar</button>
-              <button class="btn btn-sm btn-outline-danger" onclick="deleteProduct('${p.id}')">Eliminar</button>
+              <button class="btn btn-sm btn-outline-pronta me-1" onclick="openProductModal('${safeId}')">Editar</button>
+              <button class="btn btn-sm btn-outline-danger" onclick="deleteProduct('${safeId}')">Eliminar</button>
             </td>
           </tr>
         `;
       }).join('');
     }
-
     document.getElementById('filter-prod-area').addEventListener('change', renderProducts);
 
     window.openProductModal = function (prodId = null) {
