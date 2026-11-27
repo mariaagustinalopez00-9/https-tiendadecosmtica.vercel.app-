@@ -821,7 +821,7 @@ function renderOrders() {
     }
 
     document.getElementById('filter-order-status').addEventListener('change', renderOrders);
-    getElementById('search-orders')?.addEventListener('input', renderOrders);
+    document.getElementById('search-orders')?.addEventListener('input', renderOrders);
 
     window.openOrderEditModal = function (orderId) {
       const order = orders.find(o => String(o.id) === String(orderId));
