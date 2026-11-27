@@ -8,14 +8,10 @@ const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBh
 const PRONTA_CONFIG = {
   whatsapp: '5491157948612',
   discountPercent: 5,       // 5% OFF en Transferencia y Efectivo
-  senaPercent: 30,          // 30% de seña para pago en Efectivo
-  quantityDiscounts: [
-    { minQty: 3, percent: 10 }, // 4 o más unidades -> 8% OFF
-    { minQty: 5, percent: 15 }  // 6 o más unidades -> 13% OFF
-  ],
+  senaPercent: 50,          // 50% de seña para pago en Efectivo
   bank: {
     titular: 'María Agustina López',
-    banco: 'Naranja X',
+    banco: 'Naranja',
     cbu: '4530000800014412407155',
     alias: 'pronta.ok'
   }
@@ -69,10 +65,22 @@ let allProducts = [];
 let allCategories = [];
 let allShippingMethods = [];
 let cart = JSON.parse(localStorage.getItem('pronta_cart_v2') || '[]');
+let customerProfile = JSON.parse(localStorage.getItem('pronta_customer_v1') || 'null');
+let currentAuthUser = null;
 let activeSection = 'all';
 let activeCategoryId = 'all';
 let activeServiceSub = 'all';
 let searchTerm = '';
+
+// Escapado básico para evitar inyección HTML al pintar datos dinámicos
+function escapeHTML(str) {
+  return String(str ?? '')
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;')
+    .replace(/'/g, '&#39;');
+}
 
 // Formateador de moneda ARS
 function formatARS(num) {
@@ -188,15 +196,76 @@ function findItemById(itemId) {
 }
 
 // ============================================================
-// INICIALIZACIÓN
+// INICIALIZACIÓN Y SESIÓN DE SUPABASE AUTH
 // ============================================================
 document.addEventListener('DOMContentLoaded', async () => {
   handleMercadoPagoReturn();
   bindUIEvents();
-  syncCustomerProfileUI();
+  await initAuthSession();
   await loadStoreData();
   renderCart();
 });
+
+async function initAuthSession() {
+  try {
+    const { data: { session } } = await sb.auth.getSession();
+    currentAuthUser = session?.user || null;
+    if (currentAuthUser) {
+      await fetchAndApplyCustomerProfile(currentAuthUser);
+    } else {
+      syncCustomerProfileUI();
+    }
+
+    sb.auth.onAuthStateChange(async (_event, nextSession) => {
+      currentAuthUser = nextSession?.user || null;
+      if (currentAuthUser) {
+        await fetchAndApplyCustomerProfile(currentAuthUser);
+      } else {
+        syncCustomerProfileUI();
+      }
+    });
+  } catch (err) {
+    console.warn('Error inicializando sesión de Supabase:', err);
+    syncCustomerProfileUI();
+  }
+}
+
+async function fetchAndApplyCustomerProfile(user) {
+  if (!user) return;
+  try {
+    const { data, error } = await sb
+      .from('customer_profiles')
+      .select('*')
+      .eq('id', user.id)
+      .maybeSingle();
+
+    if (error) throw error;
+
+    customerProfile = {
+      id: user.id,
+      name: data?.full_name || user.user_metadata?.full_name || '',
+      email: data?.email || user.email || '',
+      phone: data?.phone || user.user_metadata?.phone || '',
+      address: data?.address || user.user_metadata?.address || '',
+      province: data?.province || user.user_metadata?.province || '',
+      postal: data?.postal_code || user.user_metadata?.postal_code || ''
+    };
+    localStorage.setItem('pronta_customer_v1', JSON.stringify(customerProfile));
+    syncCustomerProfileUI();
+  } catch (err) {
+    console.warn('No se pudo cargar customer_profiles:', err);
+    customerProfile = {
+      id: user.id,
+      name: user.user_metadata?.full_name || '',
+      email: user.email || '',
+      phone: '',
+      address: '',
+      province: '',
+      postal: ''
+    };
+    syncCustomerProfileUI();
+  }
+}
 
 // Retorno de Mercado Pago
 function handleMercadoPagoReturn() {
@@ -234,11 +303,8 @@ async function loadStoreData() {
     populateShippingOptions();
   } catch (err) {
     console.error('Error cargando datos de Supabase:', err);
-    const grid = document.getElementById('products-grid');
-    if (grid) {
-      grid.innerHTML =
-        '<div class="col-12 text-center py-5 text-danger">No se pudo conectar con el catálogo. Verificá tu conexión.</div>';
-    }
+    document.getElementById('products-grid').innerHTML =
+      '<div class="col-12 text-center py-5 text-danger">No se pudo conectar con el catálogo. Verificá tu conexión.</div>';
   }
 }
 
@@ -257,11 +323,11 @@ function renderCategories() {
     `;
   } else {
     container.innerHTML = allCategories.map(cat => {
-      const label = getCategoryLabel(cat);
+      const label = escapeHTML(getCategoryLabel(cat));
       const isActive = String(activeCategoryId) === String(cat.id);
       return `
         <div class="swiper-slide">
-          <div class="category-item ${isActive ? 'active-cat' : ''}" onclick="filterByCategory('${cat.id}')">
+          <div class="category-item ${isActive ? 'active-cat' : ''}" onclick="filterByCategory('${escapeHTML(cat.id)}')">
             <h3 class="category-title fs-6 mb-0">${label}</h3>
           </div>
         </div>
@@ -286,17 +352,18 @@ function renderCategories() {
 
 function buildProductCard(prod, isSlide = false) {
   const section = detectProductSection(prod);
-  const imgUrl = prod.image || prod.image_url || 'https://placehold.co/400x400/FAF8F6/333333?text=PRONTA';
+  const imgUrl = escapeHTML(prod.image || prod.image_url || 'https://placehold.co/400x400/FAF8F6/333333?text=PRONTA');
+  const safeName = escapeHTML(prod.name);
   const price = Number(prod.price || 0);
-  const subtitle = prod.presentation || prod.volume || getCategoryName(prod.category_id || prod.category) || getSectionLabel(section);
+  const subtitle = escapeHTML(prod.presentation || prod.volume || getCategoryName(prod.category_id || prod.category) || getSectionLabel(section));
 
   const isWhatsAppService = prod.whatsappOnly === true || (section === 'servicios' && detectServiceSubtype(prod) === 'limpiezas');
 
   const actionButton = isWhatsAppService
-    ? `<a href="${getServiceWhatsAppUrl(prod)}" target="_blank" class="btn btn-pronta btn-sm w-100 rounded-3 py-2 text-decoration-none">
+    ? `<a href="${getServiceWhatsAppUrl(prod)}" target="_blank" rel="noopener noreferrer" class="btn btn-pronta btn-sm w-100 rounded-3 py-2 text-decoration-none">
          Coordinar Turno por privado
        </a>`
-    : `<button class="btn btn-pronta btn-sm w-100 rounded-3 py-2" onclick="addToCart('${prod.id}')">
+    : `<button class="btn btn-pronta btn-sm w-100 rounded-3 py-2" onclick="addToCart('${escapeHTML(prod.id)}')">
          Agregar al carrito
        </button>`;
 
@@ -307,11 +374,11 @@ function buildProductCard(prod, isSlide = false) {
   const cardInner = `
     <div class="product-item position-relative">
       <div>
-        <figure onclick="openProductDetail('${prod.id}')">
-          <img src="${imgUrl}" alt="${prod.name}" loading="lazy">
+        <figure onclick="openProductDetail('${escapeHTML(prod.id)}')">
+          <img src="${imgUrl}" alt="${safeName}" loading="lazy">
         </figure>
-        <span class="product-badge-section">${getSectionLabel(section)}</span>
-        <h3 onclick="openProductDetail('${prod.id}')">${prod.name}</h3>
+        <span class="product-badge-section">${escapeHTML(getSectionLabel(section))}</span>
+        <h3 onclick="openProductDetail('${escapeHTML(prod.id)}')">${safeName}</h3>
         <div class="small text-muted mb-2">${subtitle}</div>
       </div>
       <div>
@@ -339,7 +406,7 @@ function buildCreaTuCosmeticaCard() {
         <p class="text-muted mx-auto mb-4" style="max-width:560px;">
           Estamos preparando manuales prácticos y cursos de cosmética casera para que aprendas a formular tus propios productos desde cero.
         </p>
-        <a href="https://wa.me/${PRONTA_CONFIG.whatsapp}?text=${waText}" target="_blank" class="btn btn-pronta rounded-3 px-4">
+        <a href="https://wa.me/${PRONTA_CONFIG.whatsapp}?text=${waText}" target="_blank" rel="noopener noreferrer" class="btn btn-pronta rounded-3 px-4">
           Avisarme por WhatsApp cuando salga
         </a>
       </div>
@@ -515,15 +582,18 @@ window.openProductDetail = function (prodId) {
   if (!prod) return;
 
   const section = detectProductSection(prod);
-  const imgUrl = prod.image || prod.image_url || 'https://placehold.co/500x500/FAF8F6/333333?text=PRONTA';
+  const imgUrl = escapeHTML(prod.image || prod.image_url || 'https://placehold.co/500x500/FAF8F6/333333?text=PRONTA');
+  const safeName = escapeHTML(prod.name);
+  const safePresentation = escapeHTML(prod.presentation || '');
+  const safeDescription = escapeHTML(prod.description || 'Consultanos por WhatsApp para conocer más detalles y modo de uso.');
   const body = document.getElementById('product-detail-body');
   const isWhatsAppService = prod.whatsappOnly === true || (section === 'servicios' && detectServiceSubtype(prod) === 'limpiezas');
 
   const modalAction = isWhatsAppService
-    ? `<a href="${getServiceWhatsAppUrl(prod)}" target="_blank" class="btn btn-pronta btn-lg w-100 rounded-3 text-decoration-none">
+    ? `<a href="${getServiceWhatsAppUrl(prod)}" target="_blank" rel="noopener noreferrer" class="btn btn-pronta btn-lg w-100 rounded-3 text-decoration-none">
          Coordinar Turno por privado
        </a>`
-    : `<button class="btn btn-pronta btn-lg w-100 rounded-3" onclick="addToCart('${prod.id}'); bootstrap.Modal.getInstance(document.getElementById('productDetailModal')).hide();">
+    : `<button class="btn btn-pronta btn-lg w-100 rounded-3" onclick="addToCart('${escapeHTML(prod.id)}'); bootstrap.Modal.getInstance(document.getElementById('productDetailModal')).hide();">
          Agregar al Carrito
        </button>`;
 
@@ -538,14 +608,14 @@ window.openProductDetail = function (prodId) {
   body.innerHTML = `
     <div class="row g-4 align-items-center">
       <div class="col-md-5">
-        <img src="${imgUrl}" alt="${prod.name}" class="img-fluid rounded-4 w-100" style="object-fit:cover; max-height:340px;">
+        <img src="${imgUrl}" alt="${safeName}" class="img-fluid rounded-4 w-100" style="object-fit:cover; max-height:340px;">
       </div>
       <div class="col-md-7">
-        <span class="product-badge-section">${getSectionLabel(section)}</span>
-        <h3 class="mb-1">${prod.name}</h3>
-        ${prod.presentation ? `<div class="small text-pronta-sage fw-semibold mb-2">${prod.presentation}</div>` : ''}
+        <span class="product-badge-section">${escapeHTML(getSectionLabel(section))}</span>
+        <h3 class="mb-1">${safeName}</h3>
+        ${safePresentation ? `<div class="small text-pronta-sage fw-semibold mb-2">${safePresentation}</div>` : ''}
         <div class="fs-4 fw-bold mb-3" style="color:#333333;">${formatARS(prod.price)}</div>
-        <p class="text-muted small mb-3">${prod.description || 'Consultanos por WhatsApp para conocer más detalles y modo de uso.'}</p>
+        <p class="text-muted small mb-3">${safeDescription}</p>
         ${infoBadge}
         ${modalAction}
       </div>
@@ -592,137 +662,21 @@ window.updateCartQty = function (prodId, delta) {
   saveCart();
 };
 
-window.removeCartItem = function (prodId) {
-  const idx = cart.findIndex(i => String(i.productId) === String(prodId));
-  if (idx === -1) return;
-  cart.splice(idx, 1);
-  saveCart();
-};
-
 function getCartSubtotal() {
   return cart.reduce((acc, item) => acc + Number(item.price) * Number(item.qty), 0);
 }
 
-function getQuantityDiscountInfo() {
-  const productCatalog =
-    typeof allProducts !== 'undefined' && Array.isArray(allProducts)
-      ? allProducts
-      : (typeof products !== 'undefined' && Array.isArray(products) ? products : []);
-
-  let eligibleQty = 0;
-  let amount = 0;
-  let maxPercent = 0;
-  let nextRule = null;
-
-  for (const item of cart) {
-    if (item.section === 'servicios') continue;
-
-    const qty = Number(item.qty || 0);
-    const unitPrice = Number(item.price || 0);
-    if (qty <= 0 || unitPrice <= 0) continue;
-
-    const prodId = item.productId ?? item.id;
-    const prod = productCatalog.find((p) => String(p.id) === String(prodId));
-
-    let rawTiers = prod?.quantity_discounts ?? [];
-    if (typeof rawTiers === 'string') {
-      try { rawTiers = JSON.parse(rawTiers); } catch (_) { rawTiers = []; }
-    }
-    const tiers = Array.isArray(rawTiers) ? rawTiers : [];
-
-    if (tiers.length > 0) {
-      eligibleQty += qty;
-    }
-
-    const itemPct = getItemQuantityDiscountPercent(tiers, qty);
-    if (itemPct > 0) {
-      amount += Math.round((unitPrice * qty) * (itemPct / 100));
-      if (itemPct > maxPercent) maxPercent = itemPct;
-    }
-
-    const upcoming = tiers
-      .slice()
-      .sort((a, b) => Number(a.minQty) - Number(b.minQty))
-      .find((r) => qty < Number(r.minQty));
-
-    if (upcoming && (!nextRule || Number(upcoming.minQty) - qty < Number(nextRule.minQty) - eligibleQty)) {
-      nextRule = upcoming;
-    }
-  }
-
-  return { eligibleQty, percent: maxPercent, amount, nextRule };
-}
-
-function getItemQuantityDiscountPercent(productOrTiers, qty) {
-  const tiers = Array.isArray(productOrTiers)
-    ? productOrTiers
-    : (productOrTiers?.quantity_discounts || []);
-  const count = Number(qty || 0);
-  if (!Array.isArray(tiers) || tiers.length === 0 || count <= 0) return 0;
-
-  const validTiers = tiers
-    .filter(t => Number(t.minQty) <= count && Number(t.percent) > 0)
-    .sort((a, b) => Number(b.minQty) - Number(a.minQty));
-
-  return validTiers.length > 0 ? Number(validTiers[0].percent) : 0;
-}
 function renderCart() {
   const list = document.getElementById('cart-items-list');
-  const rawSubtotal = getCartSubtotal();
-  const qtyDisc = getQuantityDiscountInfo();
-  const netSubtotal = rawSubtotal - qtyDisc.amount;
+  const subtotal = getCartSubtotal();
   const totalItems = cart.reduce((acc, item) => acc + item.qty, 0);
 
-  const countBadge = document.getElementById('cart-count-badge');
-  const desktopCount = document.getElementById('desktop-cart-count');
-  const mobileBadge = document.getElementById('mobile-cart-badge');
-  const headerTotal = document.getElementById('header-cart-total');
-  const subtotalEl = document.getElementById('cart-subtotal');
-  const checkoutBtn = document.getElementById('btn-open-checkout');
-
-  if (countBadge) countBadge.textContent = totalItems;
-  if (desktopCount) desktopCount.textContent = totalItems;
-  if (mobileBadge) mobileBadge.textContent = totalItems;
-  if (headerTotal) headerTotal.textContent = formatARS(netSubtotal);
-  if (subtotalEl) {
-    subtotalEl.innerHTML = qtyDisc.amount > 0
-      ? `<span class="text-muted text-decoration-line-through small me-1">${formatARS(rawSubtotal)}</span> ${formatARS(netSubtotal)}`
-      : formatARS(rawSubtotal);
-  }
-  if (checkoutBtn) checkoutBtn.disabled = cart.length === 0;
-  renderCartShipping(netSubtotal);
-
-  // Aviso dinámico de descuento por cantidad dentro del carrito
-  let qtyBanner = document.getElementById('cart-qty-discount-banner');
-  if (!qtyBanner && list && list.parentElement) {
-    qtyBanner = document.createElement('div');
-    qtyBanner.id = 'cart-qty-discount-banner';
-    qtyBanner.className = 'small rounded-3 p-2 mt-2';
-    list.parentElement.insertBefore(qtyBanner, list.nextSibling);
-  }
-  if (qtyBanner) {
-    if (!cart.length) {
-      qtyBanner.classList.add('d-none');
-    } else if (qtyDisc.amount > 0) {
-      qtyBanner.classList.remove('d-none');
-      qtyBanner.style.backgroundColor = '#EEF2EC';
-      qtyBanner.style.color = '#2f4f2f';
-      const nextHint = qtyDisc.nextRule
-        ? ` Sumá ${qtyDisc.nextRule.minQty - qtyDisc.eligibleQty} más para llegar al ${qtyDisc.nextRule.percent}% OFF.`
-        : '';
-      qtyBanner.innerHTML = `🎉 <strong>${qtyDisc.percent}% OFF por cantidad aplicado</strong> (-${formatARS(qtyDisc.amount)}).${nextHint}`;
-    } else if (qtyDisc.nextRule) {
-      qtyBanner.classList.remove('d-none');
-      qtyBanner.style.backgroundColor = '#FAF8F6';
-      qtyBanner.style.color = '#555555';
-      const missing = qtyDisc.nextRule.minQty - qtyDisc.eligibleQty;
-      qtyBanner.innerHTML = `✨ Sumá <strong>${missing} producto(s)</strong> más y obtené un <strong>${qtyDisc.nextRule.percent}% OFF</strong> por cantidad.`;
-    } else {
-      qtyBanner.classList.add('d-none');
-    }
-  }
-
-  if (!list) return;
+  document.getElementById('cart-count-badge').textContent = totalItems;
+  document.getElementById('desktop-cart-count').textContent = totalItems;
+  document.getElementById('mobile-cart-badge').textContent = totalItems;
+  document.getElementById('header-cart-total').textContent = formatARS(subtotal);
+  document.getElementById('cart-subtotal').textContent = formatARS(subtotal);
+  document.getElementById('btn-open-checkout').disabled = cart.length === 0;
 
   if (!cart.length) {
     list.innerHTML = '<li class="list-group-item text-center text-muted py-4 border-0">Tu carrito está vacío.</li>';
@@ -732,14 +686,13 @@ function renderCart() {
   list.innerHTML = cart.map(item => `
     <li class="list-group-item d-flex justify-content-between align-items-center py-3">
       <div class="me-2">
-        <div class="fw-semibold small">${item.name}</div>
+        <div class="fw-semibold small">${escapeHTML(item.name)}</div>
         <div class="text-muted" style="font-size:0.8rem;">${formatARS(item.price)} c/u</div>
       </div>
-     <div class="d-flex align-items-center gap-2">
-        <button class="btn btn-sm btn-outline-secondary py-0 px-2" onclick="updateCartQty('${item.productId}', -1)">-</button>
+      <div class="d-flex align-items-center gap-2">
+        <button class="btn btn-sm btn-outline-secondary py-0 px-2" onclick="updateCartQty('${escapeHTML(item.productId)}', -1)">-</button>
         <span class="small fw-bold">${item.qty}</span>
-        <button class="btn btn-sm btn-outline-secondary py-0 px-2" onclick="updateCartQty('${item.productId}', 1)">+</button>
-        <button type="button" class="btn btn-sm btn-outline-danger py-0 px-1" title="Eliminar producto" aria-label="Eliminar producto" onclick="removeCartItem('${item.productId}')">🗑️</button>
+        <button class="btn btn-sm btn-outline-secondary py-0 px-2" onclick="updateCartQty('${escapeHTML(item.productId)}', 1)">+</button>
       </div>
     </li>
   `).join('');
@@ -759,106 +712,20 @@ function populateShippingOptions() {
 
   select.innerHTML = allShippingMethods.map(m => {
     const cost = Number(m.price || m.cost || 0);
-    return `<option value="${cost}" data-name="${m.name || m.label}" data-threshold="${m.free_threshold || 0}">
-      ${m.name || m.label} (${cost === 0 ? 'Gratis' : formatARS(cost)})
+    const label = escapeHTML(m.name || m.label);
+    return `<option value="${cost}" data-name="${label}" data-threshold="${m.free_threshold || 0}">
+      ${label} (${cost === 0 ? 'Gratis' : formatARS(cost)})
     </option>`;
   }).join('');
 }
 
-function renderCartShipping(currentSubtotal) {
-  const box = document.getElementById('cart-shipping-box');
-  if (!box) return;
-
-  const hasOnlyServices = cart.length > 0 && cart.every(i => i.section === 'servicios');
-  if (!cart.length || hasOnlyServices) {
-    box.innerHTML = '';
-    return;
-  }
-
-  const methods = (typeof allShippingMethods !== 'undefined' && Array.isArray(allShippingMethods))
-    ? allShippingMethods
-    : [];
-
-  if (!methods.length) {
-    box.innerHTML = '';
-    return;
-  }
-
-  const savedName = localStorage.getItem('pronta_selected_shipping_name') || '';
-
-  const optionsHtml = methods.map((m, idx) => {
-    const label = m.name || m.label || 'Envío';
-    const baseCost = Number(m.price ?? m.cost ?? 0);
-    const threshold = Number(m.free_threshold ?? 0);
-    const isFree = threshold > 0 && currentSubtotal >= threshold;
-    const effectiveCost = isFree ? 0 : baseCost;
-    const selected = savedName ? savedName === label : idx === 0;
-
-    return `<option value="${effectiveCost}" data-name="${label}" data-threshold="${threshold}" ${selected ? 'selected' : ''}>
-      ${label} (${effectiveCost === 0 ? 'Gratis' : formatARS(effectiveCost)})
-    </option>`;
-  }).join('');
-
-  const freeHintsHtml = methods
-    .filter(m => Number(m.free_threshold ?? 0) > 0)
-    .map(m => {
-      const label = m.name || m.label || 'Envío';
-      const threshold = Number(m.free_threshold);
-      const missing = Math.max(0, threshold - currentSubtotal);
-      return missing === 0
-        ? `<div class="small text-success">✅ Envío gratis habilitado en <strong>${label}</strong> (desde ${formatARS(threshold)}).</div>`
-        : `<div class="small text-muted">🚚 Envío gratis en <strong>${label}</strong> a partir de <strong>${formatARS(threshold)}</strong> (te faltan ${formatARS(missing)}).</div>`;
-    }).join('');
-
-  box.innerHTML = `
-    <label for="cart-shipping-select" class="form-label small fw-bold mb-1">Envío o retiro</label>
-    <select id="cart-shipping-select" class="form-select form-select-sm mb-2">
-      ${optionsHtml}
-    </select>
-    ${freeHintsHtml}
-  `;
-
-  const sel = document.getElementById('cart-shipping-select');
-  if (sel) {
-    const currentOpt = sel.options[sel.selectedIndex];
-    if (currentOpt) {
-      localStorage.setItem('pronta_selected_shipping_name', currentOpt.dataset.name || '');
-    }
-    sel.addEventListener('change', () => {
-      const opt = sel.options[sel.selectedIndex];
-      if (opt) {
-        localStorage.setItem('pronta_selected_shipping_name', opt.dataset.name || '');
-      }
-      syncCheckoutShippingFromCart();
-      if (typeof calculateCheckoutTotals === 'function') {
-        calculateCheckoutTotals();
-      }
-    });
-  }
-}
-
-function syncCheckoutShippingFromCart() {
-  const chkSelect = document.getElementById('chk-shipping');
-  const savedName = localStorage.getItem('pronta_selected_shipping_name');
-  if (!chkSelect || !savedName) return;
-
-  const idx = Array.from(chkSelect.options).findIndex(
-    o => (o.dataset.name || o.textContent || '').trim() === savedName.trim()
-  );
-  if (idx >= 0) {
-    chkSelect.selectedIndex = idx;
-    chkSelect.dispatchEvent(new Event('change', { bubbles: true }));
-  }
-}
 function getSelectedPaymentMethod() {
   const checked = document.querySelector('input[name="paymentMethod"]:checked');
   return checked ? checked.value : 'mercadopago';
 }
 
 function calculateCheckoutTotals() {
-const rawSubtotal = getCartSubtotal();
-const qtyDisc = getQuantityDiscountInfo();
-const subtotal = rawSubtotal - qtyDisc.amount;
+  const subtotal = getCartSubtotal();
   const paymentMethod = getSelectedPaymentMethod();
   const hasOnlyServices = cart.length > 0 && cart.every(i => i.section === 'servicios');
 
@@ -874,18 +741,11 @@ const subtotal = rawSubtotal - qtyDisc.amount;
   } else if (shipSelect) {
     shipSelect.disabled = false;
     const opt = shipSelect.options[shipSelect.selectedIndex];
-    
-    const hasDiscount = paymentMethod === 'transferencia' || paymentMethod === 'efectivo';
-  const discountPct = Number(PRONTA_CONFIG?.discountPercent || 0);
-  const effectiveSubtotal = hasDiscount
-    ? Math.round(subtotal * (1 - discountPct / 100))
-    : subtotal;
-    
     if (opt) {
       shippingCost = Number(opt.value || 0);
       shippingName = opt.dataset.name || 'Envío';
       const threshold = Number(opt.dataset.threshold || 0);
-      if (threshold > 0 && effectiveSubtotal >= threshold) {
+      if (threshold > 0 && subtotal >= threshold) {
         shippingCost = 0;
         if (shipNote) shipNote.textContent = `¡Envío bonificado por superar ${formatARS(threshold)}!`;
       } else {
@@ -900,62 +760,48 @@ const subtotal = rawSubtotal - qtyDisc.amount;
   const senaAmount = paymentMethod === 'efectivo' ? Math.round(total * (PRONTA_CONFIG.senaPercent / 100)) : 0;
   const cashRest = paymentMethod === 'efectivo' ? total - senaAmount : 0;
 
-  return { subtotal, discount, shippingCost, shippingName, total, paymentMethod, senaAmount, cashRest, qtyDiscount: qtyDisc.amount, qtyDiscountPercent: qtyDisc.percent };
+  return { subtotal, discount, shippingCost, shippingName, total, paymentMethod, senaAmount, cashRest };
 }
 
 function updateCheckoutUI() {
   const t = calculateCheckoutTotals();
 
-  const subEl = document.getElementById('chk-subtotal');
-  const shipEl = document.getElementById('chk-shipping-cost');
-  const totEl = document.getElementById('chk-total');
-  if (subEl) subEl.textContent = formatARS(t.subtotal);
-  if (shipEl) shipEl.textContent = t.shippingCost === 0 ? 'Gratis' : formatARS(t.shippingCost);
-  if (totEl) totEl.textContent = formatARS(t.total);
+  document.getElementById('chk-subtotal').textContent = formatARS(t.subtotal);
+  document.getElementById('chk-shipping-cost').textContent = t.shippingCost === 0 ? 'Gratis' : formatARS(t.shippingCost);
+  document.getElementById('chk-total').textContent = formatARS(t.total);
 
   const discRow = document.getElementById('chk-discount-row');
-  if (discRow) {
-    if (t.discount > 0) {
-      discRow.classList.remove('d-none');
-      const discVal = document.getElementById('chk-discount');
-      if (discVal) discVal.textContent = '-' + formatARS(t.discount);
-    } else {
-      discRow.classList.add('d-none');
-    }
+  if (t.discount > 0) {
+    discRow.classList.remove('d-none');
+    document.getElementById('chk-discount').textContent = '-' + formatARS(t.discount);
+  } else {
+    discRow.classList.add('d-none');
   }
 
   const bankBox = document.getElementById('bank-info-box');
   const senaRow = document.getElementById('chk-sena-row');
 
-  if (bankBox) {
-    if (t.paymentMethod === 'transferencia' || t.paymentMethod === 'efectivo') {
-      bankBox.classList.remove('d-none');
-    } else {
-      bankBox.classList.add('d-none');
-    }
+  if (t.paymentMethod === 'transferencia' || t.paymentMethod === 'efectivo') {
+    bankBox.classList.remove('d-none');
+  } else {
+    bankBox.classList.add('d-none');
   }
 
-  if (senaRow) {
-    if (t.paymentMethod === 'efectivo') {
-      senaRow.classList.remove('d-none');
-      const senaEl = document.getElementById('chk-sena-amount');
-      const restEl = document.getElementById('chk-cash-rest');
-      if (senaEl) senaEl.textContent = formatARS(t.senaAmount);
-      if (restEl) restEl.textContent = formatARS(t.cashRest);
-    } else {
-      senaRow.classList.add('d-none');
-    }
+  if (t.paymentMethod === 'efectivo') {
+    senaRow.classList.remove('d-none');
+    document.getElementById('chk-sena-amount').textContent = formatARS(t.senaAmount);
+    document.getElementById('chk-cash-rest').textContent = formatARS(t.cashRest);
+  } else {
+    senaRow.classList.add('d-none');
   }
 
   const btn = document.getElementById('btn-confirm-order');
-  if (btn) {
-    if (t.paymentMethod === 'mercadopago') {
-      btn.textContent = `Pagar ${formatARS(t.total)} con Mercado Pago`;
-    } else if (t.paymentMethod === 'transferencia') {
-      btn.textContent = `Confirmar Pedido (${formatARS(t.total)} por Transferencia)`;
-    } else {
-      btn.textContent = `Confirmar Pedido (Seña ${formatARS(t.senaAmount)})`;
-    }
+  if (t.paymentMethod === 'mercadopago') {
+    btn.textContent = `Pagar ${formatARS(t.total)} con Mercado Pago`;
+  } else if (t.paymentMethod === 'transferencia') {
+    btn.textContent = `Confirmar Pedido (${formatARS(t.total)} por Transferencia)`;
+  } else {
+    btn.textContent = `Confirmar Pedido (Seña ${formatARS(t.senaAmount)})`;
   }
 }
 
@@ -964,20 +810,32 @@ async function handleCheckoutSubmit(e) {
   if (!cart.length) return;
 
   const btn = document.getElementById('btn-confirm-order');
-  if (btn) {
-    btn.disabled = true;
-    btn.textContent = 'Procesando pedido...';
-  }
+  btn.disabled = true;
+  btn.textContent = 'Procesando pedido...';
 
-  const name = document.getElementById('chk-name')?.value.trim() || '';
-  const email = document.getElementById('chk-email')?.value.trim() || '';
-  const phone = document.getElementById('chk-phone')?.value.trim() || '';
-  const address = document.getElementById('chk-address')?.value.trim() || '';
+  const name = document.getElementById('chk-name').value.trim();
+  const email = document.getElementById('chk-email').value.trim();
+  const phone = document.getElementById('chk-phone').value.trim();
+  const address = document.getElementById('chk-address').value.trim();
 
   customerProfile = { ...(customerProfile || {}), name, email, phone, address };
-  upsertCustomerAccount(customerProfile);
   localStorage.setItem('pronta_customer_v1', JSON.stringify(customerProfile));
   syncCustomerProfileUI();
+
+  if (currentAuthUser) {
+    try {
+      await sb.from('customer_profiles').upsert({
+        id: currentAuthUser.id,
+        email,
+        full_name: name,
+        phone,
+        address
+      });
+    } catch (err) {
+      console.warn('No se pudo sincronizar perfil al confirmar pedido:', err);
+    }
+  }
+
   const totals = calculateCheckoutTotals();
 
   const paymentLabels = {
@@ -989,6 +847,7 @@ async function handleCheckoutSubmit(e) {
   let savedOrderId = 'PR-' + Date.now().toString().slice(-6);
   try {
     const orderPayload = {
+      user_id: currentAuthUser ? currentAuthUser.id : null,
       customer_name: name,
       customer_email: email,
       customer_phone: phone,
@@ -1015,23 +874,19 @@ async function handleCheckoutSubmit(e) {
 
   if (totals.paymentMethod === 'mercadopago') {
     try {
-      const response = await fetch('/api/create-preference', {        method: 'POST',
+      const response = await fetch('/api/create-preference', {
+        method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
-...(() => {
-      const factor = totals.qtyDiscountPercent > 0 ? (1 - totals.qtyDiscountPercent / 100) : 1;
-      return {
-        items: cart.map(item => ({
-          title: item.name || 'Producto PRONTA',
-          quantity: item.qty,
-          unit_price: Math.round(Number(item.price || 0) * (item.section !== 'servicios' ? factor : 1))
-        }))
-      };
-    })(),
-    payer: { name, email },
-    shipping_cost: totals.shippingCost
-  })
-});
+          items: cart.map(item => ({
+            title: item.name || 'Producto PRONTA',
+            quantity: item.qty,
+            unit_price: Number(item.price || 0)
+          })),
+          payer: { name, email },
+          shipping_cost: totals.shippingCost
+        })
+      });
 
       const mpData = await response.json();
       const checkoutUrl = mpData.init_point || mpData.sandbox_init_point;
@@ -1045,7 +900,7 @@ async function handleCheckoutSubmit(e) {
     } catch (err) {
       console.error('Error Mercado Pago:', err);
       showToast('Hubo un problema al conectar con Mercado Pago. Probá nuevamente.');
-      if (btn) btn.disabled = false;
+      btn.disabled = false;
       updateCheckoutUI();
       return;
     }
@@ -1073,22 +928,19 @@ async function handleCheckoutSubmit(e) {
 
   const waUrl = `https://wa.me/${PRONTA_CONFIG.whatsapp}?text=${encodeURIComponent(waMessage)}`;
 
-  document.getElementById('checkout-form')?.classList.add('d-none');
-  document.getElementById('checkout-success-view')?.classList.remove('d-none');
-  const subTitle = document.getElementById('success-order-subtitle');
-  const sumEl = document.getElementById('success-amount-summary');
-  const waBtn = document.getElementById('btn-send-whatsapp');
-  if (subTitle) subTitle.textContent = `Pedido #${savedOrderId} registrado para ${name}.`;
-  if (sumEl) sumEl.innerHTML = amountSummaryHTML;
-  if (waBtn) waBtn.href = waUrl;
+  document.getElementById('checkout-form').classList.add('d-none');
+  document.getElementById('checkout-success-view').classList.remove('d-none');
+  document.getElementById('success-order-subtitle').textContent = `Pedido #${savedOrderId} registrado para ${name}.`;
+  document.getElementById('success-amount-summary').innerHTML = amountSummaryHTML;
+  document.getElementById('btn-send-whatsapp').href = waUrl;
 
   cart = [];
   saveCart();
-  if (btn) btn.disabled = false;
+  btn.disabled = false;
 }
 
 // ============================================================
-// EVENTOS DE INTERFAZ
+// EVENTOS DE INTERFAZ Y AUTENTICACIÓN DE CLIENTA
 // ============================================================
 function bindUIEvents() {
   const desktopSearch = document.getElementById('desktop-search-input');
@@ -1124,10 +976,9 @@ function bindUIEvents() {
       const offcanvas = bootstrap.Offcanvas.getInstance(offcanvasEl);
       if (offcanvas) offcanvas.hide();
 
-      document.getElementById('checkout-form')?.classList.remove('d-none');
-      document.getElementById('checkout-success-view')?.classList.add('d-none');
+      document.getElementById('checkout-form').classList.remove('d-none');
+      document.getElementById('checkout-success-view').classList.add('d-none');
       prefillCheckoutFromCustomer();
-      syncCheckoutShippingFromCart();
       updateCheckoutUI();
       new bootstrap.Modal(document.getElementById('checkoutModal')).show();
     });
@@ -1153,210 +1004,216 @@ function bindUIEvents() {
     checkoutForm.addEventListener('submit', handleCheckoutSubmit);
   }
 
+  // Iniciar sesión con Supabase Auth
   const custLoginForm = document.getElementById('customer-login-form');
   if (custLoginForm) {
     custLoginForm.addEventListener('submit', async e => {
       e.preventDefault();
-      const loginEmail = document.getElementById('login-cust-email')?.value.trim() || '';
-      const loginPass = document.getElementById('login-cust-password')?.value || '';
+      const btnLogin = document.getElementById('btn-cust-login');
+      const loginEmail = document.getElementById('login-cust-email').value.trim();
+      const loginPass = document.getElementById('login-cust-password').value;
 
-      const localMatch = customerAccounts.find(
-        acc => (acc.email || '').toLowerCase() === loginEmail.toLowerCase()
-      );
-
-      if (localMatch) {
-        if (localMatch.password && localMatch.password !== loginPass) {
-          showCustomerLoginFeedback('La contraseña no coincide con este email.', true);
-          return;
-        }
-        customerProfile = { ...localMatch };
-        localStorage.setItem('pronta_customer_v1', JSON.stringify(customerProfile));
-        syncCustomerProfileUI();
-        showCustomerLoginFeedback(`¡Bienvenida de nuevo, ${customerProfile.name || customerProfile.email}!`, false);
-        showToast(`Sesión iniciada: ${customerProfile.name || customerProfile.email}`);
-        await loadCustomerOrders();
-        return;
-      }
+      btnLogin.disabled = true;
+      btnLogin.textContent = 'Ingresando...';
 
       try {
-        const { data, error } = await sb
-          .from('orders')
-          .select('*')
-          .ilike('customer_email', loginEmail)
-          .order('created_at', { ascending: false })
-          .limit(1);
+        const { data, error } = await sb.auth.signInWithPassword({
+          email: loginEmail,
+          password: loginPass
+        });
 
-        if (!error && data && data.length) {
-          const latestOrder = data[0];
-          customerProfile = {
-            name: latestOrder.customer_name || '',
-            email: latestOrder.customer_email || loginEmail,
-            password: loginPass,
-            phone: latestOrder.customer_phone || '',
-            address: latestOrder.shipping_address || '',
-            province: '',
-            postal: '',
-            avatar: ''
-          };
-          upsertCustomerAccount(customerProfile);
-          localStorage.setItem('pronta_customer_v1', JSON.stringify(customerProfile));
-          syncCustomerProfileUI();
-          showCustomerLoginFeedback('Cuenta encontrada por tu historial de pedidos. ¡Datos cargados!', false);
-          showToast('Sesión iniciada');
-          await loadCustomerOrders();
+        if (error) {
+          showCustomerLoginFeedback(error.message || 'No se pudo iniciar sesión. Verificá tu email y contraseña.', true);
           return;
         }
+
+        currentAuthUser = data.user;
+        await fetchAndApplyCustomerProfile(currentAuthUser);
+        showCustomerLoginFeedback(`¡Bienvenida de nuevo, ${customerProfile?.name || loginEmail}!`, false);
+        showToast('Sesión iniciada');
+        await loadCustomerOrders();
       } catch (err) {
-        console.warn('Error consultando cuenta en Supabase:', err);
+        showCustomerLoginFeedback('Ocurrió un error al iniciar sesión. Intentá nuevamente.', true);
+      } finally {
+        btnLogin.disabled = false;
+        btnLogin.textContent = 'Iniciar Sesión';
       }
-
-      showCustomerLoginFeedback('No encontramos una cuenta con ese email. Podés crearla en "Crear Cuenta / Mis Datos".', true);
     });
   }
 
-  const avatarInput = document.getElementById('cust-avatar-file');
-  if (avatarInput) {
-    avatarInput.addEventListener('change', e => {
-      const file = e.target.files && e.target.files[0];
-      if (!file) return;
-      const reader = new FileReader();
-      reader.onload = () => {
-        const result = typeof reader.result === 'string' ? reader.result : '';
-        const previewImg = document.getElementById('cust-avatar-preview');
-        const placeholder = document.getElementById('cust-avatar-placeholder');
-        if (previewImg && result) {
-          previewImg.src = result;
-          previewImg.classList.remove('d-none');
-        }
-        if (placeholder) placeholder.classList.add('d-none');
-      };
-      reader.readAsDataURL(file);
-    });
-  }
-
+  // Crear cuenta o actualizar perfil en Supabase Auth + customer_profiles
   const custForm = document.getElementById('customer-profile-form');
   if (custForm) {
-    custForm.addEventListener('submit', e => {
+    custForm.addEventListener('submit', async e => {
       e.preventDefault();
-      const previewImg = document.getElementById('cust-avatar-preview');
-      const currentAvatar = previewImg && !previewImg.classList.contains('d-none') && previewImg.src
-        ? previewImg.src
-        : (customerProfile?.avatar || '');
+      const btnSave = document.getElementById('btn-save-profile');
+      const fullName = document.getElementById('cust-name').value.trim();
+      const email = document.getElementById('cust-email').value.trim();
+      const password = document.getElementById('cust-password').value;
+      const phone = document.getElementById('cust-phone').value.trim();
+      const address = document.getElementById('cust-address').value.trim();
+      const province = document.getElementById('cust-province').value.trim();
+      const postal = document.getElementById('cust-postal').value.trim();
 
-      customerProfile = {
-        name: document.getElementById('cust-name')?.value.trim() || '',
-        email: document.getElementById('cust-email')?.value.trim() || '',
-        password: document.getElementById('cust-password')?.value || '',
-        phone: document.getElementById('cust-phone')?.value.trim() || '',
-        address: document.getElementById('cust-address')?.value.trim() || '',
-        province: document.getElementById('cust-province')?.value.trim() || '',
-        postal: document.getElementById('cust-postal')?.value.trim() || '',
-        avatar: currentAvatar
-      };
-      upsertCustomerAccount(customerProfile);
-      localStorage.setItem('pronta_customer_v1', JSON.stringify(customerProfile));
-      syncCustomerProfileUI();
-      showToast('¡Tus datos quedaron guardados!');
+      btnSave.disabled = true;
+      btnSave.textContent = 'Guardando...';
+
+      try {
+        if (!currentAuthUser) {
+          if (!password || password.length < 6) {
+            showCustomerProfileFeedback('Elegí una contraseña de al menos 6 caracteres para crear tu cuenta.', true);
+            return;
+          }
+
+          const { data, error } = await sb.auth.signUp({
+            email,
+            password,
+            options: {
+              emailRedirectTo: window.location.origin,
+              data: {
+                full_name: fullName,
+                phone,
+                address,
+                province,
+                postal_code: postal
+              }
+            }
+          });
+
+          if (error) {
+            showCustomerProfileFeedback(error.message || 'No se pudo crear la cuenta.', true);
+            return;
+          }
+
+          if (data?.user && data?.session) {
+            currentAuthUser = data.user;
+            await sb.from('customer_profiles').upsert({
+              id: data.user.id,
+              email,
+              full_name: fullName,
+              phone,
+              address,
+              province,
+              postal_code: postal
+            });
+            await fetchAndApplyCustomerProfile(currentAuthUser);
+            showCustomerProfileFeedback('¡Cuenta creada y datos guardados con éxito!', false);
+            showToast('¡Cuenta creada!');
+          } else {
+            customerProfile = { name: fullName, email, phone, address, province, postal };
+            localStorage.setItem('pronta_customer_v1', JSON.stringify(customerProfile));
+            syncCustomerProfileUI();
+            showCustomerProfileFeedback(
+              '¡Cuenta creada! Revisá tu correo para confirmar el email y luego iniciá sesión para ver tus pedidos.',
+              false
+            );
+            showToast('Revisá tu email para confirmar la cuenta');
+          }
+        } else {
+          const { error } = await sb.from('customer_profiles').upsert({
+            id: currentAuthUser.id,
+            email,
+            full_name: fullName,
+            phone,
+            address,
+            province,
+            postal_code: postal
+          });
+
+          if (error) throw error;
+
+          customerProfile = {
+            id: currentAuthUser.id,
+            name: fullName,
+            email,
+            phone,
+            address,
+            province,
+            postal
+          };
+          localStorage.setItem('pronta_customer_v1', JSON.stringify(customerProfile));
+          syncCustomerProfileUI();
+          showCustomerProfileFeedback('¡Tus datos quedaron actualizados!', false);
+          showToast('¡Datos guardados!');
+        }
+      } catch (err) {
+        console.error('Error guardando cuenta/perfil:', err);
+        showCustomerProfileFeedback('No se pudieron guardar tus datos. Intentá nuevamente.', true);
+      } finally {
+        btnSave.disabled = false;
+        btnSave.textContent = 'Guardar Mis Datos';
+      }
     });
   }
 }
+
+window.handleForgotPassword = async function () {
+  const emailInput = document.getElementById('login-cust-email');
+  const email = (emailInput?.value || '').trim();
+  if (!email) {
+    showCustomerLoginFeedback('Escribí tu email primero y volvé a hacer clic en "¿Olvidaste tu contraseña?".', true);
+    emailInput?.focus();
+    return;
+  }
+
+  try {
+    const { error } = await sb.auth.resetPasswordForEmail(email, {
+      redirectTo: window.location.origin
+    });
+    if (error) throw error;
+    showCustomerLoginFeedback(`Te enviamos un enlace de recuperación a ${email}.`, false);
+    showToast('Correo de recuperación enviado');
+  } catch (err) {
+    showCustomerLoginFeedback('No se pudo enviar el correo de recuperación. Verificá el email.', true);
+  }
+};
 
 // ============================================================
 // PERFIL DE CLIENTE E HISTORIAL DE PEDIDOS
 // ============================================================
-let customerProfile = JSON.parse(localStorage.getItem('pronta_customer_v1') || 'null');
-
-function renderAvatarPreview(avatarDataUrl, fallbackLabel = '?') {
-  const previewImg = document.getElementById('cust-avatar-preview');
-  const placeholder = document.getElementById('cust-avatar-placeholder');
-  const headerIcon = document.getElementById('header-customer-icon');
-  const headerAvatar = document.getElementById('header-customer-avatar');
-
-  if (avatarDataUrl) {
-    if (previewImg) {
-      previewImg.src = avatarDataUrl;
-      previewImg.classList.remove('d-none');
-    }
-    if (placeholder) placeholder.classList.add('d-none');
-    if (headerAvatar) {
-      headerAvatar.src = avatarDataUrl;
-      headerAvatar.classList.remove('d-none');
-    }
-    if (headerIcon) headerIcon.classList.add('d-none');
-  } else {
-    if (previewImg) {
-      previewImg.src = '';
-      previewImg.classList.add('d-none');
-    }
-    if (placeholder) {
-      placeholder.textContent = (fallbackLabel || '?').charAt(0).toUpperCase();
-      placeholder.classList.remove('d-none');
-    }
-    if (headerAvatar) {
-      headerAvatar.src = '';
-      headerAvatar.classList.add('d-none');
-    }
-    if (headerIcon) headerIcon.classList.remove('d-none');
-  }
-}
-
 function syncCustomerProfileUI() {
   const headerBadge = document.getElementById('header-customer-name');
-  const navLogin = document.getElementById('cust-nav-login');
-  const navOrders = document.getElementById('cust-nav-orders');
-  const profileBtn = document.getElementById('cust-tab-profile-btn');
-  const profileSub = document.getElementById('cust-profile-subtitle');
-  const logoutBtn = document.getElementById('btn-cust-logout');
-  const saveBtn = document.getElementById('btn-cust-save');
+  const passGroup = document.getElementById('cust-password-group');
+  const passInput = document.getElementById('cust-password');
+  const helpText = document.getElementById('cust-profile-help');
 
-  const isLoggedIn = Boolean(customerProfile && customerProfile.email);
+  if (currentAuthUser) {
+    if (passGroup) passGroup.classList.add('d-none');
+    if (passInput) passInput.required = false;
+    if (helpText) {
+      helpText.textContent = `Sesión iniciada como ${currentAuthUser.email}. Podés editar tus datos de envío cuando quieras.`;
+    }
+  } else {
+    if (passGroup) passGroup.classList.remove('d-none');
+    if (passInput) passInput.required = true;
+    if (helpText) {
+      helpText.textContent = 'Creá tu cuenta o completá tus datos para agilizar tus próximas compras.';
+    }
+  }
 
-  if (isLoggedIn) {
+  if (customerProfile && (customerProfile.name || customerProfile.email)) {
     const firstName = (customerProfile.name || customerProfile.email).trim().split(' ')[0];
     if (headerBadge) {
       headerBadge.textContent = firstName;
       headerBadge.classList.remove('d-none');
     }
-    renderAvatarPreview(customerProfile.avatar || '', firstName);
-    if (navLogin) navLogin.classList.add('d-none');
-    if (navOrders) navOrders.classList.remove('d-none');
-    if (profileBtn) {
-      profileBtn.textContent = 'Mis Datos';
-      bootstrap.Tab.getOrCreateInstance(profileBtn).show();
-    }
-    if (profileSub) profileSub.textContent = 'Sesión iniciada. Podés actualizar tus datos, foto o revisar tus pedidos en la pestaña "Mis Pedidos".';
-    if (logoutBtn) logoutBtn.classList.remove('d-none');
-    if (saveBtn) saveBtn.textContent = 'Guardar Cambios';
-
     const fields = {
       'cust-name': customerProfile.name,
       'cust-email': customerProfile.email,
-      'cust-password': customerProfile.password,
       'cust-phone': customerProfile.phone,
       'cust-address': customerProfile.address,
       'cust-province': customerProfile.province,
       'cust-postal': customerProfile.postal,
+      'cust-orders-email': customerProfile.email,
       'login-cust-email': customerProfile.email
     };
     Object.entries(fields).forEach(([id, val]) => {
       const el = document.getElementById(id);
       if (el && val) el.value = val;
     });
-  } else {
-    if (headerBadge) {
-      headerBadge.textContent = '';
-      headerBadge.classList.add('d-none');
-    }
-    renderAvatarPreview('', '?');
-    if (navLogin) navLogin.classList.remove('d-none');
-    if (navOrders) navOrders.classList.add('d-none');
-    if (profileBtn) profileBtn.textContent = 'Crear Cuenta';
-    if (profileSub) profileSub.textContent = 'Completá tus datos para crear tu cuenta y agilizar tus próximas compras.';
-    if (logoutBtn) logoutBtn.classList.add('d-none');
-    if (saveBtn) saveBtn.textContent = 'Crear Cuenta';
-
-    const loginBtn = document.getElementById('cust-tab-login-btn');
-    if (loginBtn) bootstrap.Tab.getOrCreateInstance(loginBtn).show();
+  } else if (headerBadge) {
+    headerBadge.textContent = '';
+    headerBadge.classList.add('d-none');
   }
 }
 
@@ -1382,42 +1239,52 @@ function prefillCheckoutFromCustomer() {
   });
 }
 
-window.clearCustomerProfile = function () {
+window.clearCustomerProfile = async function () {
+  try {
+    await sb.auth.signOut();
+  } catch (err) {
+    console.warn('Error al cerrar sesión en Supabase:', err);
+  }
+  currentAuthUser = null;
   customerProfile = null;
   localStorage.removeItem('pronta_customer_v1');
   document.getElementById('customer-profile-form')?.reset();
-  document.getElementById('customer-login-form')?.reset();
-  const ordersList = document.getElementById('cust-orders-list');
-  if (ordersList) ordersList.innerHTML = '';
+  const ordersEmail = document.getElementById('cust-orders-email');
+  if (ordersEmail) ordersEmail.value = '';
+  document.getElementById('cust-orders-list').innerHTML =
+    '<div class="text-center text-muted small py-4">Sesión cerrada. Iniciá sesión para consultar tus pedidos.</div>';
   syncCustomerProfileUI();
   showToast('Sesión cerrada');
 };
 
 window.loadCustomerOrders = async function () {
+  const emailInput = document.getElementById('cust-orders-email');
+  const email = (emailInput?.value || currentAuthUser?.email || customerProfile?.email || '').trim().toLowerCase();
   const listEl = document.getElementById('cust-orders-list');
-  const ownerEl = document.getElementById('cust-orders-owner');
   if (!listEl) return;
 
-  if (!customerProfile || !customerProfile.email) {
-    listEl.innerHTML = '<div class="text-center text-muted small py-4">Iniciá sesión para ver tus pedidos.</div>';
+  if (!currentAuthUser) {
+    listEl.innerHTML =
+      '<div class="text-center text-muted small py-4">Iniciá sesión en tu cuenta PRONTA para ver el historial de tus pedidos de forma segura.</div>';
     return;
   }
 
-  const email = customerProfile.email.trim().toLowerCase();
-  if (ownerEl) ownerEl.textContent = email;
-  listEl.innerHTML = '<div class="text-center text-muted small py-4">Cargando tus pedidos...</div>';
+  listEl.innerHTML = '<div class="text-center text-muted small py-4">Buscando tus pedidos...</div>';
 
   try {
-    const { data, error } = await sb
-      .from('orders')
-      .select('*')
-      .ilike('customer_email', email)
-      .order('created_at', { ascending: false });
+    let query = sb.from('orders').select('*').order('created_at', { ascending: false });
 
+    if (email) {
+      query = query.or(`user_id.eq.${currentAuthUser.id},customer_email.ilike.${email}`);
+    } else {
+      query = query.eq('user_id', currentAuthUser.id);
+    }
+
+    const { data, error } = await query;
     if (error) throw error;
 
     if (!data || !data.length) {
-      listEl.innerHTML = '<div class="text-center text-muted small py-4">Todavía no tenés pedidos realizados con esta cuenta.</div>';
+      listEl.innerHTML = '<div class="text-center text-muted small py-4">No encontramos pedidos asociados a tu cuenta todavía.</div>';
       return;
     }
 
@@ -1426,47 +1293,27 @@ window.loadCustomerOrders = async function () {
         ? new Date(o.created_at).toLocaleDateString('es-AR', { day: '2-digit', month: '2-digit', year: 'numeric' })
         : '';
       const itemsText = Array.isArray(o.items)
-        ? o.items.map(i => `${i.qty}x ${i.name}`).join(' · ')
+        ? o.items.map(i => `${escapeHTML(i.qty)}x ${escapeHTML(i.name)}`).join(' · ')
         : '';
       return `
         <div class="border rounded-3 p-3 bg-light">
           <div class="d-flex justify-content-between align-items-center mb-1">
-            <strong class="small">Pedido #${String(o.id).slice(0, 8)} ${dateStr ? '· ' + dateStr : ''}</strong>
-            <span class="badge rounded-pill" style="background-color:#D4A3A3; color:#333333;">${o.status || 'Pendiente'}</span>
+            <strong class="small">Pedido #${escapeHTML(String(o.id).slice(0, 8))} ${dateStr ? '· ' + escapeHTML(dateStr) : ''}</strong>
+            <span class="badge rounded-pill" style="background-color:#D4A3A3; color:#333333;">${escapeHTML(o.status || 'Pendiente')}</span>
           </div>
           <div class="small text-muted mb-1">${itemsText}</div>
           <div class="d-flex justify-content-between small fw-bold">
-            <span>${o.payment_method || ''}</span>
+            <span>${escapeHTML(o.payment_method || '')}</span>
             <span>${formatARS(o.total)}</span>
           </div>
         </div>
       `;
     }).join('');
   } catch (err) {
-    listEl.innerHTML = '<div class="text-center text-danger small py-4">No se pudieron cargar tus pedidos en este momento.</div>';
+    console.error('Error cargando pedidos de clienta:', err);
+    listEl.innerHTML = '<div class="text-center text-danger small py-4">No se pudieron cargar los pedidos en este momento.</div>';
   }
 };
-
-let customerAccounts = JSON.parse(localStorage.getItem('pronta_customer_accounts_v1') || '[]');
-
-function upsertCustomerAccount(profile) {
-  if (!profile || !profile.email) return;
-  const normalizedEmail = profile.email.trim().toLowerCase();
-  const idx = customerAccounts.findIndex(acc => (acc.email || '').toLowerCase() === normalizedEmail);
-  const existing = idx !== -1 ? customerAccounts[idx] : {};
-  const merged = {
-    ...existing,
-    ...profile,
-    email: profile.email.trim(),
-    password: profile.password !== undefined && profile.password !== '' ? profile.password : (existing.password || '')
-  };
-  if (idx !== -1) {
-    customerAccounts[idx] = merged;
-  } else {
-    customerAccounts.push(merged);
-  }
-  localStorage.setItem('pronta_customer_accounts_v1', JSON.stringify(customerAccounts));
-}
 
 window.switchToCustomerRegisterTab = function () {
   const regBtn = document.getElementById('cust-tab-profile-btn');
@@ -1475,6 +1322,14 @@ window.switchToCustomerRegisterTab = function () {
 
 function showCustomerLoginFeedback(message, isError = false) {
   const fb = document.getElementById('cust-login-feedback');
+  if (!fb) return;
+  fb.textContent = message;
+  fb.className = `small mt-2 ${isError ? 'text-danger fw-semibold' : 'text-success fw-semibold'}`;
+  fb.classList.remove('d-none');
+}
+
+function showCustomerProfileFeedback(message, isError = false) {
+  const fb = document.getElementById('cust-profile-feedback');
   if (!fb) return;
   fb.textContent = message;
   fb.className = `small mt-2 ${isError ? 'text-danger fw-semibold' : 'text-success fw-semibold'}`;
