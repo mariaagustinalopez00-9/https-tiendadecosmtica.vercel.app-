@@ -1444,6 +1444,90 @@ window.clearCustomerProfile = async function () {
   showToast('Sesión cerrada');
 };
 
+window.printOrderReceipt = function (order) {
+  if (!order) return;
+  const dateStr = order.created_at
+    ? new Date(order.created_at).toLocaleString('es-AR')
+    : '';
+  const itemsRows = Array.isArray(order.items)
+    ? order.items.map(i => `
+        <tr>
+          <td style="padding:8px; border-bottom:1px solid #eee;">${escapeHTML(i.name || 'Producto')}</td>
+          <td style="padding:8px; border-bottom:1px solid #eee; text-align:center;">${Number(i.qty || 1)}</td>
+          <td style="padding:8px; border-bottom:1px solid #eee; text-align:right;">${formatARS(Number(i.price || 0) * Number(i.qty || 1))}</td>
+        </tr>
+      `).join('')
+    : '';
+
+  const win = window.open('', '_blank', 'width=720,height=840');
+  if (!win) return showToast('Habilitá las ventanas emergentes para imprimir/descargar.');
+
+  win.document.write(`
+    <!DOCTYPE html>
+    <html lang="es">
+    <head>
+      <meta charset="UTF-8">
+      <title>Orden #${escapeHTML(String(order.id).slice(0, 8))} - PRONTA</title>
+      <style>
+        body { font-family: Arial, sans-serif; color: #333; padding: 32px; max-width: 680px; margin: auto; }
+        h1 { margin: 0 0 4px; letter-spacing: 2px; }
+        .muted { color: #666; font-size: 13px; }
+        .box { background: #FAF8F6; border: 1px solid #eee; border-radius: 10px; padding: 14px; margin: 16px 0; font-size: 14px; }
+        table { width: 100%; border-collapse: collapse; margin-top: 12px; font-size: 14px; }
+        th { text-align: left; padding: 8px; border-bottom: 2px solid #D4A3A3; }
+        .total { font-size: 18px; font-weight: bold; text-align: right; margin-top: 16px; }
+        @media print { .no-print { display: none; } }
+      </style>
+    </head>
+    <body>
+      <div style="display:flex; justify-content:space-between; align-items:center;">
+        <div>
+          <h1>PRONTA</h1>
+          <div class="muted">Belleza & Cosmética · Comprobante de Orden</div>
+        </div>
+        <div style="text-align:right;">
+          <strong>Orden #${escapeHTML(String(order.id).slice(0, 8))}</strong><br>
+          <span class="muted">${escapeHTML(dateStr)}</span><br>
+          <span class="muted">Estado: ${escapeHTML(order.status || 'Pendiente')}</span>
+        </div>
+      </div>
+
+      <div class="box">
+        <strong>Cliente:</strong> ${escapeHTML(order.customer_name || '-')}<br>
+        <strong>Email:</strong> ${escapeHTML(order.customer_email || '-')}<br>
+        <strong>Teléfono:</strong> ${escapeHTML(order.customer_phone || '-')}<br>
+        <strong>Envío:</strong> ${escapeHTML(order.shipping_method || '-')} (${Number(order.shipping_cost || 0) === 0 ? 'Gratis' : formatARS(order.shipping_cost)})<br>
+        <strong>Dirección / Nota:</strong> ${escapeHTML(order.shipping_address || '-')}<br>
+        <strong>Medio de pago:</strong> ${escapeHTML(order.payment_method || '-')}
+      </div>
+
+      <table>
+        <thead>
+          <tr>
+            <th>Producto</th>
+            <th style="text-align:center;">Cant.</th>
+            <th style="text-align:right;">Subtotal</th>
+          </tr>
+        </thead>
+        <tbody>${itemsRows}</tbody>
+      </table>
+
+      <div class="total">Total: ${formatARS(order.total)}</div>
+
+      <div class="no-print" style="margin-top:24px; text-align:center;">
+        <button onclick="window.print()" style="padding:10px 20px; background:#333; color:#fff; border:none; border-radius:8px; cursor:pointer;">
+          Imprimir / Guardar PDF
+        </button>
+      </div>
+    </body>
+    </html>
+  `);
+  win.document.close();
+  win.focus();
+  setTimeout(() => win.print(), 300);
+};
+
+
 window.loadCustomerOrders = async function () {
   const emailInput = document.getElementById('cust-orders-email');
   const email = (emailInput?.value || currentAuthUser?.email || customerProfile?.email || '').trim().toLowerCase();
@@ -1475,7 +1559,8 @@ window.loadCustomerOrders = async function () {
       return;
     }
 
-    listEl.innerHTML = data.map(o => {
+    window._lastCustomerOrders = data;
+    listEl.innerHTML = data.map((o, idx) => {
       const dateStr = o.created_at
         ? new Date(o.created_at).toLocaleDateString('es-AR', { day: '2-digit', month: '2-digit', year: 'numeric' })
         : '';
@@ -1492,10 +1577,15 @@ window.loadCustomerOrders = async function () {
           <div class="d-flex justify-content-between small fw-bold">
             <span>${escapeHTML(o.payment_method || '')}</span>
             <span>${formatARS(o.total)}</span>
-          </div>
         </div>
-      `;
-    }).join('');
+        <div class="mt-2 text-end">
+          <button class="btn btn-sm btn-outline-secondary rounded-3" onclick="printOrderReceipt(window._lastCustomerOrders[${idx}])">
+            🖨️ Imprimir / Descargar Orden
+          </button>
+        </div>
+      </div>
+    `;
+  }).join('');
   } catch (err) {
     console.error('Error cargando pedidos de clienta:', err);
     listEl.innerHTML = '<div class="text-center text-danger small py-4">No se pudieron cargar los pedidos en este momento.</div>';
