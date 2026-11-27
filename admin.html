@@ -526,6 +526,26 @@
       return '$' + Number(num || 0).toLocaleString('es-AR', { minimumFractionDigits: 0, maximumFractionDigits: 0 });
     }
 
+    function escapeHTML(str) {
+      return String(str ?? '')
+        .replace(/&/g, '&amp;')
+        .replace(/</g, '&lt;')
+        .replace(/>/g, '&gt;')
+        .replace(/"/g, '&quot;')
+        .replace(/'/g, '&#39;');
+    }
+
+    function safeImageUrl(url, fallback = 'https://placehold.co/100x100/FAF8F6/333333?text=P') {
+      const clean = String(url || '').trim();
+      if (!clean) return fallback;
+      try {
+        const parsed = new URL(clean, window.location.origin);
+        if (parsed.protocol === 'https:' || parsed.protocol === 'http:') {
+          return parsed.href;
+        }
+      } catch (_err) {}
+      return fallback;
+    }
     function showToast(msg) {
       const container = document.getElementById('toast-container');
       const el = document.createElement('div');
