@@ -21,14 +21,14 @@
     }
 
     body {
-      background-color: var(--pronta-bg);
-      color: var(--pronta-charcoal);
+      background-color: var(---bg);
+      color: var(---charcoal);
       font-family: 'Nunito', sans-serif;
     }
 
     h1, h2, h3, h4, .brand-serif {
       font-family: 'Playfair Display', serif;
-      color: var(--pronta-charcoal);
+      color: var(---charcoal);
     }
 
     .btn-pronta {
@@ -608,7 +608,7 @@
       } catch (_err) {}
       return fallback;
     }
-    }
+    
     function normalizeOrderStatus(rawStatus) {
       const val = String(rawStatus || 'Pendiente').trim().toLowerCase();
       const map = {
