@@ -1031,22 +1031,58 @@ async function handleCheckoutSubmit(e) {
     }
   }
 
-  const itemsText = cart.map(i => `• ${i.qty}x ${i.name} (${formatARS(i.price * i.qty)})`).join('\n');
-  let amountSummaryHTML = `<strong>Total a transferir (5% OFF incluido):</strong> ${formatARS(totals.total)}`;
-  let paymentMsg = `Medio de pago: Transferencia Bancaria (5% OFF)\nTotal a transferir: ${formatARS(totals.total)}`;
+const cartTotals = getCartTotals();
+  const itemsText = cart.map(i => {
+    const p = getCartItemPricing(i);
+    const discTag = p.discountPercent > 0 ? ` (${p.discountPercent}% OFF)` : '';
+    return `• ${i.qty}x ${i.name}${discTag}: ${formatARS(p.lineFinalTotal)}`;
+  }).join('\n');
+
+  const qtyDiscHtml = cartTotals.qtyDiscountTotal > 0
+    ? `<div class="d-flex justify-content-between text-success"><span>Descuento por cantidad:</span><span>-${formatARS(cartTotals.qtyDiscountTotal)}</span></div>`
+    : '';
+
+  const payDiscHtml = totals.discount > 0
+    ? `<div class="d-flex justify-content-between text-success"><span>Descuento ${PRONTA_CONFIG.discountPercent}% OFF (${totals.paymentMethod}):</span><span>-${formatARS(totals.discount)}</span></div>`
+    : '';
+
+  const shippingHtml = `<div class="d-flex justify-content-between"><span>Envío (${escapeHTML(totals.shippingName)}):</span><span>${totals.shippingCost === 0 ? 'Gratis' : formatARS(totals.shippingCost)}</span></div>`;
+
+  let amountSummaryHTML = `
+    <div class="d-flex justify-content-between"><span>Subtotal productos:</span><span>${formatARS(cartTotals.rawSubtotal)}</span></div>
+    ${qtyDiscHtml}
+    ${payDiscHtml}
+    ${shippingHtml}
+    <hr class="my-2">
+    <div class="d-flex justify-content-between fw-bold"><span>Total a transferir:</span><span>${formatARS(totals.total)}</span></div>
+  `;
+
+  let paymentMsg = `Subtotal lista: ${formatARS(cartTotals.rawSubtotal)}`;
+  if (cartTotals.qtyDiscountTotal > 0) paymentMsg += `\nDescuento por cantidad: -${formatARS(cartTotals.qtyDiscountTotal)}`;
+  if (totals.discount > 0) paymentMsg += `\nDescuento 5% OFF: -${formatARS(totals.discount)}`;
+  paymentMsg += `\nEnvío: ${totals.shippingName} (${totals.shippingCost === 0 ? 'Gratis' : formatARS(totals.shippingCost)})`;
+  paymentMsg += `\nMedio de pago: Transferencia Bancaria (5% OFF)\nTotal a transferir: ${formatARS(totals.total)}`;
 
   if (totals.paymentMethod === 'efectivo') {
     amountSummaryHTML = `
-      <div><strong>Total con 5% OFF:</strong> ${formatARS(totals.total)}</div>
-      <div class="text-pronta"><strong>Seña a transferir ahora (50%):</strong> ${formatARS(totals.senaAmount)}</div>
-      <div><strong>Saldo restante en efectivo:</strong> ${formatARS(totals.cashRest)}</div>
+      <div class="d-flex justify-content-between"><span>Subtotal productos:</span><span>${formatARS(cartTotals.rawSubtotal)}</span></div>
+      ${qtyDiscHtml}
+      ${payDiscHtml}
+      ${shippingHtml}
+      <hr class="my-2">
+      <div class="d-flex justify-content-between fw-bold"><span>Total con descuentos:</span><span>${formatARS(totals.total)}</span></div>
+      <div class="d-flex justify-content-between text-pronta fw-bold"><span>Seña a transferir ahora (50%):</span><span>${formatARS(totals.senaAmount)}</span></div>
+      <div class="d-flex justify-content-between"><span>Saldo restante en efectivo:</span><span>${formatARS(totals.cashRest)}</span></div>
     `;
-    paymentMsg = `Medio de pago: Efectivo con seña (5% OFF)\nTotal: ${formatARS(totals.total)}\nSeña a transferir (50%): ${formatARS(totals.senaAmount)}\nRestante en efectivo: ${formatARS(totals.cashRest)}`;
+    paymentMsg = `Subtotal lista: ${formatARS(cartTotals.rawSubtotal)}`;
+    if (cartTotals.qtyDiscountTotal > 0) paymentMsg += `\nDescuento por cantidad: -${formatARS(cartTotals.qtyDiscountTotal)}`;
+    if (totals.discount > 0) paymentMsg += `\nDescuento 5% OFF: -${formatARS(totals.discount)}`;
+    paymentMsg += `\nEnvío: ${totals.shippingName} (${totals.shippingCost === 0 ? 'Gratis' : formatARS(totals.shippingCost)})`;
+    paymentMsg += `\nMedio de pago: Efectivo con seña (5% OFF)\nTotal: ${formatARS(totals.total)}\nSeña a transferir (50%): ${formatARS(totals.senaAmount)}\nRestante en efectivo: ${formatARS(totals.cashRest)}`;
   }
 
   const waMessage = `¡Hola PRONTA! Acabo de realizar un pedido (#${savedOrderId}):\n\n` +
     `${itemsText}\n\n` +
-    `Envío: ${totals.shippingName} (${formatARS(totals.shippingCost)})\n` +
     `${paymentMsg}\n\n` +
     `Mis datos:\nNombre: ${name}\nTel: ${phone}\nDirección/Nota: ${address || '-'}\n\n` +
     `¡Te adjunto el comprobante de transferencia!`;
