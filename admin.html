@@ -967,7 +967,7 @@ document.getElementById('btn-add-qty-tier')?.addEventListener('click', () => {
     viewEl.classList.remove('d-none');
   });
 
-  btnSave.addEventListener('click', () => {
+btnSave.addEventListener('click', () => {
     const lines = textareaEl.value
       .split('\n')
       .map(l => l.trim())
@@ -976,11 +976,11 @@ document.getElementById('btn-add-qty-tier')?.addEventListener('click', () => {
     const html = lines.map(line => {
       const idx = line.indexOf(':');
       if (idx > -1) {
-        const label = line.slice(0, idx).trim();
-        const rest = line.slice(idx + 1).trim();
+        const label = escapeHTML(line.slice(0, idx).trim());
+        const rest = escapeHTML(line.slice(idx + 1).trim());
         return `<li>✅ <strong>${label}:</strong> ${rest}</li>`;
       }
-      return `<li>✅ ${line}</li>`;
+      return `<li>✅ ${escapeHTML(line)}</li>`;
     }).join('');
 
     viewEl.innerHTML = html;
