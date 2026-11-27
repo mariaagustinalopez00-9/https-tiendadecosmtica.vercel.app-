@@ -608,6 +608,22 @@
       } catch (_err) {}
       return fallback;
     }
+    }
+    function normalizeOrderStatus(rawStatus) {
+      const val = String(rawStatus || 'Pendiente').trim().toLowerCase();
+      const map = {
+        pendiente: 'Pendiente',
+        pagado: 'Pagado',
+        approved: 'Pagado',
+        enviado: 'Enviado',
+        entregado: 'Entregado',
+        cancelado: 'Cancelado',
+        cancelled: 'Cancelado'
+      };
+      return map[val] || 'Pendiente';
+    }
+
+    function showToast(msg) {
     function showToast(msg) {
       const container = document.getElementById('toast-container');
       const el = document.createElement('div');
