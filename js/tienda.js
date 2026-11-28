@@ -992,24 +992,35 @@ async function handleCheckoutSubmit(e) {
   const paymentLabels = {
     mercadopago: 'Mercado Pago',
     transferencia: 'Transferencia Bancaria (5% OFF)',
-    efectivo: 'Efectivo con seña 50% (5% OFF)'
+    efectivo: 'Efectivo con seña 30% (5% OFF)'
   };
 
   let savedOrderId = 'PR-' + Date.now().toString().slice(-6);
   try {
-    const orderPayload = {
-      user_id: currentAuthUser ? currentAuthUser.id : null,
-      customer_name: name,
-      customer_email: email,
-      customer_phone: phone,
-      shipping_address: address,
-      shipping_method: totals.shippingName,
-      shipping_cost: totals.shippingCost,
-      payment_method: paymentLabels[totals.paymentMethod],
-      items: cart,
-      total: totals.total,
-      status: 'Pendiente'
-    };
+  await fetch('/api/send-order-email', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({
+      toEmail: email,
+      adminCopyEmail: 'mariaagustinalopez.00@gmail.com',
+      order: {
+        id: savedOrderId,
+        customer_name: name,
+        customer_email: email,
+        customer_phone: phone,
+        shipping_address: address,
+        shipping_method: totals.shippingName,
+        shipping_cost: totals.shippingCost,
+        payment_method: paymentLabels[totals.paymentMethod],
+        items: cart,
+        total: totals.total,
+        status: 'Pendiente'
+      }
+    })
+  });
+} catch (mailErr) {
+  console.warn('Error al enviar correo automático:', mailErr);
+}
 
     const { data, error } = await sb.from('orders').insert([orderPayload]).select();
     if (!error && data && data[0] && data[0].id) {
